@@ -153,9 +153,9 @@ const datedEvents: StoryEvent[] = [
   // Beat IDs and count stay stable so saved checkpoints keep their meaning.
   // The intro cinematic wakes Felice beside her bed and opens the first beat.
   sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
-    beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .33, y: .53 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
+    beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .42, y: .52 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
     beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
-    beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .80, y: .68 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
+    beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .70, y: .66 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
   ] }),
   ...chatEvents,
   {
@@ -163,7 +163,7 @@ const datedEvents: StoryEvent[] = [
     id: "radegast-chocolate", title: "Die Schokolade", date: "2025-11-19", order: 1, chapterNumber: 1, symbol: "▦", source: "historical", cast: ["Felice", "Elias"],
     place: "radegast", scene: "encounter", requires: [], confirmed: true, rewards: ["chocolate"], hint: "Vielleicht sollte ich zu den Pferden gehen.",
     description: "Elias kam mit dem Fahrrad aus Zörbig zu mir nach Radegast und brachte Schokolade mit. Mir war kalt und ich hatte keinen Appetit. Ich aß sie nicht, und er fühlte sich etwas unbeholfen. Trotzdem half mir schon seine Anwesenheit.",
-    illustration: "pasture", staging: { start: 960, end: 990, spawn: { x: .49, y: .49 }, timeConfirmed: false },
+    illustration: "pasture", staging: { start: 960, end: 990, spawn: { x: .66, y: .42 }, timeConfirmed: false },
     dialogue: [
       { speaker: "Erzählung", text: "Felice ist bei den Pferden in Radegast. Ihr ist kalt. Elias kommt mit dem Fahrrad aus Zörbig, um sie zu besuchen.", emotion: "neutral" },
       { speaker: "Felice", text: "Schön, dass du gekommen bist. Es ist ziemlich kalt hier.", emotion: "happy" },

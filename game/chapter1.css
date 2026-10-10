@@ -112,3 +112,33 @@
 .intro-line small { display:block; margin-bottom:5px; font:11px monospace; font-style:normal; letter-spacing:.3em; text-transform:uppercase; color:#d9bd81; }
 .intro-zoerbig img { filter:sepia(.45) saturate(1.3) hue-rotate(-20deg) brightness(.82) contrast(1.05); }
 @media (max-height:520px) { .intro-line { bottom:calc(9vh + 14px); font-size:15px; } .intro-title { bottom:calc(9vh + 14px); } .intro-skip { bottom:calc(9vh + 4px); } }
+/* Felice asleep in the v10 bed: bigger lying figure so she fills the mattress. */
+.version-065 .room-player.in-bed.pose-lying { width:16%; }
+
+/* First school morning: bus ride, seen from inside. */
+.bus-ride { position:fixed; inset:0; z-index:60; overflow:hidden; color:#f4e7cc; background:radial-gradient(ellipse at 50% 40%,#1b2421,#070b0a 75%); }
+.bus-window { position:absolute; left:50%; top:9vh; width:min(76vw,860px); aspect-ratio:16/9; max-height:62vh; transform:translateX(-50%); overflow:hidden; border:min(1.6vw,14px) solid #2a2f31; border-radius:22px; box-shadow:inset 0 0 0 3px #11181a,0 12px 50px #000a; }
+.bus-sky { position:absolute; inset:0; background:linear-gradient(180deg,#a9a79a 0%,#d9c7a1 55%,#ecd9b0 100%); }
+.bus-layer { position:absolute; left:0; top:0; width:200%; height:100%; will-change:transform; }
+.bus-strip { display:block; width:100%; height:100%; }
+.bus-far { animation:bus-scroll 16s linear infinite; opacity:.9; }
+.bus-near { animation:bus-scroll 4.6s linear infinite; }
+@keyframes bus-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+.bus-glass { position:absolute; inset:0; background:linear-gradient(115deg,#ffffff2e 0%,transparent 22%,transparent 60%,#ffffff1c 72%,transparent 80%),radial-gradient(ellipse at 50% 120%,#00000055,transparent 60%); }
+.bus-rain { position:absolute; inset:0; background:repeating-linear-gradient(104deg,transparent 0 23px,#ffffff30 23px 24px); opacity:.35; animation:bus-drops 1.4s linear infinite; }
+@keyframes bus-drops { from { background-position:0 0; } to { background-position:-46px 70px; } }
+.bus-pole { position:absolute; left:calc(50% + min(38vw,430px) + 6px); top:0; bottom:0; width:14px; background:linear-gradient(90deg,#6f787a,#c9d0d0 45%,#5b6466); box-shadow:0 0 20px #0008; }
+.bus-seat { position:absolute; left:0; right:0; bottom:0; height:30vh; background:linear-gradient(180deg,#26333a,#17222a); border-top:6px solid #31424a; box-shadow:0 -14px 40px #000a; }
+.bus-seat::before { content:""; position:absolute; left:50%; top:-3vh; width:min(60vw,640px); height:6vh; transform:translateX(-50%); border-radius:14px 14px 0 0; background:#2c3b43; }
+.bus-felice { position:absolute; left:50%; bottom:20vh; -webkit-mask-image:radial-gradient(ellipse 62% 60% at 50% 46%,#000 62%,transparent 100%); mask-image:radial-gradient(ellipse 62% 60% at 50% 46%,#000 62%,transparent 100%); width:min(30vw,260px); aspect-ratio:1; margin-left:calc(min(30vw,260px) / -2 - min(10vw,110px)); transform-origin:50% 100%; transform:rotate(-9deg); animation:bus-bump .62s steps(2,end) infinite; filter:drop-shadow(0 6px 10px #0009); }
+.bus-felice .character-art { width:100%; height:100%; display:block; }
+@keyframes bus-bump { 0%,100% { transform:rotate(-9deg) translateY(0); } 50% { transform:rotate(-9.6deg) translateY(2px); } }
+.bus-thought { position:absolute; left:50%; bottom:calc(20vh + min(24vw,210px)); width:min(40vw,330px); margin:0 0 0 min(0px,0px); margin-left:calc(min(30vw,260px) / -2 + min(10vw,110px) - 20px); padding:14px 18px; border:3px solid #f4e7cc; border-radius:24px; background:#e9dfc7; color:#2a2a24; text-align:center; font:italic clamp(15px,2.2vw,22px)/1.4 Georgia,serif; box-shadow:0 8px 30px #0008; pointer-events:none; }
+.bus-thought small { display:block; margin-bottom:3px; font:10px monospace; font-style:normal; letter-spacing:.2em; text-transform:uppercase; color:#8a6b34; }
+.bus-thought::before,.bus-thought::after { content:""; position:absolute; border:3px solid #f4e7cc; border-radius:50%; background:#e9dfc7; }
+.bus-thought::before { left:12%; bottom:-24px; width:18px; height:18px; }
+.bus-thought::after { left:6%; bottom:-42px; width:10px; height:10px; }
+.bus-caption { position:absolute; left:0; right:0; top:calc(9vh - 26px); margin:0; text-align:center; font:11px monospace; letter-spacing:.24em; text-transform:uppercase; color:#d9bd81; }
+.bus-skip { bottom:18px; }
+@media (max-height:520px) { .bus-window { top:7vh; max-height:56vh; } .bus-caption { top:calc(7vh - 20px); font-size:9px; } .bus-felice { bottom:6vh; width:min(24vw,200px); margin-left:calc(min(24vw,200px) / -2 - min(10vw,90px)); } .bus-thought { bottom:calc(6vh + min(22vw,190px)); font-size:13px; padding:8px 12px; } .bus-seat { height:22vh; } }
+@media (prefers-reduced-motion:reduce) { .bus-far,.bus-near,.bus-rain,.bus-felice { animation:none!important; } }

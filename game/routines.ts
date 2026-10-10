@@ -10,6 +10,13 @@ export function routineEntities(place: Place, minute: number, entities: Entity[]
   return entities;
 }
 
+// Places that the story has not reached yet have no path: the Christmas market (06.12.2025) and Elias' room (20.03.2026).
+export const CHRISTMAS_MARKET_OPENS = "2025-12-06";
+export const ELIAS_ROOM_OPENS = "2026-03-20";
+export function exitOpen(to: Place, date: string) {
+  return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
+}
+
 // Outside story scenes Elias only appears where the story has already brought
 // him: nowhere before the first meeting, at Felice's home only after Christmas,
 // in his room only after the March weekend. Story casts are unaffected.

@@ -13,12 +13,12 @@ import { PhoneHub, eventDateText } from "./PhoneHub";
 import { DialogueBox } from "./DialogueBox";
 import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
-import { advanceFollower, anukPresent, eliasPresent, routineEntities } from "./routines";
+import { advanceFollower, anukPresent, eliasPresent, exitOpen, routineEntities } from "./routines";
 import { ROUTINE_ITEMS, ROUTINE_TASKS, isRoutineDay, routineDone, routineFlag, routineOpen, type RoutineTask } from "./routine";
 import { TimelineJournal } from "./TimelineJournal";
 import { EncounterElias, RadegastPasture } from "./StoryWorldArt";
 import { readProgress } from "./memories/progress";
-import { TIMELINE_KEY, STORY_END, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
+import { TIMELINE_KEY, STORY_END, STORY_START, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
 import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
@@ -38,8 +38,10 @@ import { speakerGraphic } from "./graphics";
 import { cameraFor, offscreenGuide } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, TRAVEL_MINUTES, activityAt, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
-import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Place, type Point, type StorySave } from "./story";
+import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
+import { BusRide } from "./BusRide";
 
+const BUS_RIDE_FLAG = "bus-ride-first-day";
 const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
 // Felice lying in her bed, ready for the existing rest system to walk her out.
 function lyingInBed(): Rest {
@@ -89,6 +91,8 @@ export function Game() {
   const save: StorySave = event ? { ...worldSave, place: sequenceBeat?.place ?? event.place, chapter: null, bag: event.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 ? ["Schokolade"] : [] } : worldSave;
   const [phone, setPhone] = useState(false);
   const [intro, setIntro] = useState(false);
+  // First school morning (10.11.): the bus ride to Zörbig plays once, seen from inside.
+  const [busRide, setBusRide] = useState<Exit | null>(null);
   const [calendarFlip, setCalendarFlip] = useState<{ from: string; to: string } | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [thought, setThought] = useState<{ key: string; text: string } | null>(null);
@@ -147,12 +151,12 @@ export function Game() {
   const memoryError = useMemories(s => s.storageError);
   const transitioning = phase === "entering" || phase === "leaving";
   const inWorld = phase === "room";
-  const overlay = intro || Boolean(calendarFlip) || inventoryOpen;
+  const overlay = intro || Boolean(busRide) || Boolean(calendarFlip) || inventoryOpen;
   const active = started && !paused && !needsLandscape && inWorld && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay;
   const chapter = CHAPTERS.find(c => c.id === save.chapter);
   const step = currentStep(save);
   const draftPlaying = Boolean(legacyView || worldSave.chapter && currentStep(worldSave));
-  const exits = event ? [] : PLACES[save.place].exits;
+  const exits = event ? [] : PLACES[save.place].exits.filter(exit => save.chapter || exitOpen(exit.to, day.date));
   const guide = step && step.place !== save.place ? routeTo(save.place, step.place) : undefined;
   const dogFollows = save.place === "garden" && save.completed.includes("dog") && save.chapter !== "dog";
   // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
@@ -183,8 +187,9 @@ export function Game() {
   const waitMinutes = !session && !legacyView ? waitingMinutes(timeline) : null;
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
   const arrived = eventState && eventState.cursor > 0 ? 1 : Math.min(1, arrivalTime / 3);
-  const eliasPoint = { x: .78 - .18 * arrived, y: .91 - .27 * arrived };
-  const encounterNearby = event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 1 && Math.hypot(player.x - .6, player.y - .64) < .13;
+  // Treffpunkt: Elias rides up the cobbled road, then turns onto the meadow beside the pavilion.
+  const eliasPoint = arrived < .6 ? { x: .64 - .02 * (arrived / .6), y: .95 - .23 * (arrived / .6) } : { x: .62 - .28 * ((arrived - .6) / .4), y: .72 };
+  const encounterNearby = event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 1 && Math.hypot(player.x - .42, player.y - .72) < .13;
   const restPose: Pose = cinema && ["sit","kiss"].includes(cinema.kind) ? "sitting" : rest?.motion.actor.pose ?? "standing";
   const bedOccupied = rest?.spot.kind === "bed" && rest.motion.phase === "resting";
   const settled = rest?.motion.phase === "resting";
@@ -411,6 +416,8 @@ export function Game() {
         updateActors({...actorsRef.current,[id]:standingActor(spawn)});
         setVisitingElias(nearbyExit.to);
       }
+      const firstSchoolBus = save.place === "bus" && nearbyExit.to === "zoerbig" && !event && dayRef.current.date === STORY_START && dayRef.current.minute < 10 * 60 && !timelineRef.current.flags.includes(BUS_RIDE_FLAG);
+      if (firstSchoolBus) { setBusRide(nearbyExit); return; }
       setSave({ ...save, place: nearbyExit.to }); position(nearbyExit.spawn); spendTime(TRAVEL_MINUTES, nearbyExit.to);
     }
   }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint, triggerNear, triggerHere, upcoming]);
@@ -591,6 +598,14 @@ export function Game() {
     changeRest(lying); wakeThen.current = then;
   }
 
+  function finishBusRide() {
+    const exit = busRide; if (!exit) return;
+    setBusRide(null);
+    const current = timelineRef.current;
+    if (!current.flags.includes(BUS_RIDE_FLAG)) persistTimeline({ ...current, flags: [...current.flags, BUS_RIDE_FLAG] });
+    clearMovement(); setSave({ ...save, place: exit.to }); position(exit.spawn); spendTime(TRAVEL_MINUTES, exit.to);
+  }
+
   function finishIntro() {
     setIntro(false);
     const current = timelineRef.current;
@@ -749,7 +764,7 @@ export function Game() {
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
 
   return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
-    <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-rest-v065.png")}/>
+    <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.png")}/>
     {Object.keys(WALK_ATLASES).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
@@ -769,10 +784,10 @@ export function Game() {
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && actors[entity.id] ? {...actors[entity.id],moving:false} : actors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
         <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+10}}>
-          {!bedOccupied && <CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}<span className="room-player-label">Felice</span>
+          {<CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}<span className="room-player-label">Felice</span>
           {event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 && <span className="pixel-chocolate felice-chocolate" aria-label="Felice behält die Schokolade"/>}
         </div>
-        {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .245, y: .10 })}>Felice</span>}
+        {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
         {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+10}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
         <WorldAtmosphere place={save.place} winter={winter}/>
         {save.place === "kitchen" && kitchenEffect && <div className={`kitchen-effect kitchen-${kitchenEffect}`} role="status"><span>{kitchenEffect === "breakfast" ? "Frühstück steht bereit" : kitchenEffect === "warm-drink" ? "Dein Getränk ist fertig" : "Die Küche ist aufgeräumt"}</span><i/><i/><i/></div>}
@@ -834,6 +849,7 @@ export function Game() {
     {dayError && started && <div className="day-save-warning" role="status">{dayError}{timelineReadable.current && <button onClick={() => persistTimeline(timelineRef.current)}>Erneut speichern</button>}</div>}
     {cutscene && started && inWorld && <div className="cutscene-bars" aria-hidden="true"/>}
     {intro && started && <IntroCinematic paused={paused || needsLandscape} onDone={finishIntro}/>}
+    {busRide && started && <BusRide paused={paused || needsLandscape} onDone={finishBusRide}/>}
     {calendarFlip && <CalendarFlip from={calendarFlip.from} to={calendarFlip.to} paused={paused || needsLandscape} onDone={() => { setCalendarFlip(null); wakeInBed("morning"); }}/>}
     {inventoryOpen && <InventoryPanel ids={timeline.inventory} onClose={() => { setInventoryOpen(false); clearMovement(); }} onOpenMemory={() => { setInventoryOpen(false); setJournal(true); }}/>}
     <MemoryTransition/>

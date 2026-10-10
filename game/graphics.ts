@@ -10,7 +10,7 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   // SVG scenes the game already fell back to are referenced directly.
   christmasmarket: { background: "/rooms/story-christmasmarket-v09.svg", outdoors: true, light: "#ffe1a6", foreground: [] },
   eliasroom: { background: "/rooms/story-eliasroom-pixel-v10.png", fallback: "/rooms/story-eliasroom-v09.svg", outdoors: false, light: "#f4c989", foreground: [] },
-  bedroom: { background: "/rooms/felice-bedroom-v9.png", outdoors: false, light: "#ffbd65", foreground: [rect(12,8.5,49.5,43),rect(49,14,74.5,30),rect(11,43,21.5,59.5),rect(84,33,95,58.5),rect(53,81,96,100,98)] },
+  bedroom: { background: "/rooms/felice-bedroom-v10.png", outdoors: false, light: "#ffbd65", foreground: [rect(24.5,10,52.5,42),rect(52.5,10,74.5,30),rect(24.5,43,35.5,57),rect(69,31,79,57),rect(45.5,79,78,91,91)] },
   home: { background: "/rooms/home-v06.png", winter: "/rooms/home-winter-v06.png", outdoors: false, light: "#ffd49a", foreground: [rect(46,23.5,73,48),{ clip: "polygon(12% 17%,40% 17%,40% 30%,24.7% 30%,24.7% 43%,12% 43%)", depth:43 },rect(84,12,96,46)] },
   kitchen: { background: "/rooms/kitchen-v065.png", outdoors: false, light: "#ffd49a", foreground: [rect(8.7,9,91.4,28.4),rect(57.6,36,85.4,51.5),rect(61,51.5,70,58.5),rect(74,51.5,82,58.5)] },
   garden: { background: "/rooms/garden-v06.png", winter: "/rooms/garden-winter-v06.png", outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ clip: "polygon(3% 9%,13% 6%,25% 10%,33% 20%,29% 28%,22% 30%,21% 38%,14% 38%,13% 30%,5% 27%,2% 20%)", depth:38 },{ clip:"polygon(69% 11%,79% 7%,94% 10%,98% 22%,91% 31%,86% 31%,86% 40%,79% 40%,77% 32%,68% 29%,65% 21%)",depth:40 }] },

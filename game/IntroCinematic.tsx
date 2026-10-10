@@ -10,6 +10,7 @@ import { worldAudio } from "./audio";
 // her bedroom at dawn → hand-over to play. Only facts the game already knows are narrated.
 // Music: drop a file at public/audio/intro.mp3 (optional; the intro plays silently without it).
 export const INTRO_MUSIC = "/audio/intro.mp3";
+const INTRO_MUSIC_VOLUME = .08; // very quiet background, 0–1
 const ZOERBIG_IN = 2000, TOWN_IN = 19600, HOUSE_PUSH = 31000, ROOM_IN = 35600, END = 43500;
 export const INTRO_DURATION = END;
 /** Narration, fade in at `from`, out at `to`. Speaker is always Elias. */
@@ -72,7 +73,7 @@ export function IntroCinematic({ paused, onDone }: { paused: boolean; onDone: ()
     const audio = music.current;
     if (!audio) return;
     const level = Math.min(span(elapsed, 0, 3000), 1 - span(elapsed, END - 3500, END));
-    try { audio.volume = worldAudio.getMuted() ? 0 : .75 * level; } catch { /* Ignore volume errors. */ }
+    try { audio.volume = worldAudio.getMuted() ? 0 : INTRO_MUSIC_VOLUME * level; } catch { /* Ignore volume errors. */ }
   }, [elapsed]);
 
   useEffect(() => {
@@ -101,7 +102,7 @@ export function IntroCinematic({ paused, onDone }: { paused: boolean; onDone: ()
     <div className="intro-layer intro-zoerbig" style={zoerbigStyle}><img src={assetUrl("/rooms/zoerbig-market-v08.png")} alt=""/><div className="intro-autumn-grade"/></div>
     <div className="intro-layer intro-town" style={townStyle}><img src={assetUrl("/rooms/radegast-walk-v075.png")} alt=""/><div className="intro-autumn-grade"/></div>
     <div className="intro-leaves" style={{ opacity: Math.max(zoerbigOpacity, townOpacity) }} aria-hidden="true">{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37 + 9) % 104}%`, animationDelay: `${-((i * .61) % 7)}s`, animationDuration: `${4.5 + i % 5}s`, animationPlayState: paused ? "paused" : "running" }}/>)}</div>
-    <div className="intro-layer intro-room" style={roomStyle}><img src={assetUrl("/rooms/felice-bedroom-rest-v065.png")} alt=""/><div className="intro-dawn"/></div>
+    <div className="intro-layer intro-room" style={roomStyle}><img src={assetUrl("/rooms/felice-bedroom-v10.png")} alt=""/><div className="intro-dawn"/></div>
     <div className="intro-bars" aria-hidden="true"/>
     <p className="intro-year" style={{ opacity: yearLater }}>Ein Jahr später</p>
     {LINES.map(line => { const opacity = window_(elapsed, line.from, line.to, 800); return opacity > 0 ? <p key={line.from} className="intro-line" style={{ opacity, transform: `translateY(${(1 - opacity) * 6}px)` }}><small>Elias</small>{line.text}</p> : null; })}

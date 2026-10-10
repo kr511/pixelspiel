@@ -6,7 +6,7 @@ import type { Place } from "./story";
 import { assetUrl } from "./assets";
 
 export const WorldBackdrop = memo(function WorldBackdrop({ place, winter, bedOccupied = false }: { place: Place; winter: boolean; bedOccupied?: boolean }) {
-  const primarySource = place === "bedroom" && bedOccupied ? "/rooms/felice-bedroom-rest-v065.png" : sceneBackground(place, winter);
+  const primarySource = sceneBackground(place, winter);
   const scene = SCENE_GRAPHICS[place];
   const fallbackSource = winter ? scene.winterFallback ?? scene.fallback : scene.fallback;
   const [failedSources, setFailedSources] = useState<string[]>([]);

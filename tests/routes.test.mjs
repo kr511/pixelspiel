@@ -35,7 +35,7 @@ test("Markt hält Brunnen und Säule frei und verbindet Bus, Markt, Schulweg und
   assert.equal(canWalk('zoerbig',.50,.64),false,'Brunnen');
   for(const [x,y] of [[.43,.275],[.50,.45],[.40,.70],[.24,.70]])assert.ok(canWalk('zoerbig',x,y),'Freier Platz');
   assert.equal(canWalk('zoerbig',.83,.40),false,'Rathausfassade');
-  assert.equal(routeTo('zoerbig','school').to,'schoolway');
-  assert.equal(routeTo('school','bus').to,'schoolway');
+  assert.equal(routeTo('zoerbig','school').to,'school', 'Vom Markt direkt zum Pausenhof');
+  assert.equal(routeTo('school','bus').to,'zoerbig');
   for(const place of ['zoerbig','schoolway'])for(const exit of PLACES[place].exits)assert.ok(canWalk(exit.to,exit.spawn.x,exit.spawn.y),exit.label);
 });

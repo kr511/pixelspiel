@@ -140,7 +140,6 @@
 
 /* V0.65: grounded poses, painted bed occupancy and kitchen action feedback. */
 .version-065 .room-player.pose-lying { width:9.5%; }
-.version-065 .room-player.in-bed { width:0; height:0; }
 .version-065 .room-player.in-bed .room-player-label { display:none; }
 .version-065 .entity-person.pose-sitting,.version-065 .entity-person.pose-lying { filter:drop-shadow(0 1px 1px #25352c44); }
 .kitchen-action-marker { display:block; color:#f2d89c; text-align:center; text-shadow:0 1px 4px #493726; font-size:14px; }
@@ -228,7 +227,11 @@
 /* Overhead school courtyard: match the figure scale to the building and yard. */
 .version-075[data-scene="school"] .room-player,
 .version-075[data-scene="school"] .entity-person { width:4.4%!important; }
-.version-075[data-scene="school"] .world-exit { z-index:110; }
+.version-075[data-scene="school"] .world-exit,
+.version-075[data-scene="zoerbig"] .world-exit,
+.version-075[data-scene="bus"] .world-exit,
+.version-075[data-scene="garden"] .world-exit,
+.version-075[data-scene="schoolway"] .world-exit { z-index:110; } /* exit labels stay readable above tree-crown foreground layers */
 
 .version-075[data-scene="school"] [data-rest-id^="school-bench-right"].pose-sitting .room-player-label,
 .version-075[data-scene="school"] [data-rest-id^="school-bench-right"].pose-sitting .entity-name { left:0; transform:translateX(-100%); }

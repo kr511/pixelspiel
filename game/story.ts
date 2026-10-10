@@ -9,11 +9,13 @@ export type Entity = Point & { id: string; name: string; kind: "person" | "dog" 
 export type Exit = Point & { to: Place; label: string; spawn: Point };
 export type Obstacle = { left: number; right: number; top: number; bottom: number };
 export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit[]; obstacles: Obstacle[] }> = {
-  bedroom: { name: "Felices Zimmer", subtitle: "Hier beginnt eure Geschichte", exits: [{ x: .9, y: .68, to: "home", label: "Ins Wohnzimmer", spawn: { x: .2, y: .72 } }], obstacles: [
-    { left: .12, right: .495, top: .085, bottom: .43 }, { left: .49, right: .745, top: .14, bottom: .3 }, { left: .57, right: .66, top: .24, bottom: .34 }, { left: .11, right: .215, top: .43, bottom: .595 }, { left: .84, right: .95, top: .33, bottom: .585 }, { left: .53, right: .96, top: .81, bottom: 1 },
+  bedroom: { name: "Felices Zimmer", subtitle: "Hier beginnt eure Geschichte", exits: [{ x: .735, y: .66, to: "home", label: "Ins Wohnzimmer", spawn: { x: .2, y: .72 } }], obstacles: [
+    // v10 room: narrower than the frame. Bed, vanity + stool, nightstand, shelf, chest, then the dark side margins.
+    { left: .245, right: .525, top: .10, bottom: .42 }, { left: .525, right: .745, top: .10, bottom: .30 }, { left: .59, right: .665, top: .24, bottom: .36 }, { left: .245, right: .355, top: .43, bottom: .57 }, { left: .69, right: .79, top: .31, bottom: .57 }, { left: .455, right: .78, top: .79, bottom: .91 },
+    { left: 0, right: .235, top: 0, bottom: 1 }, { left: .765, right: 1, top: 0, bottom: 1 },
   ] },
   home: { name: "Bei Felice zu Hause", subtitle: "Ein Platz für uns", exits: [
-    { x: .12, y: .72, to: "bedroom", label: "Felices Zimmer", spawn: { x: .84, y: .68 } }, { x: .5, y: .9, to: "garden", label: "In den Garten", spawn: { x: .5, y: .35 } },
+    { x: .12, y: .72, to: "bedroom", label: "Felices Zimmer", spawn: { x: .70, y: .66 } }, { x: .5, y: .9, to: "garden", label: "In den Garten", spawn: { x: .5, y: .35 } },
     { x: .925, y: .52, to: "kitchen", label: "In Felices Küche", spawn: { x: .5, y: .85 } },
     { x: .11, y: .52, to: "radegast", label: "Vor die Wohnung", spawn: { x: .435, y: .28 } },
   ], obstacles: [{ left: .46, right: .73, top: .235, bottom: .48 }, { left: .12, right: .40, top: .17, bottom: .43 }, { left: .84, right: .96, top: .12, bottom: .46 }] },
@@ -34,7 +36,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
   ], obstacles: [] },
   zoerbig: { name: "Zörbig · Markt", subtitle: "Löwen-Apotheke, Rathaus und Brunnen", exits: [
     { x: .397, y: .255, to: "bus", label: "Bus zurück nach Radegast", spawn: { x: .74, y: .47 } },
-    { x: .205, y: .74, to: "schoolway", label: "Auf den Schulweg", spawn: schoolWayPoint(.35,.43) },
+    { x: .70, y: .65, to: "school", label: "Zur Schule", spawn: { x: .52, y: .92 } },
     { x: .67, y: .47, to: "christmasmarket", label: "Zum Weihnachtsmarkt · Spielweg", spawn: { x: .50, y: .87 } },
     { x: .70, y: .29, to: "eliasroom", label: "Zu Elias · verkürzter Spielweg", spawn: { x: .50, y: .85 } },
   ], obstacles: [
@@ -46,10 +48,10 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { left: .67, right: .69, top: .71, bottom: .73 },
   ] },
   schoolway: { name: "Zörbig · Schulweg", subtitle: "An St. Mauritius vorbei zur Grünstraße", exits: [
-    { ...schoolWayPoint(.34,.43), to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .24, y: .70 } },
+    { ...schoolWayPoint(.34,.43), to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } },
     { ...schoolWayPoint(.17,.76), to: "school", label: "Zum Pausenhof", spawn: { x: .52, y: .92 } },
   ], obstacles: [] },
-  school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Treffpunkt an den Fenstergittern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 } }, { x: .515, y: .95, to: "schoolway", label: "Zurück zum Schulweg", spawn: schoolWayPoint(.20,.75) }], obstacles: [] },
+  school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Treffpunkt an den Fenstergittern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 } }, { x: .515, y: .95, to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } }], obstacles: [] },
   gym: { name: "Zörbig · Kleine Turnhalle", subtitle: "Abschlusszeugnisse · Sommer 2026", exits: [{ x: .5, y: .90, to: "school", label: "Zurück auf den Schulhof", spawn: { x: .84, y: .73 } }], obstacles: [
     { left: .36, right: .65, top: .18, bottom: .25 },
     { left: .687, right: .74, top: .17, bottom: .25 },
@@ -100,9 +102,9 @@ export const ENTITIES: Record<Place, Entity[]> = {
   ],
   radegast: [{ id: "radegast-way", name: "Weg zur Bushaltestelle", x: .56, y: .61, kind: "item", art: "sign", text: "Von Felices Wohnung geht es entlang der Häuser und am Grün vorbei zur Haltestelle. Der Weg ist für das Spiel verkürzt." }],
   zoerbig: [
-    { id: "zoerbig-stop", name: "Zörbig · Markt", x: .60, y: .26, display: { x: .60, y: .19 }, kind: "item", art: "landmark", text: "Am Markt kommt ihr mit dem Bus an. Links oben liegt die Löwen-Apotheke, rechts das Rathaus. Unten links beginnt der Schulweg." },
+    { id: "zoerbig-stop", name: "Zörbig · Markt", x: .60, y: .26, display: { x: .60, y: .19 }, kind: "item", art: "landmark", text: "Am Markt kommt ihr mit dem Bus an. Links oben liegt die Löwen-Apotheke, rechts das Rathaus. Unten rechts geht es direkt zur Schule." },
     { id: "zoerbig-pharmacy", name: "Löwen-Apotheke", x: .255, y: .285, display: { x: .17, y: .165 }, kind: "item", art: "landmark", text: "Die Löwen-Apotheke steht an der oberen linken Ecke des Marktes." },
-    { id: "zoerbig-townhall", name: "Rathaus Zörbig", x: .715, y: .42, display: { x: .827, y: .315 }, kind: "item", art: "landmark", text: "Das Rathaus mit seinem Uhrturm liegt an der rechten Marktseite." },
+    { id: "zoerbig-townhall", name: "Rathaus Zörbig", x: .715, y: .42, display: { x: .865, y: .44 }, kind: "item", art: "landmark", text: "Das Rathaus mit seinem Uhrturm liegt an der rechten Marktseite." },
   ],
   schoolway: [
     { id: "zoerbig-church", name: "St. Mauritius", ...schoolWayPoint(.37,.60), display: schoolWayPoint(.70,.50), kind: "item", art: "landmark", text: "Am Weg zwischen Markt und Schule liegt St. Mauritius. Weiter südwestlich geht es zum Pausenhof." },
@@ -119,7 +121,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "graduation-photo", name: "Ein Foto von euch beiden", x: .55, y: .76, display: { x: .63, y: .79 }, kind: "item", art: "camera", text: "Kurz zusammenstellen. Ein heller Blitz, dann die Schnappschüsse von Elias und Felice." },
   ],
   goelzau: [{ id: "goelzau-sign", name: "Schützenhaus Gölzau", x: .43, y: .35, display: { x: .40, y: .24 }, kind: "item", art: "landmark", text: "Am Schützenhaus in Weißandt-Gölzau trefft ihr eure Schießfreunde. Durch den Eingang geht es zur Bahn." }],
-  bedroom: [{ id: "homework", name: "Schulsachen", x: .60, y: .43, display: { x: .60, y: .43 }, kind: "item", art: "action", text: "Meine Schulsachen liegen bereit. Zeit für die Hausaufgaben." }, { id: "album", name: "Unser Erinnerungsbuch", x: .77, y: .32, display: { x: .68, y: .23 }, kind: "item", art: "book", text: "Der Anfang eurer Geschichte und Platz für weitere Erinnerungen. Öffne das Buch oben rechts: historische Daten, Fortschritt und erneutes Erleben." }, { id: "photo", name: "Foto aus Gölzau", x: .79, y: .52, display: { x: .885, y: .45 }, kind: "item", art: "photo", text: "Das Foto führt dich direkt zum Schießen in Gölzau." }],
+  bedroom: [{ id: "homework", name: "Schulsachen", x: .53, y: .42, display: { x: .53, y: .42 }, kind: "item", art: "action", text: "Meine Schulsachen liegen bereit. Zeit für die Hausaufgaben." }, { id: "album", name: "Unser Erinnerungsbuch", x: .64, y: .50, display: { x: .64, y: .50 }, kind: "item", art: "book", text: "Der Anfang eurer Geschichte und Platz für weitere Erinnerungen. Öffne das Buch oben rechts: historische Daten, Fortschritt und erneutes Erleben." }, { id: "photo", name: "Foto aus Gölzau", x: .62, y: .62, display: { x: .62, y: .62 }, kind: "item", art: "photo", text: "Das Foto führt dich direkt zum Schießen in Gölzau." }],
   kitchen: [
     { id: "breakfast", name: "Frühstück vorbereiten", x: .535, y: .465, display: { x: .65, y: .465 }, kind: "item", art: "action", text: "Du bereitest ein kleines Frühstück vor und deckst den Küchentisch. Ein ruhiger Start in den Tag." },
     { id: "warm-drink", name: "Warmes Getränk machen", x: .21, y: .33, display: { x: .18, y: .17 }, kind: "item", art: "action", text: "Der Wasserkocher wird warm. Du machst dir ein warmes Getränk und nimmst dir einen kleinen Moment Zeit." },
@@ -288,18 +290,17 @@ export function canWalk(place: Place, x: number, y: number) {
 }
 export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 } };
 
-/** Story-pasture collisions match the fence rails, horses, barn and tree trunks. */
+/** Treffpunkt collisions (cropped v11 painting): big trees, the pavilion, the bushes and the houses beyond the road. */
 export function storyCanWalk(place: Place, x: number, y: number, options: { pasture?: boolean } = {}) {
   if (place !== "radegast" || !options.pasture) return canWalk(place, x, y);
-  if (x < .075 || x > .94 || y < .16 || y > .92) return false;
+  if (x < .075 || x > .78 || y < .16 || y > .92) return false;
   const solids = [
-    { left: .045, right: .080, top: .18, bottom: .70 },
-    { left: .06, right: .365, top: .185, bottom: .285 },
-    { left: .06, right: .49, top: .58, bottom: .70 },
-    { left: .105, right: .265, top: .34, bottom: .45 },
-    { left: .245, right: .41, top: .47, bottom: .58 },
-    { left: .69, right: .91, top: .275, bottom: .45 },
-    ...[{ x:.10,y:.19 },{ x:.26,y:.16 },{ x:.615,y:.19 },{ x:.865,y:.24 },{ x:.865,y:.685 },{ x:.125,y:.92 }].map(p => ({ left:p.x-.015,right:p.x+.015,top:p.y-.06,bottom:p.y })),
+    { left: .05, right: .25, top: .20, bottom: .43 },
+    { left: .43, right: .56, top: .12, bottom: .38 },
+    { left: .37, right: .50, top: .45, bottom: .65 },
+    { left: .03, right: .19, top: .50, bottom: .62 },
+    { left: .30, right: .52, top: .77, bottom: .90 },
+    { left: 0, right: .30, top: .80, bottom: 1 },
   ];
   return !solids.some(o => x > o.left-.02 && x < o.right+.02 && y > o.top-.015 && y < o.bottom+.015);
 }

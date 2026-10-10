@@ -33,9 +33,12 @@ test("Inventar wird aufgenommen und abgegeben; falscher Ort zählt nicht", () =>
 });
 
 test("Alle Orte sind in beide Richtungen verbunden und alle Spawns begehbar", () => {
+  // Der Schulweg ist nur noch Bühne der Szene vom 25.11.; der Markt führt direkt zum Pausenhof.
+  const storyOnly = ["schoolway"];
   for (const from of Object.keys(PLACES)) {
     assert.ok(canWalk(from,SPAWNS[from].x,SPAWNS[from].y),from);
-    for (const to of Object.keys(PLACES)) if (from !== to) assert.ok(routeTo(from,to),`${from} → ${to}`);
+    if (storyOnly.includes(from)) continue;
+    for (const to of Object.keys(PLACES)) if (from !== to && !storyOnly.includes(to)) assert.ok(routeTo(from,to),`${from} → ${to}`);
     for (const exit of PLACES[from].exits) {
       assert.ok(canWalk(exit.to,exit.spawn.x,exit.spawn.y),`${from} → ${exit.to}: Spawn`);
       assert.ok(PLACES[exit.to].exits.some(e=>e.to===from),`${from} → ${exit.to}: Rückweg`);
