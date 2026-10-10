@@ -219,15 +219,15 @@
   .names-heading p { font-size:11px; }
 }
 
-/* Street overviews use a smaller figure scale than the close school courtyard. */
+/* Aerial street/school views: figures must stay small next to roads and houses (~1/4 of road width wide). */
 .version-075[data-scene="radegast"] .room-player,
 .version-075[data-scene="zoerbig"] .room-player,
 .version-075[data-scene="radegast"] .entity-person,
-.version-075[data-scene="zoerbig"] .entity-person { width:4.8%!important; }
+.version-075[data-scene="zoerbig"] .entity-person { width:3.4%!important; }
 
 /* Overhead school courtyard: match the figure scale to the building and yard. */
 .version-075[data-scene="school"] .room-player,
-.version-075[data-scene="school"] .entity-person { width:4.8%!important; }
+.version-075[data-scene="school"] .entity-person { width:3.4%!important; }
 .version-075[data-scene="school"] .world-exit { z-index:110; }
 
 .version-075[data-scene="school"] [data-rest-id^="school-bench-right"].pose-sitting .room-player-label,
@@ -238,7 +238,7 @@
 }
 
 .version-075[data-scene="schoolway"] .room-player,
-.version-075[data-scene="schoolway"] .entity-person { width:4.8%!important; }
+.version-075[data-scene="schoolway"] .entity-person { width:3.4%!important; }
 
 /* V0.8: graduation snapshots, one soft white fade and still photographs. */
 .graduation-photos { position:fixed; inset:0; z-index:160; display:grid; place-items:center; overflow:hidden; background:#172923; }
