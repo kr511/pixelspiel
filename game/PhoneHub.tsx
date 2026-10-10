@@ -10,10 +10,12 @@ export type PhoneTab = "Nachrichten" | "Verlauf" | "Kalender" | "Erinnerungen";
 const TABS: PhoneTab[] = ["Nachrichten", "Verlauf", "Kalender", "Erinnerungen"];
 export function resolveStoryIllustration(illustration: string): string {
   const scenes: Record<string, string> = {
-    playground: "/rooms/story-playground-winter-pixel-v10.png",
-    christmasmarket: "/rooms/story-christmasmarket-pixel-v10.png",
+    // Only reference files that exist; the pixel variants for winter playground,
+    // market and pasture have not been delivered yet.
+    playground: "/rooms/story-playground-winter-v09.svg",
+    christmasmarket: "/rooms/story-christmasmarket-v09.svg",
     eliasroom: "/rooms/story-eliasroom-pixel-v10.png",
-    pasture: "/rooms/story-pasture-pixel-v10.png",
+    pasture: "/rooms/radegast-walk-v075.png",
   };
   return assetUrl(scenes[illustration] ?? illustration);
 }

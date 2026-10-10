@@ -13,11 +13,15 @@ import { PhoneHub, eventDateText } from "./PhoneHub";
 import { DialogueBox } from "./DialogueBox";
 import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
-import { advanceFollower, routineEntities } from "./routines";
+import { advanceFollower, anukPresent, eliasPresent, routineEntities } from "./routines";
 import { TimelineJournal } from "./TimelineJournal";
 import { EncounterElias, PhoneArt, RadegastPasture } from "./StoryWorldArt";
 import { readProgress } from "./memories/progress";
-import { TIMELINE_KEY, STORY_END, STORY_EVENTS, STORY_CHAPTERS, storySeason, advanceTimelineClock, beginEvent, completeEvent, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepTimelineClock, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
+import { TIMELINE_KEY, STORY_END, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
+import { IntroCinematic } from "./IntroCinematic";
+import { CalendarFlip } from "./CalendarFlip";
+import { InventoryPanel } from "./InventoryPanel";
+import "./chapter1.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
 import { WALK_ATLASES } from "./graphics07";
 import { pressedKeys, useInput } from "./input";
@@ -34,6 +38,14 @@ import { cameraFor, offscreenGuide } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, TRAVEL_MINUTES, activityAt, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Place, type Point, type StorySave } from "./story";
+
+const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
+// Felice lying in her bed, ready for the existing rest system to walk her out.
+function lyingInBed(): Rest {
+  const actor = { ...standingActor({ x: BED.position.x, y: .45 }), pose: "lying" as Pose, restId: `${BED.id}:0`, approach: BED.approach };
+  return { spot: BED, elias: false, motion: { actor, phase: "resting", pose: "lying" } };
+}
+const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
 
 type Direction = "front" | "left" | "back" | "right";
 type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence"; response?: boolean; actorId?: string; kitchenId?: string; morning?: boolean };
@@ -75,6 +87,16 @@ export function Game() {
   const sequenceBeat = event?.steps?.[eventState?.cursor ?? 0];
   const save: StorySave = event ? { ...worldSave, place: sequenceBeat?.place ?? event.place, chapter: null, bag: event.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 ? ["Schokolade"] : [] } : worldSave;
   const [phone, setPhone] = useState(false);
+  const [intro, setIntro] = useState(false);
+  const [calendarFlip, setCalendarFlip] = useState<{ from: string; to: string } | null>(null);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [thought, setThought] = useState<{ key: string; text: string } | null>(null);
+  const shownThought = useRef<string | null>(null);
+  // After waking, either the tutorial begins or a quiet morning line follows.
+  const wakeThen = useRef<"beginning" | "morning" | null>(null);
+  const morningText = useRef("");
+  const triggerArmed = useRef(true);
+  const startFromWorldRef = useRef<(id: string) => void>(() => {});
   const [cinema, setCinemaState] = useState<StoryEffect | null>(null);
   const cinemaRef = useRef<StoryEffect | null>(null);
   function setCinema(value:StoryEffect | null) { cinemaRef.current=value;setCinemaState(value); }
@@ -124,14 +146,18 @@ export function Game() {
   const memoryError = useMemories(s => s.storageError);
   const transitioning = phase === "entering" || phase === "leaving";
   const inWorld = phase === "room";
-  const active = started && !paused && !needsLandscape && inWorld && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale;
+  const overlay = intro || Boolean(calendarFlip) || inventoryOpen;
+  const active = started && !paused && !needsLandscape && inWorld && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay;
   const chapter = CHAPTERS.find(c => c.id === save.chapter);
   const step = currentStep(save);
   const draftPlaying = Boolean(legacyView || worldSave.chapter && currentStep(worldSave));
   const exits = event ? [] : PLACES[save.place].exits;
   const guide = step && step.place !== save.place ? routeTo(save.place, step.place) : undefined;
   const dogFollows = save.place === "garden" && save.completed.includes("dog") && save.chapter !== "dog";
-  const sourceEntities = (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias)).map(entity => ({ ...entity, name: displayName(entity, names) }));
+  // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
+  const eliasHere = Boolean(save.chapter) || followingElias || visitingElias === save.place || eliasPresent(save.place, id => Boolean(timeline.progress[id]?.completedAt));
+  const anukHere = Boolean(save.chapter) || anukPresent(id => Boolean(timeline.progress[id]?.completedAt));
+  const sourceEntities = (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias)).filter(entity => (entity.art !== "elias" || eliasHere) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
   const sceneEntities = sourceEntities.filter(e => !rest?.elias || e.art !== "elias").map(e => cinema && !cinema.sequence && e.art === "elias" ? {...e,...castPoint(undefined,player,cinema,save.place)} : e.id === "anuk" && dogFollows ? { ...e, ...dog } : actors[e.id] ? { ...e, ...actors[e.id].position } : e);
   const nearbyExit = exits.filter(e => Math.hypot(e.x-player.x, e.y-player.y) < .105).sort((a,b) => Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
   const nearbyEntity = sceneEntities.map(e => ({ e, d: Math.hypot(e.x - player.x, e.y - player.y), companion: e.id === "anuk" && save.completed.includes("dog") && save.chapter !== "dog" })).filter(v => v.d < .115 && !(v.companion && nearbyExit) && (!nearbyExit || v.d < Math.hypot(nearbyExit.x-player.x, nearbyExit.y-player.y))).sort((a,b) => Number(a.companion)-Number(b.companion) || a.d-b.d)[0]?.e;
@@ -146,6 +172,14 @@ export function Game() {
   const light = seasonalLight(sceneSeason, sceneMinute);
   const winter = sceneSeason === "Winter";
   const upcoming = nextEvent(timeline);
+  // Memories start from the world: a place, an object or Elias, never a menu button.
+  const pendingTrigger = !session && !legacyView && !worldSave.chapter && upcoming && canTrigger(timeline, upcoming) ? storyTrigger(upcoming) : null;
+  const triggerHere = pendingTrigger && pendingTrigger.mode !== "phone" && pendingTrigger.place === save.place ? pendingTrigger : null;
+  const triggerDistance = triggerHere ? Math.hypot(player.x-triggerHere.point.x, player.y-triggerHere.point.y) : Infinity;
+  const triggerNear = Boolean(triggerHere && triggerDistance < triggerHere.radius);
+  const storyGuide = !guide && pendingTrigger && pendingTrigger.place !== save.place ? routeTo(save.place, pendingTrigger.place) : undefined;
+  const hint = !started || session || legacyView ? null : worldSave.chapter && step ? { key: `draft:${worldSave.chapter}:${worldSave.step}`, text: step.label } : storyHint(timeline);
+  const waitMinutes = !session && !legacyView ? waitingMinutes(timeline) : null;
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
   const arrived = eventState && eventState.cursor > 0 ? 1 : Math.min(1, arrivalTime / 3);
   const eliasPoint = { x: .78 - .18 * arrived, y: .91 - .27 * arrived };
@@ -247,6 +281,8 @@ export function Game() {
     if (event?.scene === "encounter" && eventState?.cursor === 0) {
       arrival.current += seconds; setArrivalTime(arrival.current);
       if (arrival.current >= 3) changeEventState({ ...eventState, cursor: 1 });
+      // Cutscene: Elias rides in while the camera follows him; Felice waits.
+      setWalking(false); clearMovement(); return;
     }
     if (dogFollows) {
       const offset = { x: playerRef.current.x-dogRef.current.x, y: playerRef.current.y-dogRef.current.y };
@@ -286,6 +322,8 @@ export function Game() {
     setDirection(Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back");
     const p = playerRef.current;
     const { x, y } = movementStep(p, { x: dx, y: dy }, seconds, (x, y) => storyCanWalk(save.place, x, y, { pasture: event?.scene === "encounter" }));
+    // Leaving a trigger zone re-arms it, so an interrupted memory can start again.
+    if (triggerHere && Math.hypot(x-triggerHere.point.x, y-triggerHere.point.y) > triggerHere.radius*1.8) triggerArmed.current = true;
     const distance = Math.hypot(x-p.x,y-p.y);
     const moved = distance > .00001;
     setWalking(moved);
@@ -296,12 +334,13 @@ export function Game() {
       if (Math.floor(walkDistance.current / .054) !== previous) worldAudio.play("step");
       playerRef.current = {x,y}; setPlayer({x,y});
     }
-  }, [save.place, dogFollows, visitingElias, event, eventState, changeEventState, followingElias, save.chapter]);
+  }, [save.place, dogFollows, visitingElias, event, eventState, changeEventState, followingElias, save.chapter, triggerHere]);
 
   const interact = useCallback(() => {
     if (!active) return;
     clearMovement();
     worldAudio.play("interact");
+    if (!event && !rest && triggerNear && triggerHere?.mode === "interact" && upcoming) { startFromWorldRef.current(upcoming.id); return; }
     if (event?.scene === "sequence") {
       if (sequenceNearby && sequenceBeat) {
         setDirection(directionBetween(playerRef.current, castPoint(sequenceBeat,playerRef.current,null,save.place)));
@@ -361,7 +400,7 @@ export function Game() {
       }
       setSave({ ...save, place: nearbyExit.to }); position(nearbyExit.spawn); spendTime(TRAVEL_MINUTES, nearbyExit.to);
     }
-  }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint]);
+  }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint, triggerNear, triggerHere, upcoming]);
 
   function finishDialogue(choice?: string) {
     if (!dialogue) return;
@@ -433,8 +472,9 @@ export function Game() {
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLElement && event.target.closest('dialog,input,select,textarea,[contenteditable="true"]')) return;
-      if (event.code === "Escape" && started && !transitioning) { event.preventDefault(); useInput.getState().setPaused(!useInput.getState().paused); clearMovement(); return; }
-      if (event.code === "KeyJ" && started && inWorld && !paused && !needsLandscape && !phone && !photoMoment && !event.repeat) { event.preventDefault(); clearMovement(); setJournal(v => !v); return; }
+      if (event.code === "Escape" && started && !transitioning && !intro) { event.preventDefault(); useInput.getState().setPaused(!useInput.getState().paused); clearMovement(); return; }
+      if (event.code === "KeyJ" && started && inWorld && !paused && !needsLandscape && !phone && !photoMoment && !overlay && !event.repeat) { event.preventDefault(); clearMovement(); setJournal(v => !v); return; }
+      if (event.code === "KeyI" && active && !event.repeat) { event.preventDefault(); clearMovement(); setInventoryOpen(true); return; }
       if (!active) return;
       if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.code)) {
         event.preventDefault(); pressedKeys.add(event.code);
@@ -445,7 +485,7 @@ export function Game() {
     const blur = () => { clearMovement(); setWalking(false); if (started) useInput.getState().setPaused(true); };
     window.addEventListener("keydown", down); window.addEventListener("keyup", up); window.addEventListener("blur", blur);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); window.removeEventListener("blur", blur); };
-  }, [active, started, inWorld, paused, needsLandscape, transitioning, move, interact, phone, photoMoment]);
+  }, [active, started, inWorld, paused, needsLandscape, transitioning, move, interact, phone, photoMoment, intro, overlay]);
 
   useEffect(() => {
     if (!active) return;
@@ -480,7 +520,7 @@ export function Game() {
     persistTimeline({ ...current, progress: { ...current.progress, [`legacy-${id}`]: { ...prior, completedAt: prior.completedAt ?? new Date().toISOString(), visits: prior.visits + 1 } } });
   }
 
-  function selectTimelineEvent(id: string, fromPhone = false) {
+  function selectTimelineEvent(id: string, fromPhone = false, inPlace = false) {
     const selected = eventById(id);
     if (!selected) return;
     if (selected.scene === "legacy") { if (selected.confirmed && eventStatus(timelineRef.current, selected) !== "gesperrt" && selected.chapter) selectChapter(selected.chapter); return; }
@@ -496,6 +536,7 @@ export function Game() {
     arrival.current = 0; setArrivalTime(0); setStoryToast(null); setCinema(null); cinemaOrigin.current=null; setFollowingElias(false);
     setJournal(false); setDialogue(null);
     if (fromPhone && rest && selected.place === "bedroom") { clearMovement(); setPhone(true); }
+    else if (inPlace) { changeRest(null); setPhone(false); clearMovement(); }
     else { changeRest(null); setPhone(false); const checkpoint = status === "abgeschlossen" ? 0 : timelineRef.current.progress[id]?.cursor ?? 0; const beatPlace = selected.steps?.[checkpoint]?.place; position(beatPlace && beatPlace !== selected.place ? SPAWNS[beatPlace] : selected.staging.spawn); }
   }
 
@@ -504,6 +545,47 @@ export function Game() {
     if (replay) { replayRef.current = null; setReplay(null); }
     else persistTimeline({ ...timelineRef.current, active: null });
     setCinema(null); setFinale(false); setPhone(false); setDialogue(null); setJournal(false); changeRest(null); position(session.returnPlayer); setDirection(session.returnDirection);
+  }
+
+  /** Starts the waiting memory where Felice stands; a fresh sequence opens its first beat at once. */
+  function startFromWorld(id: string) {
+    const selected = eventById(id);
+    if (!selected || !canTrigger(timelineRef.current, selected)) return;
+    triggerArmed.current = false;
+    const resumed = timelineRef.current.progress[id]?.cursor ?? 0;
+    const inPlace = selected.scene === "sequence" && resumed === 0 && storyTrigger(selected).place === save.place;
+    selectTimelineEvent(id, false, inPlace);
+    const first = selected.steps?.[0];
+    if (inPlace && first) {
+      setDirection(directionBetween(playerRef.current, first.target));
+      setDialogue({ speaker: first.speaker, art: first.art, text: first.text, emotion: dialogueEmotion(first.text, first.emotion as Emotion), choices: first.choices, action: "sequence", target: first.id });
+    }
+  }
+
+  /** Felice lies in bed, then the rest system walks her out; `then` decides what follows. */
+  function wakeInBed(then: "beginning" | "morning") {
+    setSave({ ...worldSave, place: "bedroom" });
+    const lying = lyingInBed();
+    position(restPosition(BED, lying.motion)); setDirection("front");
+    changeRest(lying); wakeThen.current = then;
+  }
+
+  function finishIntro() {
+    setIntro(false);
+    const current = timelineRef.current;
+    if (!current.flags.includes(INTRO_FLAG)) persistTimeline({ ...current, flags: [...current.flags, INTRO_FLAG] });
+    wakeInBed("beginning");
+  }
+
+  function goToSleep() {
+    if (!rest || rest.spot.kind !== "bed" || session || legacyView) return;
+    const from = dayRef.current.date;
+    const clock = sleepToStoryDay(timelineRef.current);
+    setNotices([]); clearMovement();
+    persistDay(clock);
+    const skipped = daysBetween(from, clock.date);
+    morningText.current = skipped > 1 ? `${historicalDate(clock.date)}. Ein paar ruhige Tage sind vergangen. Es ist 5:00 Uhr – ein neuer Morgen.` : "Ein neuer Morgen. Es ist 5:00 Uhr. Ich bin ausgeschlafen.";
+    setCalendarFlip({ from, to: clock.date });
   }
 
   function advanceSequence() {
@@ -562,6 +644,39 @@ export function Game() {
     handle=requestAnimationFrame(tick);return()=>cancelAnimationFrame(handle);
   },[finale,paused,needsLandscape]);
 
+  // interact() is memoized above the declaration; it reaches the latest starter via this ref.
+  useEffect(() => { startFromWorldRef.current = startFromWorld; });
+  // Walking onto an "enter" trigger (the pasture) starts its memory once per approach.
+  useEffect(() => {
+    if (!active || !triggerNear || triggerHere?.mode !== "enter" || !triggerArmed.current || !upcoming) return;
+    startFromWorld(upcoming.id);
+  }, [active, triggerNear, triggerHere, upcoming]);
+  // Waking: a short beat in bed, then the existing rest motion steps Felice out.
+  useEffect(() => {
+    if (!wakeThen.current || !active) return;
+    if (rest?.spot.id === BED.id && rest.motion.phase === "resting") {
+      const timer = window.setTimeout(() => { const current = restRef.current; if (current?.motion.phase === "resting") changeRest({ ...current, motion: leaveRest("bedroom", current.motion) }); }, 1400);
+      return () => window.clearTimeout(timer);
+    }
+    if (!rest) {
+      const then = wakeThen.current; wakeThen.current = null;
+      if (then === "beginning") startFromWorld("beginning-2025-11-01");
+      else setDialogue({ speaker: "Felice", art: "felice", text: morningText.current, morning: true });
+    }
+  }, [rest, active]);
+  // Thoughts appear when the situation changes and again only after a long quiet stretch.
+  useEffect(() => {
+    if (!active || !hint) return;
+    if (shownThought.current !== hint.key) { shownThought.current = hint.key; setThought(hint); return; }
+    const timer = window.setTimeout(() => setThought(hint), THOUGHT_REPEAT_MS);
+    return () => window.clearTimeout(timer);
+  }, [active, hint?.key]);
+  useEffect(() => {
+    if (!thought) return;
+    const timer = window.setTimeout(() => setThought(null), THOUGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [thought]);
+
   function jumpStory() {
     if (session || legacyView) return;
     const next = nextEvent(timelineRef.current);
@@ -600,8 +715,12 @@ export function Game() {
 
   const completed = datedCompleted + STORY_EVENTS.filter(e => !e.confirmed && timeline.progress[e.id]?.completedAt).length;
   const labelStyle = (p: Point) => ({ left: `${p.x*100}%`, top: `${p.y*100}%` });
-  const camera = cameraFor(player, cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1);
-  const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : undefined);
+  // Cutscene camera: while Elias rides in, push in on him and settle back to the full view.
+  const arrivalShot = event?.scene === "encounter" && (eventState?.cursor ?? 0) === 0 ? Math.min(1, arrivalTime / 3) : null;
+  const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
+  const camera = cameraFor(focus, arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1);
+  const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
+  const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
 
   return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
@@ -615,13 +734,14 @@ export function Game() {
         {event?.scene === "encounter" && <EncounterElias position={eliasPoint} arriving={eventState?.cursor === 0} cursor={eventState?.cursor ?? 0}/>}
         {event?.scene === "sequence" && <SequenceCast event={event} beat={sequenceBeat} player={player} effect={cinema} place={save.place} conversing={Boolean(dialogue)}/> }
         {sequenceBeat && <div className="story-target" data-testid="story-target" data-x={sequenceBeat.target.x} data-y={sequenceBeat.target.y} style={labelStyle(sequenceBeat.target)}><span>✦</span><small>{sequenceBeat.label}</small></div>}
-        {save.place === "bedroom" && <div className={`world-phone${event ? " has-message" : ""}`} style={labelStyle({ x: .6, y: .265 })} aria-label="Felices Handy auf dem Schreibtisch"><PhoneArt/>{event && <span>!</span>}</div>}
+        {save.place === "bedroom" && <div className={`world-phone${event ? " has-message" : ""}`} style={labelStyle({ x: .6, y: .265 })} aria-label="Felices Handy auf dem Schreibtisch"><PhoneArt/>{(event || pendingTrigger?.mode === "phone") && <span>!</span>}</div>}
         {save.place === "radegast" && <span className="town-place-label" style={labelStyle({ x: .19, y: .17 })}>{event ? "Radegast · Bei den Pferden" : "Felices Wohnung"}</span>}
         {spots.map(spot => <div key={spot.id} className={`rest-spot rest-${spot.kind}${restTarget?.id === spot.id ? " nearby-rest" : ""}`} style={{...labelStyle(spot.furniture ?? spot.approach), zIndex: Math.round((spot.furniture ?? spot.position).y*100)+8}} aria-label={spot.name}>
           {spot.furniture && <BenchArt winter={winter && save.place === "garden"}/>}
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
-        {exits.map(exit => <div key={exit.to} className={`world-exit ${guide?.to === exit.to ? "quest-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
+        {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
+        {exits.map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && actors[entity.id] ? {...actors[entity.id],moving:false} : actors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
         <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+10}}>
@@ -638,24 +758,36 @@ export function Game() {
       {active && arrow && <div className="offscreen-guide" style={labelStyle(arrow)} role="status" aria-label={`Aufgabenziel: ${step?.label}`}><span style={{ transform: `rotate(${arrow.angle}deg)` }}>➜</span><small>{guide?.label ?? "Dein nächstes Ziel"}</small></div>}
     </div>
     {(phase === "memory" || phase === "leaving") && <ShootingMemory blocked={paused || needsLandscape || transitioning} onComplete={completeShooting} onLeave={useMemories.getState().leave}/>}
-    <GameUI started={started} onStart={() => { setStarted(true); if (!session && !save.chapter && !datedCompleted) setJournal(true); }} roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale} transitioning={transitioning} place={inWorld ? event?.scene === "encounter" ? "Radegast · Bei den Pferden" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed}/>
+    <GameUI started={started} onStart={() => {
+      setStarted(true);
+      const current = timelineRef.current;
+      // A brand-new game opens with the autumn intro; returning players continue directly.
+      if (!current.flags.includes(INTRO_FLAG) && !current.active && !current.progress["beginning-2025-11-01"]?.completedAt) { clearMovement(); setIntro(true); }
+    }} roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay && arrivalShot === null} transitioning={transitioning} place={inWorld ? event?.scene === "encounter" ? "Radegast · Bei den Pferden" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed} menu={overlay || !inWorld ? [] : [
+      { label: "Tasche", shortcut: "I", onSelect: () => { clearMovement(); setInventoryOpen(true); } },
+      { label: "Erinnerungsalbum", shortcut: "J", onSelect: () => { clearMovement(); setJournal(true); } },
+      { label: "Smartphone", onSelect: () => { clearMovement(); setPhone(true); } },
+    ]}/>
     {started && inWorld && !paused && !transitioning && <>
       <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(day.minute)}</strong><small>{session ? "Aktuelle Spielzeit · während der Szene pausiert" : `Tag ${day.day} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span></div>
       {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `Rekonstruierte Dialoge · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}>▣ <span>Handy</span></button>
       <button className="journal-button" aria-label="Erinnerungsbuch öffnen" onClick={() => { clearMovement(); setJournal(true); }}>▤ <span>Erinnerungsbuch</span> <kbd>J</kbd></button>
-      <aside className="quest-tracker" aria-live="polite"><small>{event ? `KAPITEL ${event.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event.chapterNumber??1))?.title ?? "Der Anfang"}` : chapter ? `Undatierter Entwurf · ${Math.min(save.step+1,chapter.steps.length)}/${chapter.steps.length}` : `Version 0.9 · ${datedCompleted}/${STORY_EVENTS.filter(e=>e.confirmed).length} Erinnerungen`}</small><strong>{event?.title ?? chapter?.title ?? "Schritt für Schritt"}</strong><p>{event ? event.scene === "sequence" ? sequenceBeat?.label ?? "Dieser Moment ist bewahrt" : event.scene === "encounter" ? eventState?.cursor === 0 ? "Elias kommt auf seinem Fahrrad an. Du kannst schon zu ihm laufen." : eventState?.cursor === 1 ? "Geh zu Elias auf dem Weg bei den Pferden." : eventState?.cursor === 2 ? "Elias hat Schokolade für dich mitgebracht." : eventState?.cursor === 3 ? "Du behältst die Schokolade bei dir und isst sie nicht." : "Elias ist ein bisschen verunsichert. Lasst dem Moment etwas Zeit." : "Nimm auf der Bettkante oder am Schreibtisch Platz und öffne dein Handy." : step?.label ?? (upcoming ? `${historicalDate(upcoming.date)} · ${upcoming.title}` : "Euer gemeinsames Jahr ist bewahrt. Entdecke die Welt und erlebe Erinnerungen erneut.")}</p>{!session && !legacyView && upcoming && <button className="story-next-button" onClick={eventStatus(timeline, upcoming) === "verfügbar" ? () => selectTimelineEvent(upcoming.id) : jumpStory}>{eventStatus(timeline,upcoming) === "verfügbar" ? "Geschichte erleben →" : "Zeit weiterblättern →"}</button>}{step && <span>{step.place === save.place ? "✦ Folge der goldenen Markierung" : `↗ ${guide?.label ?? PLACES[step.place].name}`}</span>}{save.bag.length > 0 && <div className="inventory">Tasche · {save.bag.join(" · ")}</div>}</aside>
-      {active && rest && <div className="memory-interaction rest-actions"><span>{!settled ? rest.motion.phase === "leaving" ? "Du stehst auf" : "Du gehst zum Ruheplatz" : rest.spot.kind === "bed" ? "Du liegst wach im Bett" : rest.elias ? "Ein Moment mit Elias" : rest.spot.kind === "chair" ? "Du sitzt gemütlich" : "Du sitzt auf der Bank"}</span><button data-testid="world-interact" disabled={rest.motion.phase === "leaving"} onClick={interact}><kbd>E</kbd>Aufstehen · 10 Min.</button>{settled && (rest.spot.kind === "bed" && !event ? <button disabled={Boolean(legacyView) || day.date === STORY_END && day.minute >= 300} onClick={() => { setNotices([]); persistDay(sleepTimelineClock(dayRef.current)); position(rest.spot.approach); changeRest(null); setDialogue({ speaker: "Felice", text: "Ein neuer Morgen. Es ist 5:00 Uhr. Du bist ausgeschlafen.", morning: true }); }}>Schlafen bis 5:00 Uhr</button> : <><button onClick={() => spendTime(ACTION_MINUTES)}>Ausruhen · 10 Min.</button>{!event && !rest.elias && <button onClick={() => { const native = sourceEntities.find(entity => entity.art === "elias");
+      {active && thought && <aside className="felice-thought" role="status" data-testid="felice-thought" key={thought.key}><span className="thought-dots" aria-hidden="true"><i/><i/><i/></span><p><small>Felice denkt</small>{thought.text}</p></aside>}
+      <button className="inventory-button" aria-label="Tasche öffnen" onClick={() => { clearMovement(); setInventoryOpen(true); }} disabled={!active}>◫ <span>Tasche</span> <kbd>I</kbd>{timeline.inventory.length > 0 && <b>{timeline.inventory.length}</b>}</button>
+      {/* No permanent quest tracker: only undated legacy drafts keep their step list. */}
+      {chapter && <aside className="quest-tracker" aria-live="polite"><small>{event ? `KAPITEL ${event.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event.chapterNumber??1))?.title ?? "Der Anfang"}` : chapter ? `Undatierter Entwurf · ${Math.min(save.step+1,chapter.steps.length)}/${chapter.steps.length}` : `Version 0.9 · ${datedCompleted}/${STORY_EVENTS.filter(e=>e.confirmed).length} Erinnerungen`}</small><strong>{event?.title ?? chapter?.title ?? "Schritt für Schritt"}</strong><p>{event ? event.scene === "sequence" ? sequenceBeat?.label ?? "Dieser Moment ist bewahrt" : event.scene === "encounter" ? eventState?.cursor === 0 ? "Elias kommt auf seinem Fahrrad an. Du kannst schon zu ihm laufen." : eventState?.cursor === 1 ? "Geh zu Elias auf dem Weg bei den Pferden." : eventState?.cursor === 2 ? "Elias hat Schokolade für dich mitgebracht." : eventState?.cursor === 3 ? "Du behältst die Schokolade bei dir und isst sie nicht." : "Elias ist ein bisschen verunsichert. Lasst dem Moment etwas Zeit." : "Nimm auf der Bettkante oder am Schreibtisch Platz und öffne dein Handy." : step?.label ?? (upcoming ? `${historicalDate(upcoming.date)} · ${upcoming.title}` : "Euer gemeinsames Jahr ist bewahrt. Entdecke die Welt und erlebe Erinnerungen erneut.")}</p>{!session && !legacyView && upcoming && <button className="story-next-button" onClick={eventStatus(timeline, upcoming) === "verfügbar" ? () => selectTimelineEvent(upcoming.id) : jumpStory}>{eventStatus(timeline,upcoming) === "verfügbar" ? "Geschichte erleben →" : "Zeit weiterblättern →"}</button>}{step && <span>{step.place === save.place ? "✦ Folge der goldenen Markierung" : `↗ ${guide?.label ?? PLACES[step.place].name}`}</span>}{save.bag.length > 0 && <div className="inventory">Tasche · {save.bag.join(" · ")}</div>}</aside>}
+      {active && rest && <div className="memory-interaction rest-actions"><span>{!settled ? rest.motion.phase === "leaving" ? "Du stehst auf" : "Du gehst zum Ruheplatz" : rest.spot.kind === "bed" ? "Du liegst wach im Bett" : rest.elias ? "Ein Moment mit Elias" : rest.spot.kind === "chair" ? "Du sitzt gemütlich" : "Du sitzt auf der Bank"}</span><button data-testid="world-interact" disabled={rest.motion.phase === "leaving"} onClick={interact}><kbd>E</kbd>Aufstehen · 10 Min.</button>{settled && (rest.spot.kind === "bed" && !event ? <button data-testid="sleep" disabled={Boolean(legacyView) || day.date === STORY_END && day.minute >= 300} onClick={goToSleep}>Schlafen gehen</button> : <><button onClick={() => spendTime(ACTION_MINUTES)}>Ausruhen · 10 Min.</button>{waitMinutes !== null && !event && <button data-testid="wait" onClick={() => spendTime(waitMinutes)}>Warten bis {clockText(day.minute + waitMinutes)} Uhr</button>}{!event && !rest.elias && eliasHere && <button onClick={() => { const native = sourceEntities.find(entity => entity.art === "elias");
         const start = native ? actorsRef.current[native.id]?.position ?? native : SPAWNS[save.place];
         const shift = canWalk(save.place, rest.spot.approach.x + .07, rest.spot.approach.y) ? .07 : -.07;
         const companionSpot = { ...rest.spot, position: rest.spot.companion ?? rest.spot.position, approach: { x: rest.spot.approach.x + shift, y: rest.spot.approach.y } };
         changeRest({ ...rest, elias: true, companion: beginRest(save.place, start, companionSpot) }); spendTime(ACTION_MINUTES); }}>Mit Elias sitzen</button>}</>)}{settled && save.place === "bedroom" && ["felice-bed","felice-desk","felice-bed-edge"].includes(rest.spot.id) && <button className="phone-open-button" onClick={openPhone}>▣ Handy öffnen{event?.scene === "love" ? " · Neue Nachricht" : ""}</button>}</div>}
-      {active && !rest && target && event?.scene !== "sequence" && <div className="memory-interaction"><span>{targetName}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{restTarget ? restTarget.kind === "bed" ? "Hinlegen · 10 Min." : "Hinsetzen · 10 Min." : nearbyEntity ? nearbyEntity.id === "school-door" && day.minute < SCHOOL_END ? "Unterricht besuchen" : nearbyEntity.kind === "person" || nearbyEntity.kind === "dog" ? "Ansprechen · 10 Min." : save.place === "kitchen" ? "Aktion wählen" : "Anschauen / benutzen" : "Weitergehen · 30 Min."}</button></div>}
+      {active && !rest && !event && triggerNear && triggerHere?.mode === "interact" && <div className="memory-interaction sequence-actions"><span>{triggerHere.label}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>Diesen Moment erleben</button></div>}
+      {active && !rest && target && event?.scene !== "sequence" && !(triggerNear && triggerHere?.mode === "interact") && <div className="memory-interaction"><span>{targetName}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{restTarget ? restTarget.kind === "bed" ? "Hinlegen · 10 Min." : "Hinsetzen · 10 Min." : nearbyEntity ? nearbyEntity.id === "school-door" && day.minute < SCHOOL_END ? "Unterricht besuchen" : nearbyEntity.kind === "person" || nearbyEntity.kind === "dog" ? "Ansprechen · 10 Min." : save.place === "kitchen" ? "Aktion wählen" : "Anschauen / benutzen" : "Weitergehen · 30 Min."}</button></div>}
       {active && event?.scene === "sequence" && !sequenceBeat && <div className="memory-interaction sequence-actions"><span>Alle Schritte dieser Szene sind erlebt.</span><button onClick={finishCurrentEvent}>Diesen Moment bewahren</button></div>}
       {active && sequenceNearby && <div className="memory-interaction sequence-actions"><span>{sequenceBeat?.label}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>Diesen Moment erleben</button></div>}
       {active && encounterNearby && <div className="memory-interaction encounter-actions"><span>Bei den Pferden · Elias</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{eventState?.cursor === 1 ? "Gespräch beginnen" : eventState?.cursor === 2 ? "Schokolade annehmen" : eventState?.cursor === 3 ? "Schokolade bei dir behalten" : "Einen Moment bleiben"}</button></div>}
-      {!save.chapter && !event && <div className="world-welcome">Dein Zimmer ist erst der Anfang. Geh durch die Tür oder öffne das Buch.</div>}
     </>}
     {photoMoment && <GraduationPhotos blocked={paused || needsLandscape} onComplete={completePhotos}/> }
     {phone && event && eventState && ["chat","love","confession","message"].includes(event.scene) && <StoryPhone event={event} state={eventState} replay={Boolean(replay)} paused={paused} onPause={() => { if (paused) void worldAudio.unlock(); useInput.getState().setPaused(!paused); clearMovement(); }} blocked={paused || needsLandscape} onChange={changeEventState} onClose={() => { setPhone(false); clearMovement(); }} onComplete={finishCurrentEvent} timeline={timeline} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}} onJump={()=>{setPhone(false);jumpStory();}}/>}
@@ -675,6 +807,10 @@ export function Game() {
       if (saveError) { try { parseStory(window.localStorage.getItem(STORY_KEY)); if (!readable.current) { setSaveError("Bitte lade die Seite neu, um den wieder lesbaren Spielstand sicher fortzusetzen."); return; } window.localStorage.setItem(STORY_KEY,JSON.stringify(save)); setSaveError(null); } catch { setSaveError("Speichern bleibt nicht möglich. Bitte erlaube lokale Browserdaten für das Spiel."); } }
     }}>Erneut speichern</button></div>}
     {dayError && started && <div className="day-save-warning" role="status">{dayError}{timelineReadable.current && <button onClick={() => persistTimeline(timelineRef.current)}>Erneut speichern</button>}</div>}
+    {cutscene && started && inWorld && <div className="cutscene-bars" aria-hidden="true"/>}
+    {intro && started && <IntroCinematic paused={paused || needsLandscape} onDone={finishIntro}/>}
+    {calendarFlip && <CalendarFlip from={calendarFlip.from} to={calendarFlip.to} paused={paused || needsLandscape} onDone={() => { setCalendarFlip(null); wakeInBed("morning"); }}/>}
+    {inventoryOpen && <InventoryPanel ids={timeline.inventory} onClose={() => { setInventoryOpen(false); clearMovement(); }} onOpenMemory={() => { setInventoryOpen(false); setJournal(true); }}/>}
     <MemoryTransition/>
     {needsLandscape && <div className="rotate-screen" role="status"><div className="rotate-phone">↻</div><strong>Handy bitte quer halten</strong><span>Im Querformat ist genug Platz für eure Welt und den Joystick.</span></div>}
   </main>;

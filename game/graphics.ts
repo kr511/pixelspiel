@@ -5,8 +5,10 @@ export type SceneGraphic = { background: string; fallback?: string; crop?: { x: 
 // Each foreground copies only the specified furniture/tree silhouette from the same scene.
 const rect = (left: number, top: number, right: number, bottom: number, depth = bottom) => ({ clip: `polygon(${left}% ${top}%,${right}% ${top}%,${right}% ${bottom}%,${left}% ${bottom}%)`, depth });
 export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
-  playground: { background: "/rooms/story-playground-pixel-v10.png", fallback: "/rooms/story-playground-v09.svg", winter: "/rooms/story-playground-winter-pixel-v10.png", winterFallback: "/rooms/story-playground-winter-v09.svg", outdoors: true, light: "#e4e8ca", foreground: [] },
-  christmasmarket: { background: "/rooms/story-christmasmarket-pixel-v10.png", fallback: "/rooms/story-christmasmarket-v09.svg", outdoors: true, light: "#ffe1a6", foreground: [] },
+  playground: { background: "/rooms/story-playground-pixel-v10.png", fallback: "/rooms/story-playground-v09.svg", winter: "/rooms/story-playground-winter-v09.svg", outdoors: true, light: "#e4e8ca", foreground: [] },
+  // The winter playground and market pixel paintings are not delivered yet; the
+  // SVG scenes the game already fell back to are referenced directly.
+  christmasmarket: { background: "/rooms/story-christmasmarket-v09.svg", outdoors: true, light: "#ffe1a6", foreground: [] },
   eliasroom: { background: "/rooms/story-eliasroom-pixel-v10.png", fallback: "/rooms/story-eliasroom-v09.svg", outdoors: false, light: "#f4c989", foreground: [] },
   bedroom: { background: "/rooms/felice-bedroom-v9.png", outdoors: false, light: "#ffbd65", foreground: [rect(12,8.5,49.5,43),rect(49,14,74.5,30),rect(11,43,21.5,59.5),rect(84,33,95,58.5),rect(53,81,96,100,98)] },
   home: { background: "/rooms/home-v06.png", winter: "/rooms/home-winter-v06.png", outdoors: false, light: "#ffd49a", foreground: [rect(46,23.5,73,48),{ clip: "polygon(12% 17%,40% 17%,40% 30%,24.7% 30%,24.7% 43%,12% 43%)", depth:43 },rect(84,12,96,46)] },

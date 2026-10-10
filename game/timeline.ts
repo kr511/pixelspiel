@@ -15,6 +15,10 @@ export type StoryEvent = {
   dialogue: StoryLine[]; interactions: string[]; chapter?: ChapterId; special?: boolean;
   chapterNumber?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; symbol?: string; source?: "historical" | "staged" | "future"; cast?: string[]; steps?: StoryBeat[];
   artifacts?: { id: string; title: string; symbol?: string; description: string }[];
+  /** Inventory item IDs granted once on the first real completion (never during replay). */
+  rewards?: string[];
+  /** Felice's subtle thought when this memory is waiting; falls back to the trigger place. */
+  hint?: string;
 };
 export const STORY_CHAPTERS: { number: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; title: string; period: string; description: string }[] = [
   { number: 1, title: "Alles beginnt", period: "November 2025", description: "Lange Gespräche, Schokolade, erste Gefühle und zwei Worte, die bleiben." },
@@ -115,23 +119,24 @@ const chatId = (day: number) => `chat-2025-11-${day}`;
 const chatEvents: StoryEvent[] = Array.from({ length: 12 }, (_, index) => {
   const day = index + 13;
   return {
-    id: chatId(day), title: `Unsere Gespräche · Abend ${index + 1}`, date: `2025-11-${day}`, order: 1,
+    // Order 2: evening chats follow the school scene (0) and the pasture meeting (1).
+    id: chatId(day), title: `Unsere Gespräche · Abend ${index + 1}`, date: `2025-11-${day}`, order: 2,
     place: "bedroom", scene: "chat", requires: [], confirmed: true, chapterNumber: 1, symbol: "☾", source: "historical", cast: ["Felice", "Elias"],
-    description: day === 16 ? "Nach dem Treffen bei den Pferden schreiben wir wieder. Felice macht deutlich: Schon Elias’ Anwesenheit hat ihr geholfen. Der genaue Wortlaut bleibt eine Rekonstruktion." : "Zwischen ungefähr 17 und 23 Uhr schreiben wir miteinander. Computer, das Weltall, große Fragen, Zukunft, Hobbys und Collin – aus vielen Abenden wird ein gemeinsamer Anfang.",
+    description: day === 19 ? "Nach dem Treffen bei den Pferden schreiben wir wieder. Felice macht deutlich: Schon Elias’ Anwesenheit hat ihr geholfen. Der genaue Wortlaut bleibt eine Rekonstruktion." : "Zwischen ungefähr 17 und 23 Uhr schreiben wir miteinander. Computer, das Weltall, große Fragen, Zukunft, Hobbys und Collin – aus vielen Abenden wird ein gemeinsamer Anfang.",
     illustration: "/rooms/felice-bedroom-v9.png", staging: { start: day === 24 ? 1100 : 1020, end: 1380, spawn: { x: .5, y: .6 }, timeConfirmed: false },
-    dialogue: [{ speaker: "Erzählung", text: day === 16 ? "Nach dem Besuch bleibt Nähe. Felice sagt sinngemäß, dass allein Elias’ Anwesenheit ihr geholfen hat. Originalnachrichten liegen nicht vor." : index < 4 ? "Ein Handy leuchtet. Es ist noch vieles neu, aber die Gespräche werden länger." : index < 7 ? "Aus einzelnen Nachrichten werden vertraute gemeinsame Abende." : "Zwischen den Zeilen wächst Nähe. Ihr nehmt euch Zeit füreinander." }],
+    dialogue: [{ speaker: "Erzählung", text: day === 19 ? "Nach dem Besuch bleibt Nähe. Felice sagt sinngemäß, dass allein Elias’ Anwesenheit ihr geholfen hat. Originalnachrichten liegen nicht vor." : index < 4 ? "Ein Handy leuchtet. Es ist noch vieles neu, aber die Gespräche werden länger." : index < 7 ? "Aus einzelnen Nachrichten werden vertraute gemeinsame Abende." : "Zwischen den Zeilen wächst Nähe. Ihr nehmt euch Zeit füreinander." }],
     interactions: ["Am Bett oder Schreibtisch Platz nehmen", "Handy öffnen", "Mindestens zwei Gesprächsthemen auswählen", "Abend bewahren"],
   };
 });
 const beat = (id: string, label: string, text: string, target: Point = { x: .5, y: .65 }, options: Partial<StoryBeat> = {}): StoryBeat => ({ id, label, text, target, speaker: "Elias", art: "elias", emotion: "thoughtful", ...options });
-type SequenceConfig = { id: string; title: string; date: string; until?: string; period?: string; order?: number; chapterNumber: StoryEvent["chapterNumber"]; place: Place; description: string; illustration?: string; symbol?: string; source?: StoryEvent["source"]; start?: number; end?: number; spawn?: Point; timeConfirmed?: boolean; cast?: string[]; special?: boolean; artifacts?: StoryEvent["artifacts"]; steps: StoryBeat[] };
+type SequenceConfig = { id: string; title: string; date: string; until?: string; period?: string; order?: number; chapterNumber: StoryEvent["chapterNumber"]; place: Place; description: string; illustration?: string; symbol?: string; source?: StoryEvent["source"]; start?: number; end?: number; spawn?: Point; timeConfirmed?: boolean; cast?: string[]; special?: boolean; artifacts?: StoryEvent["artifacts"]; rewards?: string[]; hint?: string; steps: StoryBeat[] };
 const sequence = (config: SequenceConfig): StoryEvent => ({
   id: config.id, title: config.title, date: config.date, until: config.until, period: config.period, order: config.order ?? 0,
   chapterNumber: config.chapterNumber, place: config.place, scene: "sequence", requires: [], confirmed: true,
   source: config.source ?? "historical", symbol: config.symbol ?? "♥", cast: config.cast ?? ["Felice", "Elias"], special: config.special,
   description: config.description, illustration: config.illustration ?? "/rooms/felice-bedroom-v9.png",
   staging: { start: config.start ?? 960, end: config.end ?? 1000, spawn: config.spawn ?? { x: .5, y: .7 }, timeConfirmed: config.timeConfirmed ?? false },
-  steps: config.steps, artifacts: config.artifacts,
+  steps: config.steps, artifacts: config.artifacts, rewards: config.rewards, hint: config.hint,
   dialogue: config.steps.map(step => ({ speaker: step.speaker === "Felice" || step.speaker === "Elias" ? step.speaker : "Erzählung", text: step.text, emotion: step.emotion, choices: step.choices })),
   interactions: config.steps.map(step => step.label),
 });
@@ -142,15 +147,18 @@ const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
   description: "In diesen Tagen fragen Mitschüler, ob wir zusammen sind. Komplimente, kleine Unsicherheiten und Gedanken über Umarmungen begleiten unsere ersten Gefühle. Die Tageszuordnung und Dialoge sind rekonstruiert.", steps,
 });
 const datedEvents: StoryEvent[] = [
-  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], description: "Ein spielerischer Anfang am 1. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
-    beat("wake", "Am Bett ankommen", "Ein neuer Morgen. Von hier aus kannst du die vertraute Welt erkunden.", { x: .40, y: .49 }, { speaker: "Felice", art: "felice", emotion: "neutral", animation: "sit" }),
-    beat("phone", "Das Handy entdecken", "Mit dem Handy werden aus einzelnen Nachrichten gemeinsame Abende. Die ersten liegen noch vor uns.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
-    beat("explore", "Die ersten Schritte machen", "Pfeiltasten oder WASD bewegen dich. Auf dem Smartphone nutzt du den Steuerkreis. Geh zu Menschen und Gegenständen und sprich sie mit E an.", { x: .73, y: .68 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Die Geschichte im Kalender entdecken"], animation: "walk" }),
+  // Beat IDs and count stay stable so saved checkpoints keep their meaning.
+  // The intro cinematic wakes Felice beside her bed and opens the first beat.
+  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 1. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
+    beat("wake", "Wach werden", "Der erste November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .33, y: .53 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
+    beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
+    beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag.", { x: .80, y: .68 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
   ] }),
   ...chatEvents,
   {
-    id: "radegast-chocolate", title: "Die Schokolade", date: "2025-11-16", order: 0, chapterNumber: 1, symbol: "▦", source: "historical", cast: ["Felice", "Elias"],
-    place: "radegast", scene: "encounter", requires: [], confirmed: true,
+    // Dated 19.11.2025 as confirmed by Elias (10.10.2026); the stable ID keeps saves valid.
+    id: "radegast-chocolate", title: "Die Schokolade", date: "2025-11-19", order: 1, chapterNumber: 1, symbol: "▦", source: "historical", cast: ["Felice", "Elias"],
+    place: "radegast", scene: "encounter", requires: [], confirmed: true, rewards: ["chocolate"], hint: "Vielleicht sollte ich zu den Pferden gehen.",
     description: "Elias kam mit dem Fahrrad aus Zörbig zu mir nach Radegast und brachte Schokolade mit. Mir war kalt und ich hatte keinen Appetit. Ich aß sie nicht, und er fühlte sich etwas unbeholfen. Trotzdem half mir schon seine Anwesenheit.",
     illustration: "pasture", staging: { start: 960, end: 990, spawn: { x: .49, y: .49 }, timeConfirmed: false },
     dialogue: [
@@ -222,7 +230,7 @@ const datedEvents: StoryEvent[] = [
     beat("kiss", "Den ersten richtigen Kuss erleben", "Ein kurzer Blick. Ein bisschen Verlegenheit. Dann unser erster richtiger Kuss.", { x: .40, y: .49 }, { place: "bedroom", speaker: "Felice", art: "felice", emotion: "love", animation: "kiss", choices: ["Den Moment zulassen", "Näher rücken und lächeln"] }),
     beat("stay", "Die gemeinsame Nacht bewahren", "Elias bleibt bei Felice. Die Szene wird sanft dunkel; Einzelheiten der Nacht werden nicht ergänzt.", { x: .5, y: .6 }, { place: "bedroom", speaker: "Erzählung", emotion: "neutral", animation: "sleep" }),
   ] }),
-  sequence({ id: "morning-after-2025-12-26", title: "Der Morgen danach", date: "2025-12-26", chapterNumber: 2, place: "bedroom", start: 540, end: 600, spawn: { x: .5, y: .6 }, symbol: "✉", description: "Wir erinnern uns an die gemeinsame Nacht. Ein persönlicher Brief von Elias und die gefalteten Kraniche, die ich in seiner Jacke versteckt habe, finden ihren Platz im Album. Der Brieftext liegt nicht vor und wird nicht erfunden.", artifacts: [
+  sequence({ id: "morning-after-2025-12-26", title: "Der Morgen danach", date: "2025-12-26", chapterNumber: 2, place: "bedroom", start: 540, end: 600, spawn: { x: .5, y: .6 }, symbol: "✉", rewards: ["elias-letter"], description: "Wir erinnern uns an die gemeinsame Nacht. Ein persönlicher Brief von Elias und die gefalteten Kraniche, die ich in seiner Jacke versteckt habe, finden ihren Platz im Album. Der Brieftext liegt nicht vor und wird nicht erfunden.", artifacts: [
     { id: "elias-letter", title: "Ein persönlicher Brief von Elias", symbol: "✉", description: "Elias’ persönlicher Brief gehört zu dieser Erinnerung. Der Originaltext ist nicht überliefert und bleibt frei für eine spätere Ergänzung." },
     { id: "folded-cranes", title: "Die gefalteten Kraniche", symbol: "◇", description: "Felice versteckte gefaltete Kraniche in Elias’ Jacke. Farbe, Zahl und weitere Details werden nicht ergänzt." },
   ], steps: [
@@ -334,7 +342,10 @@ export const STORY_EVENTS: StoryEvent[] = [
 
 export type EventProgress = { cursor: number; topics: string[]; topic: string | null; line: number; visits: number; typed?: number; answers?: Record<string,string>; completedAt?: string };
 export type StorySession = { id: string; returnPlayer: Point; returnDirection: "front" | "back" | "left" | "right" };
-export type TimelineSave = { version: 1; clock: DaySave; progress: Record<string, EventProgress>; active: StorySession | null };
+// Version 2 adds Felice's inventory and one-time flags (e.g. the intro). Version 1
+// saves are migrated on read; nothing is dropped.
+export type TimelineSave = { version: 2; clock: DaySave; progress: Record<string, EventProgress>; active: StorySession | null; inventory: string[]; flags: string[] };
+export const INTRO_FLAG = "intro-seen";
 export const emptyEvent = (): EventProgress => ({ cursor: 0, topics: [], topic: null, line: 0, visits: 0 });
 export function historicalDate(date: string | null) { return date ? date.split("-").reverse().join(".") : "Historisches Datum noch offen"; }
 export function eventById(id: string) { return STORY_EVENTS.find(event => event.id === id); }
@@ -343,7 +354,13 @@ export function initialTimeline(legacyDay?: DaySave, legacyStory?: StorySave, sh
   const progress: Record<string, EventProgress> = {};
   for (const id of legacyStory?.completed ?? []) progress[`legacy-${id}`] = { ...emptyEvent(), visits: 1, completedAt: "legacy" };
   if (shootingCompleted && !progress["legacy-shooting"]) progress["legacy-shooting"] = { ...emptyEvent(), visits: 1, completedAt: "legacy" };
-  return { version: 1, clock, progress, active: null };
+  // Returning players (older day or chapter saves) are not shown the new-game intro.
+  const returning = Boolean(legacyDay || legacyStory?.completed.length || shootingCompleted);
+  return { version: 2, clock, progress, active: null, inventory: [], flags: returning ? [INTRO_FLAG] : [] };
+}
+/** Items earned by already completed memories, used when migrating version-1 saves. */
+export function earnedRewards(progress: Record<string, EventProgress>) {
+  return [...new Set(STORY_EVENTS.filter(event => progress[event.id]?.completedAt).flatMap(event => event.rewards ?? []))];
 }
 export function calendarSeason(date: string): Season {
   const month = Number(date.slice(5,7));
@@ -364,6 +381,27 @@ export function advanceTimelineClock(clock: DaySave, minutes: number) {
   return { save: boundClock(result.save), notices: result.notices.filter(notice => notice.date < STORY_END || notice.date === STORY_END && notice.minute < 1440) };
 }
 export function sleepTimelineClock(clock: DaySave) { return clock.date === STORY_END && clock.minute >= 300 ? clock : boundClock(sleepUntilMorning(clock)); }
+/**
+ * Sleeping skips unimportant days: Felice wakes at 5:00 on the next day that
+ * holds a memory. If a memory is still open today or already due, she only
+ * sleeps until the next morning. The date never moves backwards.
+ */
+export function sleepToStoryDay(save: TimelineSave): DaySave {
+  const morning = sleepTimelineClock(save.clock);
+  const next = nextEvent(save);
+  if (save.active || !next?.date || next.date <= morning.date) return morning;
+  return clockAtLeast(morning, next.date, 300);
+}
+const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+export function weekday(date: string) { return WEEKDAYS[new Date(`${date}T12:00:00Z`).getUTCDay()]; }
+/** Calendar sheets shown while sleeping; long jumps collapse into a gap marker ("…"). */
+export function calendarPages(from: string, to: string): (string | null)[] {
+  const total = Math.max(0, daysBetween(from, to));
+  const at = (offset: number) => new Date(Date.parse(`${from}T12:00:00Z`) + offset * 86400000).toISOString().slice(0, 10);
+  if (total <= 5) return Array.from({ length: total + 1 }, (_, i) => at(i));
+  return [at(0), at(1), null, at(total - 1), at(total)];
+}
+export function daysBetween(from: string, to: string) { return Math.round((Date.parse(`${to}T12:00Z`) - Date.parse(`${from}T12:00Z`)) / 86400000); }
 export function eventStatus(save: TimelineSave, event: StoryEvent): "gesperrt" | "verfügbar" | "abgeschlossen" {
   if (save.progress[event.id]?.completedAt) return "abgeschlossen";
   if (!event.confirmed || !event.date || event.date < STORY_START || event.date > STORY_END) return "gesperrt";
@@ -383,9 +421,44 @@ export function clockAtLeast(clock: DaySave, date: string, minute: number): DayS
   const days = Math.round((Date.parse(`${date}T12:00Z`) - Date.parse(`${clock.date}T12:00Z`)) / 86400000);
   return boundClock({ ...clock, date, minute, day: clock.day + days });
 }
+/** The single gate deciding whether a first (non-replay) play of a memory may start. */
+export function canTrigger(save: TimelineSave, event: StoryEvent | undefined): boolean {
+  return Boolean(event && event.scene !== "legacy" && !save.active && eventStatus(save, event) === "verfügbar");
+}
+export type StoryTrigger = { place: Place; point: Point; radius: number; mode: "enter" | "interact" | "phone"; label: string; hint: string };
+const PLACE_HINTS: Partial<Record<Place, string>> = {
+  bedroom: "in meinem Zimmer nachsehen", home: "ins Wohnzimmer gehen", kitchen: "in die Küche gehen", garden: "in den Garten gehen",
+  radegast: "nach draußen gehen", playground: "zum Spielplatz gehen", christmasmarket: "nach Zörbig zum Weihnachtsmarkt fahren",
+  eliasroom: "nach Zörbig zu Elias fahren", school: "zum Pausenhof in Zörbig fahren", schoolway: "nach Zörbig auf den Schulweg fahren",
+};
+// The pasture lies beside the Radegast path; walking onto it starts the meeting.
+const PASTURE_TRIGGER: Point = { x: .52, y: .50 };
+/** Where and how a waiting memory is started from the world instead of a menu. */
+export function storyTrigger(event: StoryEvent): StoryTrigger {
+  if (event.scene === "encounter") return { place: "radegast", point: PASTURE_TRIGGER, radius: .055, mode: "enter", label: "Zur Pferdekoppel", hint: event.hint ?? "Vielleicht sollte ich zu den Pferden gehen." };
+  if (event.scene !== "sequence") return { place: "bedroom", point: { x: .60, y: .395 }, radius: .13, mode: "phone", label: "Handy", hint: event.hint ?? (event.scene === "chat" ? "Vielleicht schaue ich heute Abend auf mein Handy. Am Bett oder Schreibtisch kann ich in Ruhe schreiben." : "Mein Handy … Vielleicht ist eine Nachricht gekommen. Am Bett oder Schreibtisch kann ich nachsehen.") };
+  const first = event.steps?.[0];
+  const place = first?.place ?? event.place;
+  return { place, point: first?.target ?? event.staging.spawn, radius: .13, mode: "interact", label: first?.label ?? event.title, hint: event.hint ?? `Vielleicht sollte ich ${PLACE_HINTS[place] ?? "mich ein bisschen umsehen"}.` };
+}
+/** Felice's gentle thought about what could come next; the key changes only when the situation does. */
+export function storyHint(save: TimelineSave): { key: string; text: string } | null {
+  if (save.active) return null;
+  const next = nextEvent(save);
+  if (!next?.date) return { key: "complete", text: "Unser Jahr ist im Album bewahrt. Ich kann mir jede Erinnerung noch einmal ansehen." };
+  if (canTrigger(save, next)) return { key: `${next.id}:go`, text: storyTrigger(next).hint };
+  if (next.date === save.clock.date) return { key: `${next.id}:later`, text: "Heute passiert später noch etwas. Bis dahin kann ich mich umsehen – oder mich hinsetzen und ein bisschen warten." };
+  return { key: `${next.id}:sleep`, text: "Heute ist ein ruhiger Tag. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag." };
+}
+/** Minutes to wait until today's next memory, or null when nothing is pending later today. */
+export function waitingMinutes(save: TimelineSave) {
+  const next = nextEvent(save);
+  if (save.active || !next?.date || next.date !== save.clock.date || save.clock.minute >= next.staging.start) return null;
+  return next.staging.start - save.clock.minute;
+}
 export function beginEvent(save: TimelineSave, id: string, player: Point, direction: StorySession["returnDirection"]): TimelineSave {
   const event = eventById(id);
-  if (!event || event.scene === "legacy" || save.active || eventStatus(save, event) !== "verfügbar") return save;
+  if (!event || !canTrigger(save, event)) return save;
   return { ...save, active: { id, returnPlayer: player, returnDirection: direction }, progress: { ...save.progress, [id]: save.progress[id] ?? emptyEvent() } };
 }
 export function completeEvent(save: TimelineSave, id: string, replay = false, now = new Date().toISOString()): TimelineSave {
@@ -397,6 +470,8 @@ export function completeEvent(save: TimelineSave, id: string, replay = false, no
   return {
     ...save, active: replay ? save.active : null,
     clock: replay || !event.date ? save.clock : clockAtLeast(save.clock, event.date, event.staging.end),
+    // Replays never change real progress, including the inventory.
+    inventory: replay ? save.inventory : [...new Set([...save.inventory, ...event.rewards ?? []])],
     progress: { ...save.progress, [id]: { ...prior, topic: null, line: 0, completedAt: prior.completedAt ?? now, visits: prior.visits + 1 } },
   };
 }
@@ -404,7 +479,7 @@ export function completeEvent(save: TimelineSave, id: string, replay = false, no
 // Unknown event IDs are retained for future additions and removed configurations.
 export function parseTimeline(raw: string): TimelineSave {
   const value = JSON.parse(raw);
-  if (value?.version !== 1 || !value.clock || typeof value.clock !== "object" || !value.progress || typeof value.progress !== "object" || Array.isArray(value.progress)) throw new Error("Unbekannter Story-Kalender");
+  if (value?.version !== 1 && value?.version !== 2 || !value.clock || typeof value.clock !== "object" || !value.progress || typeof value.progress !== "object" || Array.isArray(value.progress)) throw new Error("Unbekannter Story-Kalender");
   const clock = parseDay(JSON.stringify(value.clock));
   if (clock.date < STORY_START || clock.date > STORY_END) throw new Error("Kalender außerhalb der Geschichte");
   const progress: Record<string, EventProgress> = {};
@@ -415,5 +490,12 @@ export function parseTimeline(raw: string): TimelineSave {
   }
   const active = value.active;
   if (active !== null && (!active || !eventById(active.id) || eventById(active.id)?.scene === "legacy" || !progress[active.id] || progress[active.id].completedAt || !["front","back","left","right"].includes(active.returnDirection) || !Number.isFinite(active.returnPlayer?.x) || !Number.isFinite(active.returnPlayer?.y) || active.returnPlayer.x < 0 || active.returnPlayer.x > 1 || active.returnPlayer.y < 0 || active.returnPlayer.y > 1)) throw new Error("Beschädigte aktive Erinnerung");
-  return { version: 1, clock: boundClock(clock), progress, active };
+  const idList = (list: unknown, label: string) => {
+    if (!Array.isArray(list) || list.length > 128 || !list.every(entry => typeof entry === "string" && /^[a-z0-9-]{1,64}$/.test(entry))) throw new Error(label);
+    return [...new Set(list as string[])];
+  };
+  // Version 1 → 2: rebuild the inventory from completed memories; a v1 player has already seen the beginning.
+  if (value.version === 1) return { version: 2, clock: boundClock(clock), progress, active, inventory: earnedRewards(progress), flags: [INTRO_FLAG] };
+  // Unknown item IDs and flags are kept for later additions.
+  return { version: 2, clock: boundClock(clock), progress, active, inventory: idList(value.inventory, "Beschädigtes Inventar"), flags: idList(value.flags, "Beschädigte Story-Markierungen") };
 }

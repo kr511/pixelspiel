@@ -7,6 +7,23 @@ export function routineEntities(place: Place, minute: number, entities: Entity[]
   return entities;
 }
 
+// Outside story scenes Elias only appears where the story has already brought
+// him: nowhere before the first meeting, at Felice's home only after Christmas,
+// in his room only after the March weekend. Story casts are unaffected.
+const ELIAS_FIRST_MEETING = "radegast-chocolate";
+export const ELIAS_PRESENCE: Partial<Record<Place, string>> = {
+  bedroom: "first-kiss-christmas", home: "first-kiss-christmas", kitchen: "first-kiss-christmas", garden: "first-kiss-christmas",
+  playground: "playground-2025-12-01", christmasmarket: "christmas-market-2025-12-06", eliasroom: "elias-room-weekend",
+};
+export function eliasPresent(place: Place, completed: (id: string) => boolean) {
+  return completed(ELIAS_FIRST_MEETING) && completed(ELIAS_PRESENCE[place] ?? ELIAS_FIRST_MEETING);
+}
+
+// Anuk does not exist yet at the start of the story. Once his arrival is a dated
+// memory, put its event ID here; until then he only appears in the legacy draft.
+export const ANUK_ARRIVAL: string | null = null;
+export function anukPresent(completed: (id: string) => boolean) { return ANUK_ARRIVAL !== null && completed(ANUK_ARRIVAL); }
+
 type Follower = Actor & { followTarget?: Point };
 
 /** Reuse the world collision routes; normalized movement keeps pace with Felice. */
