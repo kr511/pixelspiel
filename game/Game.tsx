@@ -14,8 +14,9 @@ import { DialogueBox } from "./DialogueBox";
 import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
 import { advanceFollower, anukPresent, eliasPresent, routineEntities } from "./routines";
+import { ROUTINE_ITEMS, ROUTINE_TASKS, isRoutineDay, routineDone, routineFlag, routineOpen, type RoutineTask } from "./routine";
 import { TimelineJournal } from "./TimelineJournal";
-import { EncounterElias, PhoneArt, RadegastPasture } from "./StoryWorldArt";
+import { EncounterElias, RadegastPasture } from "./StoryWorldArt";
 import { readProgress } from "./memories/progress";
 import { TIMELINE_KEY, STORY_END, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
 import { IntroCinematic } from "./IntroCinematic";
@@ -48,7 +49,7 @@ function lyingInBed(): Rest {
 const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
 
 type Direction = "front" | "left" | "back" | "right";
-type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence"; response?: boolean; actorId?: string; kitchenId?: string; morning?: boolean };
+type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence" | "routine"; response?: boolean; actorId?: string; kitchenId?: string; routineId?: string; morning?: boolean };
 type Rest = { spot: RestSpot; elias: boolean; motion: RestMotion; companion?: RestMotion };
 type Notice = { date: string; minute: number; label: string };
 function clearMovement() { pressedKeys.clear(); useInput.getState().setMove(0, 0); }
@@ -157,7 +158,7 @@ export function Game() {
   // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
   const eliasHere = Boolean(save.chapter) || followingElias || visitingElias === save.place || eliasPresent(save.place, id => Boolean(timeline.progress[id]?.completedAt));
   const anukHere = Boolean(save.chapter) || anukPresent(id => Boolean(timeline.progress[id]?.completedAt));
-  const sourceEntities = (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias)).filter(entity => (entity.art !== "elias" || eliasHere) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
+  const sourceEntities = (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)).filter(entity => (entity.art !== "elias" || eliasHere) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
   const sceneEntities = sourceEntities.filter(e => !rest?.elias || e.art !== "elias").map(e => cinema && !cinema.sequence && e.art === "elias" ? {...e,...castPoint(undefined,player,cinema,save.place)} : e.id === "anuk" && dogFollows ? { ...e, ...dog } : actors[e.id] ? { ...e, ...actors[e.id].position } : e);
   const nearbyExit = exits.filter(e => Math.hypot(e.x-player.x, e.y-player.y) < .105).sort((a,b) => Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
   const nearbyEntity = sceneEntities.map(e => ({ e, d: Math.hypot(e.x - player.x, e.y - player.y), companion: e.id === "anuk" && save.completed.includes("dog") && save.chapter !== "dog" })).filter(v => v.d < .115 && !(v.companion && nearbyExit) && (!nearbyExit || v.d < Math.hypot(nearbyExit.x-player.x, nearbyExit.y-player.y))).sort((a,b) => Number(a.companion)-Number(b.companion) || a.d-b.d)[0]?.e;
@@ -205,6 +206,12 @@ export function Game() {
     try { window.localStorage.setItem(TIMELINE_KEY, JSON.stringify(next)); setDayError(null); }
     catch { setDayError("Der Story-Fortschritt bleibt für diese Sitzung erhalten. Lokales Speichern ist gerade nicht möglich."); }
   }, []);
+  /** Ticks off one of today's school-day tasks (10.–12.11.); a no-op on other days or when already done. */
+  const markRoutine = useCallback((task: RoutineTask) => {
+    const current = timelineRef.current, date = current.clock.date;
+    if (!isRoutineDay(date) || routineDone(current.flags, date, task)) return;
+    persistTimeline({ ...current, flags: [...current.flags, routineFlag(date, task)] });
+  }, [persistTimeline]);
   const persistDay = useCallback((next: DaySave) => {
     if (sessionRef.current || draftPlaying) return;
     persistTimeline({ ...timelineRef.current, clock: next });
@@ -271,7 +278,7 @@ export function Game() {
   const move = useCallback((seconds: number) => {
     const next = { ...actorsRef.current };
     let changed = false;
-    for (const entity of event ? [] : routineEntities(save.place, save.chapter ? 840 : dayRef.current.minute, inhabitants(save.place,visitingElias),followingElias)) {
+    for (const entity of event ? [] : routineEntities(save.place, save.chapter ? 840 : dayRef.current.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)) {
       const actor = next[entity.id];
       if (!actor || restRef.current?.elias && entity.art === "elias") continue;
       const updated = followingElias && entity.art === "elias" ? advanceFollower(save.place,actor,playerRef.current,seconds) : advanceActor(save.place, entity.id, actor, seconds);
@@ -367,6 +374,12 @@ export function Game() {
         setPhotoMoment({ target: step?.target === nearbyEntity.id ? nearbyEntity.id : undefined }); return;
       }
       if (nearbyEntity.id === "album") { setJournal(true); return; }
+      const routineItem = ROUTINE_ITEMS[nearbyEntity.id];
+      if (routineItem && !event && isRoutineDay(dayRef.current.date)) {
+        const done = routineDone(timelineRef.current.flags, dayRef.current.date, routineItem.task);
+        setDialogue(done ? { speaker: "Felice", text: "Das habe ich heute schon erledigt." } : { speaker: "Felice", text: nearbyEntity.text, action: "routine", routineId: nearbyEntity.id, choices: [`${nearbyEntity.name} · ${routineItem.minutes} Min.`, "Zurück ins Spiel"] });
+        return;
+      }
       if (save.place === "kitchen" && nearbyEntity.kind === "item") {
         setDialogue({ speaker: "Felice", text: nearbyEntity.text, action: "kitchen", kitchenId: nearbyEntity.id, choices: [`${nearbyEntity.name} · 10 Min.`, "Zurück ins Spiel"] }); return;
       }
@@ -425,7 +438,15 @@ export function Game() {
       return;
     }
     if (dialogue.action === "school") {
-      if (choice === "Unterricht besuchen") spendTime(SCHOOL_END - dayRef.current.minute, "school");
+      if (choice === "Unterricht besuchen") { spendTime(SCHOOL_END - dayRef.current.minute, "school"); markRoutine("school"); }
+      setDialogue(null); clearMovement(); return;
+    }
+    if (dialogue.action === "routine") {
+      const item = dialogue.routineId ? ROUTINE_ITEMS[dialogue.routineId] : undefined;
+      if (item && choice !== "Zurück ins Spiel") {
+        markRoutine(item.task); spendTime(item.minutes);
+        setDialogue({ speaker: "Felice", art: "felice", text: item.done }); clearMovement(); return;
+      }
       setDialogue(null); clearMovement(); return;
     }
     if (dialogue.action === "kitchen") {
@@ -580,6 +601,9 @@ export function Game() {
   function goToSleep() {
     if (!rest || rest.spot.kind !== "bed" || session || legacyView) return;
     const from = dayRef.current.date;
+    const open = isRoutineDay(from) ? routineOpen(timelineRef.current.flags, from) : [];
+    if (open.length) { setDialogue({ speaker: "Felice", art: "felice", text: `Ich kann noch nicht schlafen. Heute fehlt noch: ${open.map(task => task.label).join(", ")}.` }); return; }
+    markRoutine("sleep");
     const clock = sleepToStoryDay(timelineRef.current);
     setNotices([]); clearMovement();
     persistDay(clock);
@@ -660,6 +684,7 @@ export function Game() {
     }
     if (!rest) {
       const then = wakeThen.current; wakeThen.current = null;
+      markRoutine("wake");
       if (then === "beginning") startFromWorld("beginning-2025-11-01");
       else setDialogue({ speaker: "Felice", art: "felice", text: morningText.current, morning: true });
     }
@@ -734,7 +759,6 @@ export function Game() {
         {event?.scene === "encounter" && <EncounterElias position={eliasPoint} arriving={eventState?.cursor === 0} cursor={eventState?.cursor ?? 0}/>}
         {event?.scene === "sequence" && <SequenceCast event={event} beat={sequenceBeat} player={player} effect={cinema} place={save.place} conversing={Boolean(dialogue)}/> }
         {sequenceBeat && <div className="story-target" data-testid="story-target" data-x={sequenceBeat.target.x} data-y={sequenceBeat.target.y} style={labelStyle(sequenceBeat.target)}><span>✦</span><small>{sequenceBeat.label}</small></div>}
-        {save.place === "bedroom" && <div className={`world-phone${event ? " has-message" : ""}`} style={labelStyle({ x: .6, y: .265 })} aria-label="Felices Handy auf dem Schreibtisch"><PhoneArt/>{(event || pendingTrigger?.mode === "phone") && <span>!</span>}</div>}
         {save.place === "radegast" && <span className="town-place-label" style={labelStyle({ x: .19, y: .17 })}>{event ? "Radegast · Bei den Pferden" : "Felices Wohnung"}</span>}
         {spots.map(spot => <div key={spot.id} className={`rest-spot rest-${spot.kind}${restTarget?.id === spot.id ? " nearby-rest" : ""}`} style={{...labelStyle(spot.furniture ?? spot.approach), zIndex: Math.round((spot.furniture ?? spot.position).y*100)+8}} aria-label={spot.name}>
           {spot.furniture && <BenchArt winter={winter && save.place === "garden"}/>}
@@ -771,6 +795,7 @@ export function Game() {
     {started && inWorld && !paused && !transitioning && <>
       <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(day.minute)}</strong><small>{session ? "Aktuelle Spielzeit · während der Szene pausiert" : `Tag ${day.day} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span></div>
       {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `Rekonstruierte Dialoge · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
+      {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}>▣ <span>Handy</span></button>
       <button className="journal-button" aria-label="Erinnerungsbuch öffnen" onClick={() => { clearMovement(); setJournal(true); }}>▤ <span>Erinnerungsbuch</span> <kbd>J</kbd></button>

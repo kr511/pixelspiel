@@ -71,8 +71,9 @@ export function requestPose(place: Place, actor: Actor, pose: Pose, seat?: Retur
   }
   if (!seat || seat.spot.place !== place || (pose === "lying" && seat.spot.kind !== "bed")) return actor;
   const route = departing ? [departing, ...walkingRoute(place, departing, seat.spot.approach)] : walkingRoute(place, actor.position, seat.spot.approach);
-  if (!route.length) return actor;
-  return { ...actor, pose: "standing", pending: pose, restId: seat.id, departing, approach: seat.spot.approach, route: [...route, seat.position], wait: 0 };
+  // Standing inside a furniture margin yields no route; walk straight out to the approach instead of hanging.
+  const path = route.length ? route : [seat.spot.approach];
+  return { ...actor, pose: "standing", pending: pose, restId: seat.id, departing, approach: seat.spot.approach, route: [...path, seat.position], wait: 0 };
 }
 
 export function advanceActor(place: Place, id: string, actor: Actor, seconds: number): Actor {
@@ -97,7 +98,8 @@ export function advanceActor(place: Place, id: string, actor: Actor, seconds: nu
     return { ...actor, position: target, waypoint: (actor.waypoint + 1) % patrol!.length, wait: id === "jason" || id === "luca" ? 3.5 : 1.6, moving: false };
   }
   // Final steps onto a seat are allowed to cross its furniture footprint.
-  const usingSeat = actor.departing === target || actor.route.length === 1 && !!actor.pending;
+  // An actor already inside a blocked margin may also walk out freely.
+  const usingSeat = actor.departing === target || actor.route.length === 1 && !!actor.pending || !canWalk(place, actor.position.x, actor.position.y);
   const speed = id === "felice" ? 1 : id === "jason" || id === "luca" ? .35 : .45;
   const delta = Math.min(seconds, length / (.19 * speed));
   const position = movementStep(actor.position, { x: dx / length, y: dy / length }, delta * speed, (x, y) => usingSeat || canWalk(place, x, y));

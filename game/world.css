@@ -10,7 +10,7 @@
 .character-art { width:100%; display:block; overflow:hidden; }
 .character-fallback { display:block; width:100%; }
 
-.version-six .room-player { width:7.6%; min-width:0; max-width:none; transform:translate(-50%,-100%); filter:drop-shadow(0 2px 2px #2d2b2455); }
+.version-six .room-player { width:9.5%; min-width:0; max-width:none; transform:translate(-50%,-100%); filter:drop-shadow(0 2px 2px #2d2b2455); }
 .version-six .world-entity { filter:drop-shadow(0 2px 1px #25352c55); }
 .version-six .entity-item { width:3.4%; }
 .version-six .entity-name { font-size:9px; border-color:#9aaa84; box-shadow:0 2px 5px #15241f44; }
@@ -139,7 +139,7 @@
 
 
 /* V0.65: grounded poses, painted bed occupancy and kitchen action feedback. */
-.version-065 .room-player.pose-lying { width:7.6%; }
+.version-065 .room-player.pose-lying { width:9.5%; }
 .version-065 .room-player.in-bed { width:0; height:0; }
 .version-065 .room-player.in-bed .room-player-label { display:none; }
 .version-065 .entity-person.pose-sitting,.version-065 .entity-person.pose-lying { filter:drop-shadow(0 1px 1px #25352c44); }
@@ -223,11 +223,11 @@
 .version-075[data-scene="radegast"] .room-player,
 .version-075[data-scene="zoerbig"] .room-player,
 .version-075[data-scene="radegast"] .entity-person,
-.version-075[data-scene="zoerbig"] .entity-person { width:3.4%!important; }
+.version-075[data-scene="zoerbig"] .entity-person { width:4.4%!important; }
 
 /* Overhead school courtyard: match the figure scale to the building and yard. */
 .version-075[data-scene="school"] .room-player,
-.version-075[data-scene="school"] .entity-person { width:3.4%!important; }
+.version-075[data-scene="school"] .entity-person { width:4.4%!important; }
 .version-075[data-scene="school"] .world-exit { z-index:110; }
 
 .version-075[data-scene="school"] [data-rest-id^="school-bench-right"].pose-sitting .room-player-label,
@@ -238,7 +238,7 @@
 }
 
 .version-075[data-scene="schoolway"] .room-player,
-.version-075[data-scene="schoolway"] .entity-person { width:3.4%!important; }
+.version-075[data-scene="schoolway"] .entity-person { width:4.4%!important; }
 
 /* V0.8: graduation snapshots, one soft white fade and still photographs. */
 .graduation-photos { position:fixed; inset:0; z-index:160; display:grid; place-items:center; overflow:hidden; background:#172923; }

@@ -2,7 +2,10 @@ import { canWalk, type Entity, type Place, type Point } from "./story.ts";
 import { walkingRoute, type Actor } from "./actors.ts";
 import { movementStep, walkingFrame } from "./motion.ts";
 // Ambient routines use the existing actors; story casts are never hidden.
-export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false): Entity[] {
+// Outside story chapters only Felice's mother and stepfather stay home; the others are out and return for the Christmas dinner.
+const AWAY_FROM_HOME = ["halfsister","halfsister-partner","stepsister","stepsister-partner"];
+export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false, inStory = false): Entity[] {
+  if (place === "home" && !inStory) entities = entities.filter(e => !AWAY_FROM_HOME.includes(e.id));
   if (place === "school" && (minute < 420 || minute >= 1080)) return entities.filter(e => e.kind !== "person" || keepElias && e.art === "elias");
   return entities;
 }

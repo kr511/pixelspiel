@@ -130,7 +130,7 @@ test("Spätere bestehende Spielzeit wird beim ersten Erleben und beim Wiederhole
   assert.deepEqual(save.clock, clock);
   assert.equal(save.progress[event.id].visits, 2);
   assert.equal(save.progress[event.id].completedAt, completedAt);
-  assert.equal(historicalDate(event.date), "01.11.2025");
+  assert.equal(historicalDate(event.date), "10.11.2025");
   assert.equal(completeEvent(save, "first-i-love-you", true), save, "gesperrte Erinnerungen sind nicht wiederholbar");
   assert.equal(storySeason(eventById("christmas-market-2025-12-06"), clock), "Winter", "Erinnerungsjahreszeit folgt dem historischen Datum");
 });
@@ -257,13 +257,16 @@ test("Belohnungen kommen nur beim ersten echten Abschluss; Wiederholungen änder
 });
 
 test("Schlafen springt zum nächsten relevanten Storytag, nie rückwärts und nie über offene Ereignisse", () => {
-  // Nach dem Abschluss des 01.11. ist der 13.11. der nächste Storytag.
+  // 10.–12.11. sind Alltagstage und werden nie übersprungen; danach ist der 13.11. der nächste Storytag.
   let save = finish(reach("beginning-2025-11-01"));
   assert.equal(nextEvent(save).id, "chat-2025-11-13");
   let woke = sleepToStoryDay(save);
+  assert.equal(woke.date, "2025-11-11");
+  assert.equal(sleepToStoryDay({ ...save, clock: woke }).date, "2025-11-12");
+  woke = sleepToStoryDay({ ...save, clock: { ...woke, date: "2025-11-12", day: woke.day + 1 } });
   assert.equal(woke.date, "2025-11-13");
   assert.equal(woke.minute, 300);
-  assert.equal(woke.day, save.clock.day + 12);
+  assert.equal(woke.day, save.clock.day + 3);
   assert.equal(woke.season, "Herbst");
   // Ein heute noch offenes Ereignis wird nicht übersprungen: nur bis zum nächsten Morgen.
   save = { ...save, clock: { ...save.clock, date: "2025-11-13", minute: 1300 } };
@@ -297,7 +300,7 @@ test("Gedanken-Hinweise ändern sich nur mit der Situation und bieten Warten am 
   assert.equal(storyHint(save).key, "beginning-2025-11-01:go");
   assert.equal(storyHint(beginEvent(save, "beginning-2025-11-01", player, "front")), null, "Keine Hinweise während einer Szene");
   const done = finish(reach("beginning-2025-11-01"));
-  assert.match(storyHint(done).key, /:sleep$/);
+  assert.equal(storyHint(done).key, "routine:2025-11-10", "Alltagstage haben einen eigenen Hinweis");
   const sameDay = { ...done, clock: { ...done.clock, date: "2025-11-13", minute: 600 } };
   assert.match(storyHint(sameDay).key, /:later$/);
   assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 600);

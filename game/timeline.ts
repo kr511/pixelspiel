@@ -2,7 +2,10 @@ import { advanceClock, initialDay, parseDay, sleepUntilMorning, type DaySave, ty
 import { CHAPTERS, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
-export const STORY_START = "2025-11-01";
+export const STORY_START = "2025-11-10";
+// 10.–12.11. are ordinary school days with Felice's daily routine; the first chat memory follows on 13.11.
+export const ROUTINE_END = "2025-11-13";
+export const isRoutineDay = (date: string) => date >= STORY_START && date < ROUTINE_END;
 export const STORY_END = "2026-11-02";
 export type StoryLine = { speaker: "Felice" | "Elias" | "Erzählung"; text: string; emotion?: string; choices?: string[]; original?: boolean };
 export type ChatTopic = { id: string; title: string; icon: string; lines: StoryLine[] };
@@ -149,10 +152,10 @@ const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
 const datedEvents: StoryEvent[] = [
   // Beat IDs and count stay stable so saved checkpoints keep their meaning.
   // The intro cinematic wakes Felice beside her bed and opens the first beat.
-  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 1. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
-    beat("wake", "Wach werden", "Der erste November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .33, y: .53 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
+  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
+    beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .33, y: .53 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
     beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
-    beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag.", { x: .80, y: .68 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
+    beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .80, y: .68 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
   ] }),
   ...chatEvents,
   {
@@ -388,6 +391,8 @@ export function sleepTimelineClock(clock: DaySave) { return clock.date === STORY
  */
 export function sleepToStoryDay(save: TimelineSave): DaySave {
   const morning = sleepTimelineClock(save.clock);
+  // Ordinary school days are lived one by one, never skipped.
+  if (isRoutineDay(morning.date)) return morning;
   const next = nextEvent(save);
   if (save.active || !next?.date || next.date <= morning.date) return morning;
   return clockAtLeast(morning, next.date, 300);
@@ -447,6 +452,7 @@ export function storyHint(save: TimelineSave): { key: string; text: string } | n
   const next = nextEvent(save);
   if (!next?.date) return { key: "complete", text: "Unser Jahr ist im Album bewahrt. Ich kann mir jede Erinnerung noch einmal ansehen." };
   if (canTrigger(save, next)) return { key: `${next.id}:go`, text: storyTrigger(next).hint };
+  if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, text: "Ein ganz normaler Schultag. Frischmachen, Schule, Hausaufgaben – und danach ins Bett." };
   if (next.date === save.clock.date) return { key: `${next.id}:later`, text: "Heute passiert später noch etwas. Bis dahin kann ich mich umsehen – oder mich hinsetzen und ein bisschen warten." };
   return { key: `${next.id}:sleep`, text: "Heute ist ein ruhiger Tag. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag." };
 }

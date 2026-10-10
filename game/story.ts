@@ -119,7 +119,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "graduation-photo", name: "Ein Foto von euch beiden", x: .55, y: .76, display: { x: .63, y: .79 }, kind: "item", art: "camera", text: "Kurz zusammenstellen. Ein heller Blitz, dann die Schnappschüsse von Elias und Felice." },
   ],
   goelzau: [{ id: "goelzau-sign", name: "Schützenhaus Gölzau", x: .43, y: .35, display: { x: .40, y: .24 }, kind: "item", art: "landmark", text: "Am Schützenhaus in Weißandt-Gölzau trefft ihr eure Schießfreunde. Durch den Eingang geht es zur Bahn." }],
-  bedroom: [{ id: "album", name: "Unser Erinnerungsbuch", x: .77, y: .32, display: { x: .68, y: .23 }, kind: "item", art: "book", text: "Der Anfang eurer Geschichte und Platz für weitere Erinnerungen. Öffne das Buch oben rechts: historische Daten, Fortschritt und erneutes Erleben." }, { id: "photo", name: "Foto aus Gölzau", x: .79, y: .52, display: { x: .885, y: .45 }, kind: "item", art: "photo", text: "Das Foto führt dich direkt zum Schießen in Gölzau." }],
+  bedroom: [{ id: "homework", name: "Schulsachen", x: .60, y: .43, display: { x: .60, y: .43 }, kind: "item", art: "action", text: "Meine Schulsachen liegen bereit. Zeit für die Hausaufgaben." }, { id: "album", name: "Unser Erinnerungsbuch", x: .77, y: .32, display: { x: .68, y: .23 }, kind: "item", art: "book", text: "Der Anfang eurer Geschichte und Platz für weitere Erinnerungen. Öffne das Buch oben rechts: historische Daten, Fortschritt und erneutes Erleben." }, { id: "photo", name: "Foto aus Gölzau", x: .79, y: .52, display: { x: .885, y: .45 }, kind: "item", art: "photo", text: "Das Foto führt dich direkt zum Schießen in Gölzau." }],
   kitchen: [
     { id: "breakfast", name: "Frühstück vorbereiten", x: .535, y: .465, display: { x: .65, y: .465 }, kind: "item", art: "action", text: "Du bereitest ein kleines Frühstück vor und deckst den Küchentisch. Ein ruhiger Start in den Tag." },
     { id: "warm-drink", name: "Warmes Getränk machen", x: .21, y: .33, display: { x: .18, y: .17 }, kind: "item", art: "action", text: "Der Wasserkocher wird warm. Du machst dir ein warmes Getränk und nimmst dir einen kleinen Moment Zeit." },
@@ -127,6 +127,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "elias-kitchen", name: "Elias", x: .43, y: .58, kind: "person", art: "elias", text: "Ein Frühstück mit dir klingt gut. Wollen wir uns zusammen an den Tisch setzen?" },
   ],
   home: [
+    { id: "wash", name: "Bad", x: .30, y: .60, kind: "item", art: "action", text: "Das Bad. Kurz frischmachen, bevor der Tag richtig losgeht." },
     { id: "family", name: "Felices Mutter", x: .28, y: .5, kind: "person", art: "mother", text: "Schön, dass ihr da seid. Hier ist immer Platz für euch." },
     { id: "stepfather", name: "Felices Stiefvater", x: .75, y: .47, kind: "person", art: "stepfather", text: "Kommt herein. Wir machen es uns heute alle zusammen gemütlich." },
     { id: "halfsister", name: "Felices Halbschwester", x: .32, y: .7, kind: "person", art: "halfsister", text: "Schön, heute Zeit miteinander zu verbringen." },
