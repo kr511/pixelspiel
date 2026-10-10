@@ -1,0 +1,75 @@
+.room-memory-object { position:absolute; width:6.4%; aspect-ratio:1; transform:translate(-50%,-75%); z-index:1; pointer-events:none; }
+.memory-photo { display:block; position:absolute; inset:0 8% 12% 0; padding:9% 9% 20%; background:#f3e6c4; border:2px solid #624737; transform:rotate(-8deg); box-shadow:3px 4px 0 #342b2a; }
+.memory-photo>span { display:block; width:100%; height:100%; background:#bdbf9c url('/rooms/goelzau-range-v1.png') center/cover; image-rendering:pixelated; }
+.memory-sparkle { position:absolute; right:-10%; top:-23%; color:#ffe2a1; font-size:clamp(13px,2vw,24px); animation:memory-glimmer 2.8s ease-in-out infinite; text-shadow:0 0 13px #ffd685; }
+.is-nearby .memory-photo { outline:2px solid #ffe0a3; outline-offset:3px; }
+.is-completed .memory-photo { border-color:#d8ab61; }
+.memory-medal { position:absolute; display:grid; place-items:center; bottom:-5%; right:-27%; width:49%; aspect-ratio:1; border:2px solid #a86c36; color:#835126; background:#f3c576; font-size:clamp(10px,1.5vw,18px); box-shadow:2px 3px 0 #3b3026; }
+.memory-medal i { position:absolute; z-index:-1; bottom:80%; width:70%; height:85%; background:linear-gradient(90deg,#9a4e43 0 40%,#e5bd72 40% 60%,#9a4e43 60%); }
+.memory-interaction { position:absolute; z-index:4; bottom:76px; left:50%; transform:translateX(-50%); display:grid; gap:8px; justify-items:center; text-align:center; white-space:nowrap; }
+.memory-interaction>span { color:#f7e5c6; font-size:12px; padding:5px 9px; background:#262633e8; border-radius:3px; }
+.memory-interaction button { display:flex; align-items:center; gap:10px; padding:10px 17px; border:1px solid #e8c28e; background:#302d39f2; color:#fff1d4; box-shadow:0 4px 0 #141821; border-radius:3px; cursor:pointer; }
+.memory-interaction kbd { font:700 12px monospace; padding:4px 7px; color:#352d29; background:#f5d6a8; border-radius:2px; }
+.memory-transition { position:absolute; inset:0; z-index:9; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:24px; text-align:center; background:#20212cfb; backdrop-filter:blur(9px); animation:memory-cover 1.3s ease both; }
+.memory-transition-star { color:#edc58f; font-size:25px; }
+.memory-transition p { margin:0; font:clamp(22px,4vw,38px) Georgia,serif; color:#f8e9d2; }
+.memory-transition small { color:#bcb5aa; line-height:1.6; }
+.scene-reveal,.shooting-memory { animation:memory-reveal .65s ease both; }
+.shooting-memory { width:min(1100px,calc((100dvh - 195px) * 1.5),calc(100vw - 48px)); position:relative; z-index:1; }
+.range-heading { text-align:center; margin:0 0 16px; }
+.range-heading>span,.memory-eyebrow { color:#d5bb8e; font-size:10px; text-transform:uppercase; letter-spacing:.16em; font-weight:700; }
+.range-heading h1 { margin:4px 0; font:36px/1.1 Georgia,serif; color:#f9ead3; letter-spacing:.01em; }
+.range-heading p { margin:0; color:#b7b6b4; font-size:12px; }
+.range-frame { position:relative; border:2px solid #837053; box-shadow:0 16px 64px #080f17a6; background:#b9baa2; }
+.range-surface { display:block; width:100%; height:auto; aspect-ratio:3/2; touch-action:none; outline:none; image-rendering:pixelated; }
+.range-surface:focus-visible { outline:2px solid #ffe2a1; outline-offset:5px; }
+.range-surface.is-aiming { cursor:none; }
+.range-air-rifle { filter:drop-shadow(3px 4px 1px #23282970); }
+.shot-burst { animation:shot-burst .7s ease-out both; transform-box:fill-box; transform-origin:center; }
+.active-target-frame { filter:drop-shadow(0 1px 2px #352c1a); }
+.memory-story { position:absolute; inset:0; display:grid; place-items:center; padding:18px; overflow:auto; background:#22283073; backdrop-filter:blur(3px); }
+.memory-card { width:min(460px,100%); padding:26px 30px 20px; background:#272b30f5; color:#e9e2d7; border:1px solid #a99169; box-shadow:0 5px 0 #171d24a6; text-align:center; }
+.memory-card h2 { margin:9px 0 16px; color:#fff1d9; font:32px/1.12 Georgia,serif; }
+.memory-card p { font-size:14px; line-height:1.65; margin:12px 0; }
+.memory-card .memory-instructions { color:#bcbeb8; font-size:12px; }
+.memory-card .memory-input-hint { color:#d2bb94; font-size:11px; }
+.memory-primary { border:1px solid #f8dbae; border-radius:3px; background:#eccb97; color:#332e28; padding:12px 18px; min-height:44px; margin-top:6px; cursor:pointer; font-weight:700; font-size:13px; box-shadow:0 3px 0 #967951; }
+.memory-primary:hover { background:#ffe3b6; }
+.memory-primary:disabled { opacity:.6; cursor:default; }
+.memory-text-button { display:block; margin:12px auto 0; border:0; background:transparent; color:#c7c6bd; padding:7px; cursor:pointer; font-size:12px; }
+.memory-text-button:hover { color:#fff1d4; text-decoration:underline; }
+.memory-text-button:disabled { opacity:.5; cursor:default; }
+.memory-primary:focus-visible,.memory-text-button:focus-visible,.memory-interaction button:focus-visible { outline:2px solid #ffdf9f; outline-offset:4px; }
+.range-hud { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0 0; color:#f4e6d0; }
+.range-hud>div:first-child { display:flex; flex-direction:column; gap:4px; }
+.range-hud small { font-size:10px; color:#b3b5ad; font-weight:400; }
+.range-hud strong { font-size:13px; font-weight:600; }
+.range-ammo { display:flex; gap:5px; }
+.range-ammo i { display:block; width:5px; height:13px; background:#edc995; border:1px solid #f7ddb3; }
+.range-ammo i.spent { border-color:#59605f; background:transparent; }
+.range-points { display:flex; flex-direction:column; gap:4px; text-align:right; min-width:135px; }
+.range-points span { color:#c1c1b5; font-size:10px; }
+.range-hud>.memory-text-button { margin:0; }
+.range-footer { text-align:center; margin:12px 0 0; color:#959d9f; font-size:10px; letter-spacing:.035em; }
+.memory-score { font:48px Georgia,serif; color:#f3cf97; }
+.memory-score small { font:13px Arial,sans-serif; color:#c4c0b9; }
+.target-results { display:flex; justify-content:center; gap:28px; margin:15px 0; }
+.target-results>span { display:flex; flex-direction:column; gap:6px; font-size:11px; color:#9ea79f; }
+.target-results strong { color:#eadcc4; font-size:13px; font-weight:500; }
+.memory-save-warning { position:absolute; z-index:8; bottom:12px; right:12px; max-width:min(360px,calc(100vw - 24px)); padding:12px; background:#3f3531; border:1px solid #c39f6c; font-size:12px; line-height:1.5; }
+.memory-save-warning button { color:#ffdfaa; display:block; margin-top:6px; padding:0; border:0; background:none; text-decoration:underline; cursor:pointer; }
+@keyframes memory-glimmer { 0%,100% { opacity:.55; transform:scale(.8); } 50% { opacity:1; transform:scale(1.1); } }
+@keyframes memory-cover { 0% { opacity:0; } 40%,100% { opacity:1; } }
+@keyframes memory-reveal { from { opacity:0; filter:blur(4px); } to { opacity:1; filter:blur(0); } }
+@keyframes shot-burst { from { opacity:1; transform:scale(.6); } to { opacity:0; transform:scale(1.6); } }
+@media (max-width:900px) { .range-heading { margin-bottom:10px; } .range-heading h1 { font-size:29px; } .memory-card { padding:18px 22px 14px; } .memory-card h2 { font-size:27px; margin:8px 0 10px; } .memory-card p { font-size:12px; } }
+@media (max-height:580px) and (orientation:landscape) {
+  .shooting-memory { width:min(calc((100dvh - 78px) * 1.5),calc(100vw - 220px)); }
+  .range-heading { position:absolute; right:calc(100% + 14px); top:70px; width:95px; text-align:right; }
+  .range-heading h1 { font-size:24px; } .range-heading p { font-size:10px; line-height:1.5; } .range-heading>span { font-size:8px; }
+  .range-hud { gap:9px; padding-top:8px; } .range-hud strong { font-size:10px; } .range-hud small,.range-points span { font-size:8px; } .range-points { min-width:94px; } .range-ammo { gap:3px; } .range-ammo i { width:4px; height:10px; } .range-footer { margin-top:6px; font-size:8px; }
+  .memory-story { padding:8px; } .memory-card { padding:12px 16px 8px; } .memory-card h2 { font-size:23px; margin:6px 0; } .memory-card p { margin:7px 0; font-size:11px; line-height:1.4; } .memory-card .memory-instructions { font-size:10px; } .memory-card .memory-input-hint { font-size:9px; } .memory-primary { padding:8px 12px; min-height:36px; font-size:11px; } .memory-text-button { font-size:10px; margin-top:6px; padding:5px; } .memory-eyebrow { font-size:8px; } .memory-score { font-size:32px; } .target-results { margin:8px 0; }
+  .memory-interaction { bottom:20px; } .memory-interaction>span { font-size:10px; } .memory-interaction button { padding:7px 12px; font-size:12px; }
+  .pixel-game .world-title { max-width:180px; padding:6px 8px; } .world-title strong { font-size:12px; } .world-title small { font-size:10px; } .world-title>span { width:28px; height:28px; font-size:9px; }
+}
+@media (prefers-reduced-motion:reduce) { .memory-transition,.scene-reveal,.shooting-memory,.memory-sparkle,.shot-burst { animation:none; } .shot-burst { opacity:0; } }

@@ -1,0 +1,78 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Read Pages configuration
+        id: pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const fallback = repo.toLowerCase() === `${owner}.github.io`.toLowerCase() ? '/' : `/${repo}/`;
+            try {
+              const { data } = await github.rest.repos.getPages({ owner, repo });
+              core.setOutput('enabled', data.build_type === 'workflow' ? 'true' : 'false');
+              core.setOutput('base_path', new URL(data.html_url).pathname.replace(/\/?$/, '/'));
+              if (data.build_type !== 'workflow') {
+                await core.summary.addHeading('GitHub Pages einrichten').addRaw('Bitte unter Settings → Pages als Source „GitHub Actions“ wählen und diesen Workflow erneut starten.').write();
+              }
+            } catch (error) {
+              if (![403, 404].includes(error.status)) throw error;
+              core.setOutput('enabled', 'false');
+              core.setOutput('base_path', fallback);
+              await core.summary.addHeading('Statischer Build bereit').addRaw('GitHub Pages ist noch nicht eingerichtet oder für dieses Repository nicht verfügbar. Unter Settings → Pages als Source „GitHub Actions“ wählen und danach diesen Workflow erneut starten. Private Repositories benötigen einen GitHub-Tarif, der Pages unterstützt.').write();
+            }
+      - name: Install dependencies
+        run: npm run install:ci
+      - name: Verify game
+        run: |
+          npm test
+          npx tsc --noEmit
+      - name: Build static game
+        run: npm run build:pages
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-pages
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages_enabled == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy game
+        id: deployment
+        uses: actions/deploy-pages@v4

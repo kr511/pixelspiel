@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "../game/memories/memories.css";
+@import "../game/story.css";
+@import "../game/world.css";
+@import "../game/timeline.css";
+@import "../game/dialogue.css";
+@import "../game/phone-album.css";
+@import "../game/year.css";
+
+:root { --ink:#fff7ef; --glass:rgba(27,28,31,.42); }
+* { box-sizing:border-box; }
+html,body { width:100%; min-height:100%; overflow:hidden; }
+body { margin:0; background:#1d2630; color:var(--ink); font-family:Arial,Helvetica,sans-serif; overscroll-behavior:none; }
+button { font:inherit; }
+.game-shell { position:fixed; inset:0; width:100%; height:100dvh; touch-action:none; user-select:none; background:#d97960; }
+.game-shell canvas { display:block; width:100%!important; height:100%!important; outline:none; }
+.pixel-game { display:grid; place-items:center; background:radial-gradient(circle at 50% 38%,#374452 0,#151e2a 64%,#101821 100%); }
+.pixel-viewport { position:relative; width:min(100vw,calc(100dvh - 16px),920px); aspect-ratio:1; overflow:hidden; border:1px solid rgba(203,146,102,.35); background:#211c20; box-shadow:0 18px 72px rgba(0,0,0,.58); }
+.pixel-room { --camera-x:0%; --camera-y:0%; position:absolute; inset:0; width:100%; height:100%; background:#6c432f url("/rooms/felice-bedroom-v9.png") center/100% 100% no-repeat; image-rendering:pixelated; transform:translate(var(--camera-x),var(--camera-y)) scale(1.5); transform-origin:center; transition:transform 260ms ease-out; will-change:transform; }
+.room-player { position:absolute; width:13%; min-width:48px; max-width:120px; transform:translate(-50%,-100%); z-index:2; filter:drop-shadow(2px 5px 2px rgba(27,23,24,.65)); }
+.room-player-art { display:block; width:100%; aspect-ratio:1; background-image:url("/characters/felice-walk-v1.png"); background-size:400% 300%; background-repeat:no-repeat; background-position-y:0; image-rendering:pixelated; }
+.facing-front .room-player-art { background-position-x:0; }
+.facing-left .room-player-art { background-position-x:33.333%; }
+.facing-back .room-player-art { background-position-x:66.667%; }
+.facing-right .room-player-art { background-position-x:100%; }
+.walking .room-player-art { animation:felice-steps .36s steps(1,end) infinite; }
+@keyframes felice-steps { 0%,49.99% { background-position-y:50%; } 50%,100% { background-position-y:100%; } }
+.room-player-label { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); padding:3px 7px; border:1px solid #d7b07e; color:#fff7eb; background:#49332b; font-size:12px; font-weight:700; line-height:1.2; white-space:nowrap; }
+.rotate-screen { display:grid; position:absolute; inset:0; z-index:10; place-content:center; justify-items:center; gap:14px; padding:28px; color:#fff7ef; background:#171d29; text-align:center; }
+.rotate-screen strong { font-family:Georgia,"Times New Roman",serif; font-size:clamp(1.65rem,6vw,2.5rem); }
+.rotate-screen span { max-width:320px; color:#d9d5d7; font-size:1rem; line-height:1.5; }
+.rotate-phone { width:62px; height:94px; display:grid; place-items:center; border:4px solid #ffc99c; border-radius:12px; color:#ffc99c; font-size:3.1rem; line-height:1; transform:rotate(90deg); margin:0 0 16px; }
+.pixel-game .world-title { z-index:4; padding:8px 12px; border:1px solid rgba(255,218,169,.3); border-radius:4px; background:rgba(28,28,39,.72); backdrop-filter:blur(5px); }
+.pixel-game .pause-button { z-index:4; border-radius:4px; background:rgba(28,28,39,.72); }
+.pixel-game .controls-hint { z-index:4; border-radius:4px; background:rgba(28,28,39,.76); }
+.pixel-game .start-screen { z-index:5; background:rgba(16,21,31,.4); backdrop-filter:none; }
+.pixel-game .start-card { border:3px solid #d9a775; border-radius:5px; background:#312d38; box-shadow:0 12px 0 #171b26,0 24px 70px rgba(0,0,0,.45); backdrop-filter:none; }
+.pixel-game .start-card h1 { font-family:Georgia,"Times New Roman",serif; }
+.pixel-game .start-card button { border-radius:4px; box-shadow:0 5px 0 #a06442; }
+.game-ui { position:absolute; inset:0; pointer-events:none; }
+.world-title { position:absolute; top:max(20px,env(safe-area-inset-top)); left:max(22px,env(safe-area-inset-left)); display:flex; align-items:center; gap:11px; text-shadow:0 2px 18px rgba(23,18,19,.34); }
+.world-title>span { width:39px; height:39px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.45); border-radius:13px; background:rgba(33,30,30,.24); backdrop-filter:blur(12px); font-size:.72rem; font-weight:800; }
+.world-title div { display:flex; flex-direction:column; gap:2px; }
+.world-title strong { font-size:.96rem; letter-spacing:-.02em; }
+.world-title small { color:rgba(255,247,239,.7); font-size:.72rem; }
+.pause-button { pointer-events:auto; position:absolute; top:max(20px,env(safe-area-inset-top)); right:max(22px,env(safe-area-inset-right)); width:42px; height:42px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.32); border-radius:14px; color:#fff; background:rgba(31,29,31,.28); backdrop-filter:blur(12px); cursor:pointer; }
+.pause-button:hover { background:rgba(31,29,31,.45); }
+.controls-hint { position:absolute; bottom:max(22px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); padding:8px 13px; border:1px solid rgba(255,255,255,.18); border-radius:999px; background:rgba(35,33,35,.24); backdrop-filter:blur(10px); color:rgba(255,255,255,.82); font-size:.75rem; white-space:nowrap; }
+.mobile-hint { display:none; }
+.joystick { display:none; }
+.start-screen { pointer-events:auto; position:absolute; inset:0; display:grid; place-items:center; padding:24px; background:linear-gradient(180deg,rgba(25,28,32,.08),rgba(25,20,26,.44)); backdrop-filter:blur(3px); }
+.start-card { width:min(100%,450px); padding:38px 34px 32px; border:1px solid rgba(255,255,255,.3); border-radius:28px; background:linear-gradient(145deg,rgba(36,32,35,.65),rgba(50,38,38,.38)); box-shadow:0 28px 90px rgba(28,18,25,.28); backdrop-filter:blur(18px); text-align:center; }
+.start-card p { margin:0 0 13px; color:#ffcda8; font-size:.74rem; font-weight:750; letter-spacing:.14em; text-transform:uppercase; }
+.start-card h1 { margin:0; font-family:Georgia,"Times New Roman",serif; font-size:clamp(2.5rem,8vw,4.2rem); font-weight:500; letter-spacing:-.06em; line-height:.95; }
+.start-card span { display:block; max-width:330px; margin:19px auto 25px; color:rgba(255,247,239,.76); font-size:1rem; line-height:1.55; }
+.start-card button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:48px; padding:0 21px; border:0; border-radius:999px; color:#45271f; background:#ffd2ad; font-weight:760; cursor:pointer; box-shadow:0 10px 26px rgba(62,31,22,.24); transition:transform .18s ease,background .18s ease; }
+.start-card button:hover { transform:translateY(-2px); background:#ffe0c5; }
+.loading-screen { position:fixed; inset:0; display:grid; place-content:center; gap:12px; background:linear-gradient(#cf745f,#293842); color:#fff9f2; text-align:center; }
+.loading-screen span { font-family:Georgia,serif; font-size:2.6rem; }
+.loading-screen p { margin:0; color:rgba(255,255,255,.72); }
+.player-name { display:inline-flex; padding:5px 10px; border:1px solid rgba(255,255,255,.32); border-radius:999px; color:#fff8f1; background:rgba(35,29,32,.5); box-shadow:0 5px 18px rgba(25,19,22,.2); backdrop-filter:blur(8px); font-size:.68rem; font-weight:800; letter-spacing:.03em; white-space:nowrap; text-shadow:0 1px 5px rgba(0,0,0,.35); }
+@media (pointer:coarse),(max-width:760px) {
+  .desktop-hint { display:none; } .mobile-hint { display:inline; }
+  .controls-hint { bottom:max(14px,env(safe-area-inset-bottom)); }
+  .joystick { pointer-events:auto; position:absolute; left:max(24px,env(safe-area-inset-left)); bottom:max(48px,calc(env(safe-area-inset-bottom) + 42px)); width:106px; height:106px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.26); border-radius:50%; background:rgba(35,35,37,.18); backdrop-filter:blur(6px); touch-action:none; }
+  .joystick-knob { width:47px; height:47px; border:1px solid rgba(255,255,255,.42); border-radius:50%; background:rgba(255,242,226,.68); box-shadow:0 8px 24px rgba(25,19,21,.18); }
+  .pixel-game .joystick { z-index:4; background:rgba(29,28,37,.58); }
+  .pixel-game .controls-hint { bottom:max(12px,env(safe-area-inset-bottom)); }
+  .world-title { top:max(14px,env(safe-area-inset-top)); left:14px; }
+  .pause-button { top:max(14px,env(safe-area-inset-top)); right:14px; }
+  .start-card { padding:32px 22px 27px; }
+}
+@media (max-height:580px) and (orientation:landscape) {
+  .start-card { padding:22px 25px 20px; }
+  .start-card h1 { font-size:2.4rem; }
+  .start-card span { margin:10px auto 14px; }
+  .joystick { width:88px; height:88px; bottom:20px; }
+  .controls-hint { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none!important; } }

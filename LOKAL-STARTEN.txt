@@ -1,0 +1,16 @@
+pixelgame
+
+STARTEN.bat doppelklicken. Das Spiel oeffnet sich im Browser.
+Adresse: http://127.0.0.1:8765/
+Das Terminalfenster beim Spielen offen lassen. Zum Beenden Strg+C.
+
+Node.js ist auf diesem Computer vorhanden. Die fertige Spielversion
+liegt im Ordner spiel und benoetigt keine Paketinstallation.
+Nach dem Kopieren ist fuer das Spielen keine Internetverbindung erforderlich.
+
+Der Quellcode und alle Grafiken sind ebenfalls enthalten.
+Fuer die Weiterentwicklung: npm ci, danach npm run dev.
+Weitere Informationen stehen in README-QUELLCODE.md.
+
+Spielstaende werden pro Browser und Spieladresse lokal gespeichert.
+Ein Spielstand der Online-Version wird nicht automatisch uebernommen.
