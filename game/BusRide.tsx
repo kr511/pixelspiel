@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { assetUrl } from "./assets";
 
-// First school morning: the bus from Radegast to Zörbig as a 10 s landscape video cutscene.
+// First school morning: the bus from Radegast to Zörbig as a 12 s landscape video cutscene.
 const SRC = "/video/bus-ride.mp4";
-const END = 10000;
+const END = 12000;
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => { const t = clamp01(value); return t * t * (3 - 2 * t); };
 const span = (elapsed: number, from: number, to: number) => ease((elapsed - from) / (to - from));
