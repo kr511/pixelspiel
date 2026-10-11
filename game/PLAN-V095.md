@@ -45,7 +45,7 @@ Bestätigter Ablauf und geplante Ereignisse (IDs stabil):
 | Mi | 22.04.2026 | (Schlafübergang) | Zweiter Straßburg-Tag nur als eigenes Ereignis, wenn es einen eigenen Moment gibt. Sonst Kalender springt weiter. |
 | Do | 23.04.2026 | `klassenfahrt-europapark` | Kompakter Parkbereich: gemeinsam rumlaufen, Achterbahn fahren (bestätigt). Welche Achterbahn, bleibt offen; die Fahrt wird als kurze Inszenierung gezeigt, kein Nachbau einer echten Bahn. |
 | Do | 23.04.2026 | `klassenfahrt-hotelabend` | Ruhige Szene im Hotel, Ausblende, Übergang zum Morgen. Nichts Explizites, kein Albumtext dazu. |
-| Di/Mi | 21./22.04.2026 | `klassenfahrt-zimmerabend` | Fußball schauen im Zimmer von Elias, Paul und Justin, Pizza bestellen, die drei klopfen als Streich an andere Türen. Felice ist im Zimmer dabei (bestätigt). Spielbar am Dienstagabend; Mittwochabend als kurze Wiederholung oder Erzählung, damit nicht zweimal dasselbe gespielt wird. |
+| Di/Mi | 21./22.04.2026 | `klassenfahrt-zimmerabend` | Fußball schauen im Zimmer von Elias, Paul und Justin, Pizza bestellen, die drei klopfen als Streich an andere Türen. Felice ist im Zimmer dabei (bestätigt). Pokalspiel lief am Mittwoch (bestätigt), daher ist der Mittwochabend die große spielbare Szene; Dienstagabend kurz als Erzählung, damit nicht zweimal dasselbe gespielt wird. |
 | Fr | 24.04.2026 | `klassenfahrt-rueckkehr` | Bus zurück, Albumkarte „Unsere Klassenfahrt – Straßburg, Kehl & Europa-Park“, 20.–24.04.2026. |
 
 Europa-Park und Hotelabend liegen am selben Tag: `staging.start` des Hotelabends muss nach dem Ende des Parkbesuchs liegen, `order` regelt die Reihenfolge. Rückweg vom Park zum Hotel nur als kurzer Übergang, keine zweite Busfahrt.
@@ -65,7 +65,7 @@ Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, 
 
 Nicht alle Figuren stehen in jeder Szene. Pro Szene nur die, die dort wirklich etwas tun, sonst wird es auf dem Handy unübersichtlich und das Ansprechen in dichten Gruppen klappt nicht mehr. Busabfahrt und Bus sind die einzigen Szenen mit der vollen Gruppe.
 
-**Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: DFB-Pokal-Halbfinale Bayer Leverkusen gegen FC Bayern (bestätigt), laut DFB 0:2. Das Spiel kommt an den Abend, an dem es tatsächlich lief; die DFB-Quellen nennen teils den 21., teils den 22.04., daher vor dem Einbau einmal klären. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
+**Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: DFB-Pokal-Halbfinale Bayer Leverkusen gegen FC Bayern (bestätigt), laut DFB 0:2. Lief am Mittwoch, 22.04.2026 (bestätigt, passt zur DFB-FAQ). Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
 
 Busfahrt hin und zurück nutzt dieselbe Komponente. Deshalb muss die doppelte Abschlussauslösung in `BusRide.tsx` vorher sauber getestet sein.
 
