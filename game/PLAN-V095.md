@@ -54,7 +54,7 @@ Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, 
 
 **Beteiligte (bestätigt):** Lehrkräfte Frau Kaiser und Herr Kluger. Paul und Justin teilen sich das Zimmer mit Elias. Paul und Justin haben schon Figuren (`graphics.ts`, `conversations.ts`), Frau Kaiser und Herr Kluger brauchen neue Sprites und Porträts. Die Lehrkräfte starten die Abfahrt am Treffpunkt und sammeln die Gruppe bei Ortswechseln.
 
-**Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: genannt wurde „Bayern gegen SC Freiburg“. In dieser Woche liefen laut DFB aber die Pokal-Halbfinals Leverkusen gegen Bayern und Stuttgart gegen Freiburg, nicht Bayern gegen Freiburg. Bis das geklärt ist, nennt das Spiel nur „Pokalabend“ ohne Paarung und ohne Ergebnis. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
+**Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: DFB-Pokal-Halbfinale Bayer Leverkusen gegen FC Bayern (bestätigt), laut DFB 0:2. Das Spiel kommt an den Abend, an dem es tatsächlich lief; die DFB-Quellen nennen teils den 21., teils den 22.04., daher vor dem Einbau einmal klären. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
 
 Busfahrt hin und zurück nutzt dieselbe Komponente. Deshalb muss die doppelte Abschlussauslösung in `BusRide.tsx` vorher sauber getestet sein.
 
