@@ -101,6 +101,14 @@ Die Entwicklungsvorschau startet unter **http://localhost:5173/**.
 | `npm run build:pages` | Statische Version nach `dist-pages/` bauen |
 | `npm run build` | Serverfassung bauen |
 
+Für einen zusätzlichen Spieltest im echten Browser gibt es [`scripts/check-game-browser.py`](scripts/check-game-browser.py). Er prüft gehaltene Lauftasten, Pause, Schülerabläufe sowie Layout und Joystick in zwei Handygrößen. Mit installiertem Python-Playwright und Chromium, während `npm run dev` läuft:
+
+```sh
+python scripts/check-game-browser.py --base-url http://127.0.0.1:5173/ --executable /usr/bin/chromium
+```
+
+Bei der statischen Entwicklungsvorschau verwende deren angezeigte Adresse einschließlich URL-Pfad. Screenshots und Testergebnisse werden unter `/tmp/pixelspiel-browser-qa/` gespeichert; eigene Spielstände bleiben unangetastet.
+
 ### Projektaufbau
 
 | Ordner / Datei | Inhalt |

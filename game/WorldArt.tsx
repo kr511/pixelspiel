@@ -1,12 +1,13 @@
 import { memo, useId, useState, type CSSProperties } from "react";
 import { SceneArt, PersonArt, DogArt } from "./SceneArt";
-import { CHARACTER_GRAPHICS, REST_GRAPHICS, POSE_ATLASES, SPRITE_FRAMES, SCENE_GRAPHICS, characterGraphic, sceneBackground, type SpriteRect } from "./graphics";
+import { CHARACTER_GRAPHICS, REST_GRAPHICS, POSE_ATLASES, SPRITE_FRAMES, SCENE_GRAPHICS, characterGraphic, sceneBackground, foregroundPath, type SpriteRect } from "./graphics";
 import { neighborFrame } from "./graphics07";
 import type { Place } from "./story";
 import type { Season } from "./day";
 import { assetUrl } from "./assets";
 
 export const WorldBackdrop = memo(function WorldBackdrop({ place, season }: { place: Place; season: Season }) {
+  const clipId = useId();
   const winter = season === "Winter";
   const primarySource = sceneBackground(place, season);
   const scene = SCENE_GRAPHICS[place];
@@ -18,7 +19,13 @@ export const WorldBackdrop = memo(function WorldBackdrop({ place, season }: { pl
   if (failedSources.includes(source)) return <div className={`scene-backdrop fallback-${place}`}><SceneArt place={place} christmas={winter}/></div>;
   return <>
     <svg className={`scene-backdrop${scene.seasons ? " seasonal-scene" : ""}${scene.fallback ? " story-pixel-backdrop" : ""}${winter && scene.outdoors && !scene.winter && !scene.seasons ? " winter-town" : ""}`} data-season={season} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none" onError={() => setFailedSources(previous => previous.includes(source) ? previous : [...previous, source])}/></svg>
-    {scene.foreground.map((layer, index) => <svg key={index} className={`scene-foreground${scene.seasons ? " seasonal-scene" : ""}`} style={{ clipPath: layer.clip, zIndex: Math.round(layer.depth) + 9 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none"/></svg>)}
+    {scene.foreground.map((layer, index) => {
+      const path = foregroundPath(layer, source, scene.seasons?.Winter ?? scene.winter);
+      return <svg key={index} className={`scene-foreground${scene.seasons ? " seasonal-scene" : ""}`} style={{ clipPath: layer.clip, zIndex: Math.round(layer.depth) + 9 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        {path && <defs><clipPath id={`${clipId}-${index}`} clipPathUnits="userSpaceOnUse"><path d={path} clipRule="evenodd"/></clipPath></defs>}
+        <image href={assetUrl(source)} {...framing} preserveAspectRatio="none" clipPath={path ? `url(#${clipId}-${index})` : undefined}/>
+      </svg>;
+    })}
   </>;
 });
 

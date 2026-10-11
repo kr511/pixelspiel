@@ -11,13 +11,14 @@ export function standingActor(position: Point, wait = 0): Actor {
   return { position, pose: "standing", moving: false, frame: 0, direction: "front", distance: 0, waypoint: 1, wait, route: [] };
 }
 
-// Four short routes beside the gray building's basement window grilles.
+// Each friend takes a few steps in their own part of the conversation group.
+// Keep both rows together instead of letting the patrols drift across the yard.
 // Elias is invited to the separate seating area and has no group patrol.
 export const SCHOOL_ROUTES: Record<string, Point[]> = {
-  friends: [{ x: .18, y: .295 }, { x: .207, y: .285 }, { x: .212, y: .315 }, { x: .185, y: .325 }],
-  jason: [{ x: .25, y: .295 }, { x: .277, y: .285 }, { x: .282, y: .315 }, { x: .255, y: .325 }],
-  luca: [{ x: .18, y: .39 }, { x: .207, y: .38 }, { x: .212, y: .41 }, { x: .185, y: .42 }],
-  wyatt: [{ x: .25, y: .39 }, { x: .277, y: .38 }, { x: .282, y: .41 }, { x: .255, y: .42 }],
+  friends: [{ x: .200, y: .308 }, { x: .205, y: .306 }, { x: .206, y: .311 }, { x: .201, y: .313 }],
+  jason: [{ x: .239, y: .308 }, { x: .244, y: .306 }, { x: .245, y: .311 }, { x: .240, y: .313 }],
+  luca: [{ x: .200, y: .347 }, { x: .205, y: .345 }, { x: .206, y: .350 }, { x: .201, y: .352 }],
+  wyatt: [{ x: .239, y: .347 }, { x: .244, y: .345 }, { x: .245, y: .350 }, { x: .240, y: .352 }],
 };
 export function initialActors(): Actors {
   return Object.fromEntries(Object.values(ENTITIES).flat().filter(e => e.kind === "person" && canChangePose(e.art)).map((e, i) => [e.id, standingActor({ x: e.x, y: e.y }, 1.5 + i % 4)]));

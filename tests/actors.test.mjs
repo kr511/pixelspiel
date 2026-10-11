@@ -5,18 +5,31 @@ import { REST_SPOTS } from "../game/day.ts";
 import { canWalk, ENTITIES, SPAWNS } from "../game/story.ts";
 import { POSE_ATLASES } from "../game/graphics.ts";
 
-test("Schulfreunde laufen mit echten Zwischenbildern auf begehbaren Wegen", () => {
+test("Schulfreunde bewegen sich mit echten Zwischenbildern auf begehbaren Wegen", () => {
   for (const id of Object.keys(SCHOOL_ROUTES)) {
     let actor = initialActors()[id];
     const frames = new Set(), positions = new Set();
-    for (let i = 0; i < 2400; i++) {
+    for (let i = 0; i < 7200; i++) {
       actor = advanceActor("school", id, actor, 1 / 60);
       assert.ok(canWalk("school", actor.position.x, actor.position.y), id);
       if (actor.moving) frames.add(actor.frame);
-      positions.add(`${actor.position.x.toFixed(2)},${actor.position.y.toFixed(2)}`);
+      positions.add(`${actor.position.x.toFixed(3)},${actor.position.y.toFixed(3)}`);
     }
     assert.ok(frames.has(1) && frames.has(2), id);
     assert.ok(positions.size > 10, id);
+  }
+});
+
+test("Die vier Schulfreunde bleiben auch während ihrer Bewegung als Gruppe zusammen", () => {
+  const actors = initialActors(), ids = Object.keys(SCHOOL_ROUTES);
+  for (let i = 0; i < 7200; i++) {
+    for (const id of ids) actors[id] = advanceActor("school", id, actors[id], 1 / 60);
+    for (let a = 0; a < ids.length; a++) for (let b = a + 1; b < ids.length; b++) {
+      const first = actors[ids[a]].position, second = actors[ids[b]].position;
+      const distance = Math.hypot(first.x - second.x, first.y - second.y);
+      assert.ok(distance >= .03, `${ids[a]} und ${ids[b]} behalten eine eigene Standfläche`);
+      assert.ok(distance <= .07, `${ids[a]} und ${ids[b]} bleiben in Gesprächsabstand`);
+    }
   }
 });
 

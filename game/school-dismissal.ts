@@ -29,7 +29,7 @@ function dismissalJourneys(): Journey[] {
   const stop = PLACES.zoerbig.exits.find(exit => exit.to === "bus")!;
   const entrance = walkingLeg("school", { x: door.x, y: door.y }, { x: door.x, y: door.y + .06 });
   const porch = entrance.points[entrance.points.length - 1];
-  const waitingPlaces = [{ x: stop.x + .04, y: stop.y + .04 }, { x: stop.x - .03, y: stop.y + .06 }, { x: stop.x + .04, y: stop.y + .10 }];
+  const waitingPlaces = [{ x: stop.x + .03183, y: stop.y + .04933 }, { x: stop.x - .01367, y: stop.y + .06233 }, { x: stop.x + .03183, y: stop.y + .08833 }];
   journeys = SCHOOL_MORNING_ENTITIES.filter(entity => entity.id.startsWith("school-pupil-")).map((pupil, i) => {
     const destination = pupil.id.includes("-left-") ? "courtyard" : "bus";
     const throughYard = walkingLeg("school", porch, destination === "courtyard" ? { x: pupil.x, y: pupil.y } : gate);

@@ -527,18 +527,21 @@ export function Game() {
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); window.removeEventListener("blur", blur); };
   }, [active, started, inWorld, paused, needsLandscape, transitioning, move, interact, phone, photoMoment, intro, overlay]);
 
+  const moveRef = useRef(move);
+  useEffect(() => { moveRef.current = move; }, [move]);
+
   useEffect(() => {
     if (!active) return;
     let frame = 0;
     let previous = performance.now();
     const tick = (now: number) => {
-      if (!document.hidden) move(Math.min((now-previous)/1000, .1));
+      if (!document.hidden) moveRef.current(Math.min((now-previous)/1000, .1));
       previous = now;
       frame = window.requestAnimationFrame(tick);
     };
     frame = window.requestAnimationFrame(tick);
     return () => { window.cancelAnimationFrame(frame); clearMovement(); };
-  }, [active,move]);
+  }, [active]);
 
   function selectChapter(id: ChapterId) {
     if (session) return;
@@ -795,12 +798,12 @@ export function Game() {
         {exits.map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
-        <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+10}}>
+        <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+9}}>
           {<CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}<span className="room-player-label">Felice</span>
           {event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 && <span className="pixel-chocolate felice-chocolate" aria-label="Felice behält die Schokolade"/>}
         </div>
         {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
-        {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+10}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
+        {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+9}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
         <WorldAtmosphere place={save.place} season={sceneSeason}/>
         {save.place === "kitchen" && kitchenEffect && <div className={`kitchen-effect kitchen-${kitchenEffect}`} role="status"><span>{kitchenEffect === "breakfast" ? "Frühstück steht bereit" : kitchenEffect === "warm-drink" ? "Dein Getränk ist fertig" : "Die Küche ist aufgeräumt"}</span><i/><i/><i/></div>}
         <div className="daylight-shade" style={{ opacity: (1-light.daylight) * (["garden", "school"].includes(save.place) ? .76 : ["bus", "radegast", "zoerbig","schoolway", "goelzau","playground","christmasmarket"].includes(save.place) ? .62 : .18) }} aria-hidden="true"/>
@@ -873,9 +876,11 @@ export function Game() {
 function WorldEntity({ entity, actor, quest, nearby }: { entity: Entity; actor?: Actor; quest: boolean; nearby: boolean }) {
   const point = entity.display ?? entity;
   const pose = actor?.pose ?? "standing";
-  return <div className={`world-entity entity-${entity.kind} pose-${pose} ${actor?.moving ? "actor-walking" : ""} ${quest ? "quest-entity" : ""} ${nearby ? "nearby-entity" : ""}`} data-entity={entity.id} data-rest-id={actor?.restId} data-friend={!["mother","stepfather","halfsister","partner-one","stepsister","partner-two"].includes(entity.art)} data-pose={pose} data-moving={actor?.moving ?? false} data-x={point.x.toFixed(3)} data-y={point.y.toFixed(3)} style={{...(entity.kind !== "item" ? characterStyle(entity.kind === "dog" ? "dog" : entity.art) : {}),left:`${point.x*100}%`,top:`${point.y*100}%`,zIndex:entity.display ? 110 : Math.round(entity.y*100)+9}} aria-label={entity.name}>
-    {quest && <span className="quest-marker">!</span>}{entity.kind === "person" ? <CharacterArt id={entity.art} pose={pose} walking={actor?.moving} frame={actor?.frame} direction={actor?.moving ? actor.direction : entity.facing ?? actor?.direction}/> : entity.kind === "dog" ? <CharacterArt id="dog"/> : entity.art === "action" ? <span className="kitchen-action-marker" aria-hidden="true">✦</span> : entity.art === "landmark" ? <span className="landmark-marker" aria-hidden="true">◇</span> : <ItemArt art={entity.art}/>}{!entity.ambient && <span className="entity-name">{entity.name}</span>}
-  </div>;
+  const liftName = pose === "standing" && ["friends", "jason", "luca", "wyatt"].includes(entity.id);
+  const nameClasses = `${quest ? "quest-entity" : ""} ${nearby ? "nearby-entity" : ""}`;
+  return <><div className={`world-entity entity-${entity.kind} pose-${pose} ${actor?.moving ? "actor-walking" : ""} ${nameClasses}`} data-entity={entity.id} data-rest-id={actor?.restId} data-friend={!["mother","stepfather","halfsister","partner-one","stepsister","partner-two"].includes(entity.art)} data-pose={pose} data-moving={actor?.moving ?? false} data-x={point.x.toFixed(3)} data-y={point.y.toFixed(3)} style={{...(entity.kind !== "item" ? characterStyle(entity.kind === "dog" ? "dog" : entity.art) : {}),left:`${point.x*100}%`,top:`${point.y*100}%`,zIndex:entity.display ? 110 : Math.round(entity.y*100)+9}} aria-label={entity.name}>
+    {quest && <span className="quest-marker">!</span>}{entity.kind === "person" ? <CharacterArt id={entity.art} pose={pose} walking={actor?.moving} frame={actor?.frame} direction={actor?.moving ? actor.direction : entity.facing ?? actor?.direction}/> : entity.kind === "dog" ? <CharacterArt id="dog"/> : entity.art === "action" ? <span className="kitchen-action-marker" aria-hidden="true">✦</span> : entity.art === "landmark" ? <span className="landmark-marker" aria-hidden="true">◇</span> : <ItemArt art={entity.art}/>}{!entity.ambient && !liftName && <span className="entity-name">{entity.name}</span>}
+  </div>{liftName && <div className={`world-entity entity-person school-group-name ${nameClasses}`} data-group-name={entity.id} data-friend="true" style={{ ...characterStyle(entity.art), left:`${point.x*100}%`, top:`${point.y*100}%`, zIndex:116 }} aria-hidden="true"><span className="entity-name">{entity.name}</span></div>}</>;
 }
 
 const ELIAS_GUEST: Entity = { id: "elias-guest", name: "Elias", x: .5, y: .7, kind: "person", art: "elias", text: "Ich bleibe noch ein bisschen bei dir. Machen wir zusammen eine Pause?" };

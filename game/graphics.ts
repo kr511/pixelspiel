@@ -1,11 +1,16 @@
 const SCHOOL_WAY_CROP = { x: .08, y: .30, width: .84, height: .70 };
 import type { ChapterId, Place, Point } from "./story";
 import type { Season } from "./day";
+import { TREE_SILHOUETTES, WINTER_TREE_SILHOUETTES } from "./foreground.ts";
 
 type LitWindow = { x: number; y: number; width: number; height: number };
-export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; seasons?: Record<Season, string>; nightLights?: { lamps: Point[]; windows: LitWindow[] }; outdoors: boolean; light: string; foreground: { clip: string; depth: number }[] };
+export type ForegroundLayer = { depth: number } & ({ clip: string; path?: never; winterPath?: never } | { path: string; winterPath?: string; clip?: never });
+export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; seasons?: Record<Season, string>; nightLights?: { lamps: Point[]; windows: LitWindow[] }; outdoors: boolean; light: string; foreground: ForegroundLayer[] };
 // Each foreground copies only the specified furniture/tree silhouette from the same scene.
 const rect = (left: number, top: number, right: number, bottom: number, depth = bottom) => ({ clip: `polygon(${left}% ${top}%,${right}% ${top}%,${right}% ${bottom}%,${left}% ${bottom}%)`, depth });
+export function foregroundPath(layer: ForegroundLayer, source: string, winterSource?: string) {
+  return source === winterSource ? layer.winterPath ?? layer.path : layer.path;
+}
 export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   playground: { background: "/rooms/story-playground-pixel-v10.png", fallback: "/rooms/story-playground-v09.svg", winter: "/rooms/story-playground-winter-v09.svg", outdoors: true, light: "#e4e8ca", foreground: [] },
   // The winter playground and market pixel paintings are not delivered yet; the
@@ -25,7 +30,7 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
       { x: 63.0, y: 2.7, width: 2.1, height: 1.5 }, { x: 66.2, y: 2.7, width: 2.1, height: 1.5 },
       { x: 63.0, y: 4.8, width: 2.1, height: 1.6 }, { x: 66.2, y: 4.8, width: 2.1, height: 1.6 },
     ],
-  }, outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ clip: "polygon(3% 9%,13% 6%,25% 10%,33% 20%,29% 28%,22% 30%,21% 38%,14% 38%,13% 30%,5% 27%,2% 20%)", depth:38 },{ clip:"polygon(69% 11%,79% 7%,94% 10%,98% 22%,91% 31%,86% 31%,86% 40%,79% 40%,77% 32%,68% 29%,65% 21%)",depth:40 }] },
+  }, outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ path: TREE_SILHOUETTES.gardenWest, winterPath: WINTER_TREE_SILHOUETTES.gardenWest, depth:37 },{ path: TREE_SILHOUETTES.gardenEast, winterPath: WINTER_TREE_SILHOUETTES.gardenEast, depth:41 }] },
   radegast: { background: "/rooms/radegast-walk-v075.png", outdoors: true, light: "#e4dbba", foreground: [] },
   bus: { background: "/rooms/radegast-stop-v075.png", outdoors: true, light: "#dbe8e5", foreground: [rect(50,26,89.5,40),rect(23.5,30,43.5,43),rect(0,0,100,24.5)] },
   zoerbig: { background: "/rooms/zoerbig-market-v08.png", outdoors: true, light: "#e9dbb8", foreground: [
@@ -49,10 +54,10 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   }, outdoors: true, light: "#e9dbb8", foreground: [
     rect(0,0,100,22.3),rect(42.1,17.6,57.8,25),
     { clip: "polygon(1.9% 6.1%,13.6% 6.1%,13.6% 23.3%,10.7% 25.2%,2.2% 23.9%)", depth:25.2 },
-    { clip: "polygon(31.5% 28%,38% 25.5%,45% 28%,48% 33%,46% 38%,45% 40.3%,45.7% 41.5%,38.4% 45.5%,32.3% 42.6%,32.5% 40.2%,31.5% 35%)", depth:45.5 },
-    { clip: "polygon(55% 31%,61% 27.5%,69% 28%,75% 33%,76% 39%,72% 42.2%,74% 43.9%,67.1% 47.8%,59.8% 44%,60.5% 42.1%,56% 39%)", depth:47.8 },
-    { clip: "polygon(36% 50%,41% 45%,50% 44.5%,56% 50%,55% 56%,53.8% 58.4%,55.7% 60.5%,49% 64.5%,40.2% 60.4%,40.9% 58.2%,37% 55%)", depth:64.5 },
-    { clip: "polygon(62% 53%,68% 47%,76% 48%,83% 53%,84% 59%,79.9% 61%,82.1% 63.6%,75.2% 68.3%,66.7% 64.4%,67.6% 61.1%,64% 58%)", depth:68.3 },
+    { path: TREE_SILHOUETTES.schoolNorthWest, winterPath: WINTER_TREE_SILHOUETTES.schoolNorthWest, depth:45.1 },
+    { path: TREE_SILHOUETTES.schoolNorthEast, winterPath: WINTER_TREE_SILHOUETTES.schoolNorthEast, depth:47.1 },
+    { path: TREE_SILHOUETTES.schoolSouthWest, winterPath: WINTER_TREE_SILHOUETTES.schoolSouthWest, depth:64 },
+    { path: TREE_SILHOUETTES.schoolSouthEast, winterPath: WINTER_TREE_SILHOUETTES.schoolSouthEast, depth:66.9 },
     { clip: "polygon(0% 14%,5% 13%,9% 17%,14% 18%,14% 23.9%,13% 25.6%,5.7% 26.7%,0% 26.7%)", depth:26.7 },
     { clip: "polygon(0% 26%,8% 27.9%,11.4% 29.6%,9.3% 34%,0% 34%)", depth:34 },
     { clip: "polygon(0% 32%,8% 31%,13% 38%,13% 46%,10% 51%,11.7% 57.7%,8.8% 63%,0% 63%)", depth:63 },

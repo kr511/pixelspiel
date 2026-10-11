@@ -90,6 +90,7 @@
 @media (max-width:640px) { .inventory-body { grid-template-columns:1fr; } }
 @media (max-height:520px) {
   .felice-thought { left:12px; top:min(190px,calc(100dvh - 140px)); width:145px; padding:8px 9px; }
+  .felice-thought { max-height:calc(100dvh - 300px); overflow:auto; pointer-events:auto; }
   .felice-thought p { font-size:12px; }
   .inventory-button { top:70px; right:226px; padding:5px 10px; }
   .inventory-button span,.inventory-button kbd { display:none; }

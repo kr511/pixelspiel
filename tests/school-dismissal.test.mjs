@@ -33,6 +33,14 @@ test("Drei Schüler bleiben auf dem Hof, drei erreichen die Bushaltestelle am Ma
     assert.ok(Math.hypot(pupil.entity.x - stop.x, pupil.entity.y - stop.y) < .12);
     assert.ok(pupil.entity.text.includes("warten"));
   }
+  for (const group of [courtyard, bus]) {
+    for (let a = 0; a < group.length; a++) for (let b = a + 1; b < group.length; b++) {
+      const first = group[a].entity, second = group[b].entity;
+      const distance = Math.hypot(first.x - second.x, first.y - second.y);
+      assert.ok(distance >= .032, `${first.id} und ${second.id} behalten eine eigene Standfläche`);
+      assert.ok(distance <= .065, `${first.id} und ${second.id} warten zusammen`);
+    }
+  }
   assert.equal(new Set([...courtyard, ...bus].map(pupil => pupil.entity.id)).size, 6);
 });
 

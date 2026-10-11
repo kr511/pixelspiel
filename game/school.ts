@@ -16,41 +16,41 @@ function additionalGroup(group: number, members: GroupMember[]): Entity[] {
 
 export const SCHOOL_ADDITIONAL_GROUPS: Entity[][] = [
   additionalGroup(1, [
-    { x: .50, y: .38, art: "pupil-three", facing: "right" },
-    { x: .53, y: .43, art: "pupil-four", facing: "left" },
+    { x: .50525, y: .38875, art: "pupil-three", facing: "right" },
+    { x: .52475, y: .42125, art: "pupil-four", facing: "left" },
   ]),
   additionalGroup(2, [
-    { x: .35, y: .67, art: "pupil-two", facing: "right" },
-    { x: .41, y: .68, art: "pupil-five", facing: "left" },
-    { x: .38, y: .73, art: "pupil-six", facing: "back" },
+    { x: .3605, y: .67817, art: "pupil-two", facing: "right" },
+    { x: .3995, y: .68467, art: "pupil-five", facing: "left" },
+    { x: .38, y: .71717, art: "pupil-six", facing: "back" },
   ]),
   additionalGroup(3, [
-    { x: .86, y: .50, art: "pupil-one", facing: "right" },
-    { x: .92, y: .50, art: "pupil-two", facing: "left" },
-    { x: .86, y: .56, art: "pupil-five", facing: "right" },
-    { x: .92, y: .56, art: "pupil-three", facing: "left" },
+    { x: .8705, y: .5105, art: "pupil-one", facing: "right" },
+    { x: .9095, y: .5105, art: "pupil-two", facing: "left" },
+    { x: .8705, y: .5495, art: "pupil-five", facing: "right" },
+    { x: .9095, y: .5495, art: "pupil-three", facing: "left" },
   ]),
   additionalGroup(4, [
-    { x: .57, y: .72, art: "pupil-four", facing: "right" },
-    { x: .63, y: .74, art: "pupil-six", facing: "left" },
+    { x: .5805, y: .7235, art: "pupil-four", facing: "right" },
+    { x: .6195, y: .7365, art: "pupil-six", facing: "left" },
   ]),
   additionalGroup(5, [
-    { x: .12, y: .65, art: "pupil-five", facing: "right" },
-    { x: .18, y: .65, art: "pupil-two", facing: "left" },
-    { x: .15, y: .70, art: "pupil-one", facing: "back" },
+    { x: .1305, y: .65583, art: "pupil-five", facing: "right" },
+    { x: .1695, y: .65583, art: "pupil-two", facing: "left" },
+    { x: .15, y: .68833, art: "pupil-one", facing: "back" },
   ]),
 ];
 
 export const SCHOOL_MORNING_ENTITIES: Entity[] = [
-  { id: SCHOOL_ELIAS_ID, name: "Schüler", x: .83, y: .36, kind: "person", art: "elias", ambient: true, facing: "back", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-paul", name: "Schüler", x: .80, y: .30, kind: "person", art: "paul", ambient: true, facing: "right", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-justin", name: "Schüler", x: .86, y: .30, kind: "person", art: "justin", ambient: true, facing: "left", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-pupil-left-1", name: "Schülerin", x: .23, y: .58, kind: "person", art: "pupil-one", ambient: true, facing: "right", text: "Guten Morgen! Wir treffen uns vor der Schule immer hier auf dem Hof." },
-  { id: "school-pupil-left-2", name: "Schüler", x: .29, y: .58, kind: "person", art: "pupil-two", ambient: true, facing: "left", text: "Wir reden noch kurz, bevor es in die Klasse geht." },
-  { id: "school-pupil-left-3", name: "Schülerin", x: .26, y: .64, kind: "person", art: "pupil-three", ambient: true, facing: "back", text: "Gleich geht der Unterricht los. Bis dahin bleiben wir noch zusammen draußen." },
-  { id: "school-pupil-right-1", name: "Schüler", x: .84, y: .82, kind: "person", art: "pupil-four", ambient: true, facing: "right", text: "Morgen! Ein paar Minuten zum Quatschen haben wir noch." },
-  { id: "school-pupil-right-2", name: "Schülerin", x: .90, y: .82, kind: "person", art: "pupil-five", ambient: true, facing: "left", text: "Wir warten hier noch auf den Unterrichtsbeginn." },
-  { id: "school-pupil-right-3", name: "Schülerin", x: .87, y: .88, kind: "person", art: "pupil-six", ambient: true, facing: "back", text: "Heute sind schon einige auf dem Pausenhof. Guten Morgen!" },
+  { id: SCHOOL_ELIAS_ID, name: "Schüler", x: .83, y: .346, kind: "person", art: "elias", ambient: true, facing: "back", text: "Drei Schüler warten zusammen vor dem Unterricht." },
+  { id: "school-paul", name: "Schüler", x: .8105, y: .307, kind: "person", art: "paul", ambient: true, facing: "right", text: "Drei Schüler warten zusammen vor dem Unterricht." },
+  { id: "school-justin", name: "Schüler", x: .8495, y: .307, kind: "person", art: "justin", ambient: true, facing: "left", text: "Drei Schüler warten zusammen vor dem Unterricht." },
+  { id: "school-pupil-left-1", name: "Schülerin", x: .2405, y: .587, kind: "person", art: "pupil-one", ambient: true, facing: "right", text: "Guten Morgen! Wir treffen uns vor der Schule immer hier auf dem Hof." },
+  { id: "school-pupil-left-2", name: "Schüler", x: .2795, y: .587, kind: "person", art: "pupil-two", ambient: true, facing: "left", text: "Wir reden noch kurz, bevor es in die Klasse geht." },
+  { id: "school-pupil-left-3", name: "Schülerin", x: .26, y: .626, kind: "person", art: "pupil-three", ambient: true, facing: "back", text: "Gleich geht der Unterricht los. Bis dahin bleiben wir noch zusammen draußen." },
+  { id: "school-pupil-right-1", name: "Schüler", x: .8505, y: .827, kind: "person", art: "pupil-four", ambient: true, facing: "right", text: "Morgen! Ein paar Minuten zum Quatschen haben wir noch." },
+  { id: "school-pupil-right-2", name: "Schülerin", x: .8895, y: .827, kind: "person", art: "pupil-five", ambient: true, facing: "left", text: "Wir warten hier noch auf den Unterrichtsbeginn." },
+  { id: "school-pupil-right-3", name: "Schülerin", x: .87, y: .866, kind: "person", art: "pupil-six", ambient: true, facing: "back", text: "Heute sind schon einige auf dem Pausenhof. Guten Morgen!" },
   ...SCHOOL_ADDITIONAL_GROUPS.flat(),
 ];
 

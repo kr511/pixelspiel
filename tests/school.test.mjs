@@ -16,20 +16,26 @@ test("Vor dem Unterricht warten 27 Figuren in mehreren Gruppen auf dem Hof", () 
     const elias = pupils.find(entity => entity.id === SCHOOL_ELIAS_ID);
     for (const id of ["school-paul", "school-justin"]) {
       const friend = pupils.find(entity => entity.id === id);
-      assert.ok(Math.hypot(friend.x - elias.x, friend.y - elias.y) < .15);
+      assert.ok(Math.hypot(friend.x - elias.x, friend.y - elias.y) < .06);
     }
     assert.ok(pupils.filter(entity => entity.id.startsWith("school-pupil-left-")).length === 3);
     assert.ok(pupils.filter(entity => entity.id.startsWith("school-pupil-right-")).length === 3);
   }
 });
 
-test("Fünf weitere Gruppen mit zwei bis vier Schülern stehen zusammen und halten Wege frei", () => {
+test("Alle Morgengruppen stehen in Gesprächsabstand und halten Wege frei", () => {
   assert.equal(SCHOOL_ADDITIONAL_GROUPS.length, 5);
-  for (const group of SCHOOL_ADDITIONAL_GROUPS) {
+  const groups = [
+    SCHOOL_MORNING_ENTITIES.filter(entity => [SCHOOL_ELIAS_ID, "school-paul", "school-justin"].includes(entity.id)),
+    SCHOOL_MORNING_ENTITIES.filter(entity => entity.id.startsWith("school-pupil-left-")),
+    SCHOOL_MORNING_ENTITIES.filter(entity => entity.id.startsWith("school-pupil-right-")),
+    ...SCHOOL_ADDITIONAL_GROUPS,
+  ];
+  for (const group of groups) {
     assert.ok(group.length >= 2 && group.length <= 4);
     for (const member of group) {
       assert.equal(member.ambient, true);
-      assert.ok(group.every(other => Math.hypot(other.x - member.x, other.y - member.y) < .15));
+      assert.ok(group.every(other => Math.hypot(other.x - member.x, other.y - member.y) < .06), member.id);
     }
   }
   assert.equal(new Set(SCHOOL_MORNING_ENTITIES.map(entity => entity.id)).size, SCHOOL_MORNING_ENTITIES.length);
@@ -37,7 +43,7 @@ test("Fünf weitere Gruppen mit zwei bis vier Schülern stehen zusammen und halt
     assert.ok(Math.hypot(pupil.x - SPAWNS.school.x, pupil.y - SPAWNS.school.y) > .10);
     assert.ok(Math.hypot(pupil.x - .50, pupil.y - .28) > .08, "Der Schuleingang bleibt frei");
     for (const other of SCHOOL_MORNING_ENTITIES) {
-      if (other.id !== pupil.id) assert.ok(Math.hypot(pupil.x - other.x, pupil.y - other.y) > .045, `${pupil.id} und ${other.id}`);
+      if (other.id !== pupil.id) assert.ok(Math.hypot(pupil.x - other.x, pupil.y - other.y) > .032, `${pupil.id} und ${other.id}: eigene Standfläche`);
     }
   }
 });
@@ -83,7 +89,7 @@ test("Elena, Luca, Jason und Wyatt stehen eng zusammen und schauen einander an",
   const four = ["friends", "jason", "luca", "wyatt"].map(id => ENTITIES.school.find(entity => entity.id === id));
   for (const member of four) {
     assert.ok(["left", "right"].includes(member.facing), `${member.name} schaut zur Gruppe`);
-    for (const other of four) if (other !== member) assert.ok(Math.hypot(member.x - other.x, member.y - other.y) < .09, `${member.name} und ${other.name}`);
+    for (const other of four) if (other !== member) assert.ok(Math.hypot(member.x - other.x, member.y - other.y) < .06, `${member.name} und ${other.name}`);
     assert.ok(canWalk("school", member.x, member.y), member.name);
   }
   const [elena, jason, luca, wyatt] = four;

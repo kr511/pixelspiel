@@ -64,6 +64,10 @@
   .version-six .world-title { top:12px; left:12px; padding:5px 8px; }
   .version-six .world-title strong { font-size:12px; } .version-six .world-title small { font-size:9px; }
   .version-six .world-title>span { width:28px; height:28px; font-size:9px; }
+  .version-six .world-title { width:180px; }
+  .version-six .world-title>span { flex-shrink:0; }
+  .version-six .world-title div { min-width:0; }
+  .version-six .world-title small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .version-six .quest-tracker { left:12px; top:90px; width:140px; padding:9px; }
   .version-six .quest-tracker strong { font-size:15px; } .version-six .quest-tracker p { font-size:10px; line-height:1.45; }
   .version-six .quest-tracker small,.version-six .quest-tracker>span,.version-six .inventory { font-size:9px; }
@@ -228,6 +232,14 @@
 /* Overhead school courtyard: match the figure scale to the building and yard. */
 .version-075[data-scene="school"] .room-player,
 .version-075[data-scene="school"] .entity-person { width:4.4%!important; }
+/* Keep the compact conversation group's names beside their own row. */
+.school-group-name { aspect-ratio:5/7; }
+.version-075[data-scene="school"] :is([data-group-name="friends"],[data-group-name="luca"]) .entity-name {
+  left:auto; right:100%; top:auto; bottom:12%; transform:none; margin-right:3px;
+}
+.version-075[data-scene="school"] :is([data-group-name="jason"],[data-group-name="wyatt"]) .entity-name {
+  left:100%; top:auto; bottom:12%; transform:none; margin-left:3px;
+}
 .version-075[data-scene="school"] .world-exit,
 .version-075[data-scene="zoerbig"] .world-exit,
 .version-075[data-scene="bus"] .world-exit,
@@ -239,6 +251,8 @@
 
 @media (max-height:600px) and (orientation:landscape) {
   .version-075[data-scene="school"] .entity-person .entity-name { font-size:8px; padding:1px 2px; }
+  .version-075[data-scene="school"] :is([data-group-name="friends"],[data-group-name="jason"]) .entity-name { bottom:25%; }
+  .version-075[data-scene="school"] :is([data-group-name="luca"],[data-group-name="wyatt"]) .entity-name { bottom:0; }
 }
 
 .version-075[data-scene="schoolway"] .room-player,
