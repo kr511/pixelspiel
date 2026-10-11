@@ -118,6 +118,7 @@
 
 /* First school morning: bus ride, seen from inside. */
 .bus-ride { position:fixed; inset:0; z-index:60; overflow:hidden; color:#f4e7cc; background:radial-gradient(ellipse at 50% 40%,#1b2421,#070b0a 75%); }
+.bus-video { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#000; }
 .bus-window { position:absolute; left:50%; top:9vh; width:min(76vw,860px); aspect-ratio:16/9; max-height:62vh; transform:translateX(-50%); overflow:hidden; border:min(1.6vw,14px) solid #2a2f31; border-radius:22px; box-shadow:inset 0 0 0 3px #11181a,0 12px 50px #000a; }
 .bus-sky { position:absolute; inset:0; background:linear-gradient(180deg,#a9a79a 0%,#d9c7a1 55%,#ecd9b0 100%); }
 .bus-layer { position:absolute; left:0; top:0; width:200%; height:100%; will-change:transform; }
@@ -139,7 +140,7 @@
 .bus-thought::before,.bus-thought::after { content:""; position:absolute; border:3px solid #f4e7cc; border-radius:50%; background:#e9dfc7; }
 .bus-thought::before { left:12%; bottom:-24px; width:18px; height:18px; }
 .bus-thought::after { left:6%; bottom:-42px; width:10px; height:10px; }
-.bus-caption { position:absolute; left:0; right:0; top:calc(9vh - 26px); margin:0; text-align:center; font:11px monospace; letter-spacing:.24em; text-transform:uppercase; color:#d9bd81; }
+.bus-caption { position:absolute; z-index:1; left:0; right:0; top:14px; text-shadow:0 1px 6px #000; margin:0; text-align:center; font:11px monospace; letter-spacing:.24em; text-transform:uppercase; color:#d9bd81; }
 .bus-skip { bottom:18px; }
 @media (max-height:520px) { .bus-window { top:7vh; max-height:56vh; } .bus-caption { top:calc(7vh - 20px); font-size:9px; } .bus-felice { bottom:6vh; width:min(24vw,200px); margin-left:calc(min(24vw,200px) / -2 - min(10vw,90px)); } .bus-thought { bottom:calc(6vh + min(22vw,190px)); font-size:13px; padding:8px 12px; } .bus-seat { height:22vh; } }
 @media (prefers-reduced-motion:reduce) { .bus-far,.bus-near,.bus-rain,.bus-felice { animation:none!important; } }
