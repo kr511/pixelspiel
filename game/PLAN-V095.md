@@ -41,13 +41,15 @@ Bestätigter Ablauf und geplante Ereignisse (IDs stabil):
 | --- | --- | --- | --- |
 | Mo | 20.04.2026 | `klassenfahrt-abfahrt` | Treffpunkt, Gruppe, Bus hin über `BusRide.tsx`, überspringbar. |
 | Mo | 20.04.2026 | `klassenfahrt-ankunft-kehl` | Ankunft am B&B Hotel in Kehl, kurzer Innenraum, Orientierung. |
-| Di | 21.04.2026 | `klassenfahrt-strassburg` | Kompakter Stadtbereich, 2 bis 4 Interaktionen. |
-| Mi | 22.04.2026 | (Schlafübergang) | Zweiter Straßburg-Tag nur als eigenes Ereignis, wenn es einen eigenen Moment gibt. Sonst gleiche Karte, Kalender springt weiter. |
+| Di | 21.04.2026 | `klassenfahrt-strassburg` | Besuch im EU-Viertel: Europäisches Parlament oder ein Gebäude direkt daneben (genaues Gebäude unsicher). Kompakter Bereich, 2 bis 4 Interaktionen. |
+| Mi | 22.04.2026 | (Schlafübergang) | Zweiter Straßburg-Tag nur als eigenes Ereignis, wenn es einen eigenen Moment gibt. Sonst Kalender springt weiter. |
 | Do | 23.04.2026 | `klassenfahrt-europapark` | Kompakter Parkbereich, ein bestätigtes gemeinsames Erlebnis. |
 | Do | 23.04.2026 | `klassenfahrt-hotelabend` | Ruhige Szene im Hotel, Ausblende, Übergang zum Morgen. Nichts Explizites, kein Albumtext dazu. |
 | Fr | 24.04.2026 | `klassenfahrt-rueckkehr` | Bus zurück, Albumkarte „Unsere Klassenfahrt – Straßburg, Kehl & Europa-Park“, 20.–24.04.2026. |
 
 Europa-Park und Hotelabend liegen am selben Tag: `staging.start` des Hotelabends muss nach dem Ende des Parkbesuchs liegen, `order` regelt die Reihenfolge. Rückweg vom Park zum Hotel nur als kurzer Übergang, keine zweite Busfahrt.
+
+EU-Viertel: Solange unklar ist, ob es das Parlament selbst oder ein Nachbargebäude war (Europarat, Menschenrechtsgerichtshof liegen direkt nebeneinander), zeigt die Karte das Viertel allgemein, und kein Text nennt ein bestimmtes Gebäude als Tatsache. Kein Innenraum, keine erfundene Führung oder Plenarsitzung. Die Gegend am Wasser mit modernen Glasbauten lässt sich ohne exakte Nachbildung erkennbar darstellen.
 
 Busfahrt hin und zurück nutzt dieselbe Komponente. Deshalb muss die doppelte Abschlussauslösung in `BusRide.tsx` vorher sauber getestet sein.
 
