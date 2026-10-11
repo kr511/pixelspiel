@@ -11,6 +11,8 @@ const TRAVEL_TIMES: [Place, Place, number][] = [
   ["bus", "zoerbig", 20], ["bus", "goelzau", 15], ["goelzau", "range", 10],
   ["zoerbig", "school", 10], ["zoerbig", "schoolway", 5], ["schoolway", "school", 5], ["school", "gym", 5],
   ["zoerbig", "christmasmarket", 10], ["zoerbig", "eliasroom", 10],
+  // Klassenfahrt: verkürzte Spielwege.
+  ["zoerbig", "hotel", 30], ["hotel", "hotelboys", 2], ["hotel", "parliament", 30], ["hotel", "europapark", 30],
 ];
 export function travelMinutes(from: Place, to: Place) {
   return TRAVEL_TIMES.find(([a, b]) => a === from && b === to || a === to && b === from)?.[2] ?? TRAVEL_MINUTES;
@@ -83,6 +85,9 @@ export function activityAt(place: Place, minute: number) {
   if (place === "playground") return "Spielplatz · Zeit draußen";
   if (place === "christmasmarket") return "Weihnachtsmarkt · Lichter und Winterluft";
   if (place === "eliasroom") return "Bei Elias zu Hause";
+  if (place === "hotel" || place === "hotelboys") return "Klassenfahrt · Hotel in Kehl";
+  if (place === "parliament") return "Klassenfahrt · Straßburg";
+  if (place === "europapark") return "Klassenfahrt · Europa-Park";
   if (place === "school") return minute >= SCHOOL_START && minute < SCHOOL_END ? "Schule · Unterrichtszeit" : "Schule · Schulhof";
   return "Radegast · Haltestelle";
 }
@@ -105,6 +110,8 @@ export const REST_SPOTS: RestSpot[] = [
   { id: "felice-bed-edge", place: "bedroom", name: "Bettkante", kind: "chair", approach: { x: .38, y: .475 }, position: { x: .38, y: .40 }, companion: { x: .46, y: .40 } },
   { id: "home-sofa", place: "home", name: "Sofa im Wohnzimmer", kind: "chair", approach: { x: .36, y: .48 }, position: { x: .275, y: .412 }, companion: { x: .345, y: .412 } },
   { id: "kitchen-chairs", place: "kitchen", name: "Stuhl am Küchentisch", kind: "chair", approach: { x: .7, y: .64 }, position: { x: .654, y: .582 }, companion: { x: .783, y: .582 } },
+  { id: "hotel-bed", place: "hotel", name: "Bett im Hotel", kind: "bed", approach: { x: .21, y: .50 }, position: { x: .21, y: .30 } },
+  { id: "hotelboys-tv", place: "hotelboys", name: "Bettkante vor dem Fernseher", kind: "chair", approach: { x: .54, y: .46 }, position: { x: .54, y: .37 }, companion: { x: .60, y: .37 } },
   { id: "felice-bed", place: "bedroom", name: "Felices Bett", kind: "bed", approach: { x: .38, y: .49 }, position: { x: .385, y: .385 } },
   { id: "garden-bench", place: "garden", name: "Gartenbank", kind: "bench", approach: { x: .25, y: .65 }, position: { x: .215, y: .602 }, companion: { x: .28, y: .602 }, furniture: { x: .25, y: .61 } },
   { id: "bus-bench", place: "bus", name: "Bank an der Haltestelle", kind: "bench", approach: { x: .33, y: .485 }, position: { x: .312, y: .419 }, companion: { x: .362, y: .419 } },

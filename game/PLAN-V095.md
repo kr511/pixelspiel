@@ -162,3 +162,22 @@ Kürzen bei Zeitdruck, in dieser Reihenfolge: Nebenaktionen, Minispiele, Reisevi
 6. **Referenzen**: Fotos vom Hotel, Orten oder Gegenständen, falls vorhanden.
 
 Phasen 0 bis 2 brauchen nichts davon und können direkt losgehen.
+
+## 7. Stand der ersten Version (11.10.2026)
+
+Umgesetzt und spielbar:
+
+- Sieben Szenen der Klassenfahrt (`klassenfahrt-*` in `game/timeline.ts`), eingereiht zwischen `spring-everyday` und `longer-visit-plan`.
+- Vier neue Orte: Hotelzimmer, Zimmer von Elias, Paul und Justin, Platz vor dem Europäischen Parlament, Europa-Park. Erreichbar nur vom 20. bis 24.04.2026; ab Dienstag wacht Felice im Hotel auf.
+- Neue Figuren Frau Kaiser, Herr Kluger, Nino und Richard als umgefärbte vorhandene Sprites.
+- Pro Schritt eigene Besetzung (`StoryBeat.cast`), neue Ausblende `fade` für den privaten Moment, `leaveAt` für Szenen, die woanders enden als sie beginnen.
+- Vorläufige Pixelbilder aus `scripts/trip-scenes.py`; Möbel und Bauten liegen auf den Kollisionen.
+- `npm test` läuft wieder unter Node 22; neue Tests in `tests/trip.test.mjs`.
+
+Noch offen:
+
+- Finale Pixelgemälde und eigene Aussehen für Frau Kaiser, Herrn Kluger, Nino und Richard.
+- Busfahrt als eigene Zwischenszene (das vorhandene Video zeigt Radegast nach Zörbig und passt nicht).
+- Bestätigen, ob am Dienstagabend wirklich geklopft wurde.
+- Ob Elias' Gruppe Felices Gruppe im Parlament oder im Europa-Park getroffen hat.
+- Orientierung (Phase 2) und Export/Import (Phase 1).

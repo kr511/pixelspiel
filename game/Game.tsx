@@ -14,7 +14,7 @@ import { PhoneHub, eventDateText } from "./PhoneHub";
 import { DialogueBox } from "./DialogueBox";
 import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
-import { advanceFollower, anukPresent, eliasPresent, exitOpen, routineEntities } from "./routines";
+import { advanceFollower, anukPresent, eliasPresent, exitOpen, routineEntities, wakePlace } from "./routines";
 import { SCHOOL_ELIAS_ID } from "./school";
 import { advanceSchoolDismissal, schoolDismissalElapsed, schoolDismissalPupils, schoolMorningArrivals, schoolMorningElapsed, type SchoolDismissalState } from "./school-dismissal";
 import { ROUTINE_ITEMS, ROUTINE_TASKS, isRoutineDay, routineDone, routineFlag, routineOpen, type RoutineTask } from "./routine";
@@ -46,10 +46,13 @@ import { BusRide } from "./BusRide";
 
 const BUS_RIDE_FLAG = "bus-ride-first-day";
 const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
+const HOTEL_BED = REST_SPOTS.find(spot => spot.id === "hotel-bed")!;
+/** Felice's bed for a morning: on the class trip she wakes up in the hotel. */
+const bedFor = (date: string) => wakePlace(date) === "hotel" ? HOTEL_BED : BED;
 // Felice lying in her bed, ready for the existing rest system to walk her out.
-function lyingInBed(): Rest {
-  const actor = { ...standingActor({ x: BED.position.x, y: .45 }), pose: "lying" as Pose, restId: `${BED.id}:0`, approach: BED.approach };
-  return { spot: BED, elias: false, motion: { actor, phase: "resting", pose: "lying" } };
+function lyingInBed(bed = BED): Rest {
+  const actor = { ...standingActor({ x: bed.position.x, y: bed.approach.y - .04 }), pose: "lying" as Pose, restId: `${bed.id}:0`, approach: bed.approach };
+  return { spot: bed, elias: false, motion: { actor, phase: "resting", pose: "lying" } };
 }
 const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
 
@@ -610,9 +613,10 @@ export function Game() {
 
   /** Felice lies in bed, then the rest system walks her out; `then` decides what follows. */
   function wakeInBed(then: "beginning" | "morning") {
-    setSave({ ...worldSave, place: "bedroom" });
-    const lying = lyingInBed();
-    position(restPosition(BED, lying.motion)); setDirection("front");
+    const bed = bedFor(dayRef.current.date);
+    setSave({ ...worldSave, place: bed.place });
+    const lying = lyingInBed(bed);
+    position(restPosition(bed, lying.motion)); setDirection("front");
     changeRest(lying); wakeThen.current = then;
   }
 
@@ -674,6 +678,7 @@ export function Game() {
     persistTimeline(completeEvent(current, finished.id, replaying));
     replayRef.current = null; setReplay(null); setPhone(false); setDialogue(null); setJournal(false); changeRest(null); setCinema(null);
     position(currentSession.returnPlayer); setDirection(currentSession.returnDirection); setStoryToast(finished); worldAudio.play("complete");
+    if (!replaying && finished.leaveAt) { setSave({ ...worldSave, place: finished.leaveAt.place }); position(finished.leaveAt.point); setDirection("front"); }
     if(finished.id === "our-story-finale") { setStoryToast(null); finaleElapsed.current=0; setFinale(true); }
   }
 
@@ -681,7 +686,7 @@ export function Game() {
     const effect=cinemaRef.current;
     if(!effect || paused || needsLandscape) return;
     let handle=0, previous:number|undefined, elapsed=effect.elapsed;
-    const duration=effect.kind === "kiss" ? 4000 : effect.kind === "sleep" ? 2700 : effect.kind === "reflection" ? 2400 : 1400;
+    const duration=effect.kind === "kiss" ? 4000 : effect.kind === "sleep" ? 2700 : effect.kind === "fade" ? 3600 : effect.kind === "reflection" ? 2400 : 1400;
     const tick=(now:number)=> {
       const dt=document.hidden || previous === undefined ? 0 : Math.min(100,now-previous); previous=now;
       elapsed+=dt;
@@ -711,8 +716,8 @@ export function Game() {
   // Waking: a short beat in bed, then the existing rest motion steps Felice out.
   useEffect(() => {
     if (!wakeThen.current || !active) return;
-    if (rest?.spot.id === BED.id && rest.motion.phase === "resting") {
-      const timer = window.setTimeout(() => { const current = restRef.current; if (current?.motion.phase === "resting") changeRest({ ...current, motion: leaveRest("bedroom", current.motion) }); }, 1400);
+    if ((rest?.spot.id === BED.id || rest?.spot.id === HOTEL_BED.id) && rest.motion.phase === "resting") {
+      const timer = window.setTimeout(() => { const current = restRef.current; if (current?.motion.phase === "resting") changeRest({ ...current, motion: leaveRest(current.spot.place, current.motion) }); }, 1400);
       return () => window.clearTimeout(timer);
     }
     if (!rest) {
