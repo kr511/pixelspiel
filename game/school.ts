@@ -28,11 +28,11 @@ function additionalGroup(group: number, center: Point, art: string[], radius: nu
 }
 
 export const SCHOOL_ADDITIONAL_GROUPS: Entity[][] = [
-  additionalGroup(1, { x: .515, y: .41 }, ["pupil-three", "pupil-four"], .03),
-  additionalGroup(2, { x: .38, y: .69 }, ["pupil-two", "pupil-five", "pupil-six"], .04),
-  additionalGroup(3, { x: .885, y: .53 }, ["pupil-one", "pupil-two", "pupil-five", "pupil-three"], .05),
-  additionalGroup(4, { x: .60, y: .73 }, ["pupil-one", "pupil-two"], .035),
-  additionalGroup(5, { x: .15, y: .675 }, ["pupil-five", "pupil-two", "pupil-one"], .04),
+  additionalGroup(1, { x: .515, y: .41 }, ["pupil-nine", "pupil-four"], .03),
+  additionalGroup(2, { x: .38, y: .69 }, ["pupil-fourteen", "pupil-eleven", "pupil-six"], .04),
+  additionalGroup(3, { x: .885, y: .53 }, ["pupil-thirteen", "pupil-two", "pupil-seventeen", "pupil-three"], .05),
+  additionalGroup(4, { x: .60, y: .73 }, ["pupil-seven", "pupil-sixteen"], .035),
+  additionalGroup(5, { x: .15, y: .675 }, ["pupil-twelve", "pupil-ten", "pupil-sixteen"], .04),
 ];
 
 function trio(prefix: string, center: Point, people: { art: string; name: string; text: string }[]): Entity[] {
@@ -44,8 +44,8 @@ const WAITING = "Drei Schüler warten zusammen vor dem Unterricht.";
 
 export const SCHOOL_MORNING_ENTITIES: Entity[] = [
   ...ringFormation({ x: .83, y: .325 }, 3, .04).map((spot, i) => ({ ...spot, id: [SCHOOL_ELIAS_ID, "school-paul", "school-justin"][i], name: "Schüler", kind: "person" as const, art: ["elias", "paul", "justin"][i], ambient: true, text: WAITING })),
-  ...trio("school-pupil-left-", { x: .26, y: .61 }, [{ art: "pupil-one", name: "Schülerin", text: LEFT[0] }, { art: "pupil-two", name: "Schüler", text: LEFT[1] }, { art: "pupil-three", name: "Schülerin", text: LEFT[2] }]),
-  ...trio("school-pupil-right-", { x: .87, y: .86 }, [{ art: "pupil-four", name: "Schüler", text: RIGHT[0] }, { art: "pupil-five", name: "Schülerin", text: RIGHT[1] }, { art: "pupil-six", name: "Schülerin", text: RIGHT[2] }]),
+  ...trio("school-pupil-left-", { x: .26, y: .61 }, [{ art: "pupil-one", name: "Schülerin", text: LEFT[0] }, { art: "pupil-eight", name: "Schüler", text: LEFT[1] }, { art: "pupil-fifteen", name: "Schülerin", text: LEFT[2] }]),
+  ...trio("school-pupil-right-", { x: .87, y: .86 }, [{ art: "pupil-ten", name: "Schüler", text: RIGHT[0] }, { art: "pupil-five", name: "Schülerin", text: RIGHT[1] }, { art: "pupil-eighteen", name: "Schülerin", text: RIGHT[2] }]),
   ...SCHOOL_ADDITIONAL_GROUPS.flat(),
 ];
 

@@ -26,7 +26,7 @@ import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
 import "./chapter1.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
-import { WALK_ATLASES } from "./graphics07";
+import { PUPIL_VARIANTS, variantSheet, WALK_ATLASES } from "./graphics07";
 import { pressedKeys, useInput } from "./input";
 import { useMemories } from "./memories/store";
 import { MemoryTransition } from "./memories/MemoryTransition";
@@ -779,7 +779,7 @@ export function Game() {
     <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.png")}/>
-    {Object.keys(WALK_ATLASES).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
+    {Object.keys(WALK_ATLASES).flatMap(sheet => [sheet, ...PUPIL_VARIANTS.map(variant => variantSheet(sheet, variant))]).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
     <div className={`pixel-viewport world-viewport ${save.place === "bedroom" ? "bedroom-viewport" : ""}`} hidden={!inWorld && phase !== "entering"} role="group" aria-label={PLACES[save.place].name}>
       <div key={save.place} className="world-scene world-camera" style={{ "--camera-x": `${camera.x*100}%`, "--camera-y": `${camera.y*100}%`, "--world-zoom": camera.zoom } as CSSProperties}>
         {event?.scene === "encounter" ? <RadegastPasture/> : <WorldBackdrop place={save.place} winter={winter} bedOccupied={bedOccupied}/>}

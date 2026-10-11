@@ -52,7 +52,7 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
 };
 export function sceneBackground(place: Place, winter: boolean) { const scene = SCENE_GRAPHICS[place]; return winter && scene.winter ? scene.winter : scene.background; }
 
-export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
+export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; variant?: number; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
 const npc = (column: number, row: number): CharacterGraphic => ({ sheet: "/characters/neighbors-v06.png", columns: 4, rows: 2, column, row, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/portraits-v06.png", columns: 4, rows: 2, column, row } });
 export const CHARACTER_GRAPHICS = {
   felice: { sheet: "/characters/felice-walk-v1.png", columns: 4, rows: 3, column: 0, row: 0, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/felice-walk-v1.png", columns: 4, rows: 3, column: 0, row: 0 } },
@@ -65,6 +65,13 @@ export const CHARACTER_GRAPHICS = {
   "pupil-one": { ...npc(0,0), width: 7.0 }, "pupil-two": { ...npc(3,0), width: 7.5 },
   "pupil-three": { ...npc(2,0), width: 7.3 }, "pupil-four": { ...npc(1,1), width: 7.4 },
   "pupil-five": { ...npc(0,1), width: 6.8 }, "pupil-six": { ...npc(2,1), width: 7.1 },
+  // Recolored pupils: other clothes and partly other hair (variant sheets, see graphics07.ts).
+  "pupil-seven": { ...npc(0,0), width: 7.0, variant: 1 }, "pupil-eight": { ...npc(3,0), width: 7.5, variant: 1 },
+  "pupil-nine": { ...npc(2,0), width: 7.3, variant: 1 }, "pupil-ten": { ...npc(1,1), width: 7.4, variant: 1 },
+  "pupil-eleven": { ...npc(0,1), width: 6.8, variant: 1 }, "pupil-twelve": { ...npc(2,1), width: 7.1, variant: 1 },
+  "pupil-thirteen": { ...npc(0,0), width: 7.1, variant: 2 }, "pupil-fourteen": { ...npc(3,0), width: 7.4, variant: 2 },
+  "pupil-fifteen": { ...npc(2,0), width: 7.2, variant: 2 }, "pupil-sixteen": { ...npc(1,1), width: 7.5, variant: 2 },
+  "pupil-seventeen": { ...npc(0,1), width: 6.9, variant: 2 }, "pupil-eighteen": { ...npc(2,1), width: 7.0, variant: 2 },
   alexander: npc(3,0), magdalena: npc(0,1), hans: npc(3,1), fritz: npc(1,0),
   dog: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0, width: 9, anchor: { x: .5, y: .94 }, portrait: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0 } },
 } satisfies Record<string, CharacterGraphic>;

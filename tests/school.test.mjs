@@ -109,3 +109,16 @@ test("Die Morgengruppen stehen in Kreisen, die Schüler schauen einander an", ()
     }
   }
 });
+
+test("Die Schüler haben 18 verschiedene Looks, keine Gruppe hat einen Look doppelt", async () => {
+  const { CHARACTER_GRAPHICS } = await import("../game/graphics.ts");
+  const { existsSync } = await import("node:fs");
+  const pupils = SCHOOL_MORNING_ENTITIES.filter(entity => entity.art.startsWith("pupil-"));
+  for (const pupil of pupils) assert.ok(CHARACTER_GRAPHICS[pupil.art], pupil.art);
+  assert.ok(new Set(pupils.map(pupil => pupil.art)).size >= 18, "alle 18 Looks kommen vor");
+  const groups = Map.groupBy(pupils, pupil => pupil.id.replace(/-\d$|\d$/, ""));
+  for (const [group, members] of groups) assert.equal(new Set(members.map(member => member.art)).size, members.length, group);
+  for (const sheet of ["front", "back", "side", "side-step"]) for (const variant of [1, 2]) {
+    assert.ok(existsSync(new URL(`../public/characters/neighbors-${sheet}-v07-alt${variant}.png`, import.meta.url)), `${sheet} alt${variant}`);
+  }
+});
