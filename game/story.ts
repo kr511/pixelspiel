@@ -1,6 +1,6 @@
 import { ringFormation, SCHOOL_MORNING_ENTITIES } from "./school.ts";
 
-export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom";
+export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom" | "hotel" | "hotelboys" | "parliament" | "europapark";
 export type Point = { x: number; y: number };
 export const SCHOOL_WAY_CROP = { x: .08, y: .30, width: .84, height: .70 };
 const schoolWayPoint = (x: number, y: number): Point => ({ x: (x-.08)/.84, y: (y-.30)/.70 });
@@ -41,6 +41,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { x: .70, y: .65, to: "school", label: "Zur Schule", spawn: { x: .52, y: .92 } },
     { x: .67, y: .47, to: "christmasmarket", label: "Zum Weihnachtsmarkt · Spielweg", spawn: { x: .50, y: .87 } },
     { x: .70, y: .29, to: "eliasroom", label: "Zu Elias · verkürzter Spielweg", spawn: { x: .50, y: .85 } },
+    { x: .26, y: .68, to: "hotel", label: "Klassenfahrt · Reisebus nach Kehl (verkürzter Spielweg)", spawn: { x: .50, y: .62 } },
   ], obstacles: [
     { left: .463, right: .535, top: .34, bottom: .385 },
     { left: .408, right: .592, top: .592, bottom: .677 },
@@ -80,6 +81,32 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { left: .075, right: .16, top: .49, bottom: .65 }, { left: .74, right: .90, top: .73, bottom: .82 },
     { left: .44, right: .565, top: .12, bottom: .265 },
   ] },
+  // Klassenfahrt 20.–24.04.2026. Layouts sind Spielinterpretationen; die Bilder sind vorläufige Pixelentwürfe.
+  hotel: { name: "B&B Hotel Kehl · Zimmer", subtitle: "Klassenfahrt · 20. bis 24. April 2026", exits: [
+    { x: .16, y: .86, to: "hotelboys", label: "Zum Zimmer von Elias, Paul und Justin", spawn: { x: .34, y: .74 } },
+    { x: .42, y: .88, to: "parliament", label: "Nach Straßburg · verkürzter Spielweg", spawn: { x: .50, y: .72 } },
+    { x: .66, y: .88, to: "europapark", label: "Zum Europa-Park · verkürzter Spielweg", spawn: { x: .40, y: .80 } },
+    { x: .90, y: .70, to: "zoerbig", label: "Mit dem Reisebus nach Hause · verkürzter Spielweg", spawn: { x: .34, y: .60 } },
+  ], obstacles: [
+    { left: .12, right: .30, top: .16, bottom: .44 }, { left: .32, right: .50, top: .16, bottom: .44 },
+    { left: .62, right: .88, top: .16, bottom: .30 }, { left: .70, right: .80, top: .55, bottom: .62 },
+  ] },
+  hotelboys: { name: "B&B Hotel Kehl · Zimmer von Elias, Paul und Justin", subtitle: "Drei Betten, ein Fernseher und viel zu lachen", exits: [
+    { x: .16, y: .86, to: "hotel", label: "Zurück ins Hotelzimmer", spawn: { x: .24, y: .74 } },
+  ], obstacles: [
+    { left: .10, right: .26, top: .16, bottom: .40 }, { left: .28, right: .44, top: .16, bottom: .40 }, { left: .46, right: .62, top: .16, bottom: .40 },
+    { left: .70, right: .90, top: .16, bottom: .28 }, { left: .62, right: .76, top: .52, bottom: .60 },
+  ] },
+  parliament: { name: "Straßburg · Europäisches Parlament", subtitle: "Glas, Fahnen und die Ill", exits: [
+    { x: .86, y: .86, to: "hotel", label: "Zurück nach Kehl ins Hotel", spawn: { x: .44, y: .74 } },
+  ], obstacles: [
+    { left: .20, right: .80, top: .16, bottom: .40 }, { left: 0, right: .18, top: 0, bottom: 1 }, { left: .62, right: .90, top: .44, bottom: .48 },
+  ] },
+  europapark: { name: "Europa-Park", subtitle: "Rumlaufen, Achterbahn und gute Laune", exits: [
+    { x: .12, y: .86, to: "hotel", label: "Zurück nach Kehl ins Hotel", spawn: { x: .64, y: .76 } },
+  ], obstacles: [
+    { left: .45, right: .92, top: .16, bottom: .40 }, { left: .18, right: .34, top: .40, bottom: .52 }, { left: .76, right: .92, top: .58, bottom: .70 },
+  ] },
 };
 
 // Bestätigt: acht Personen beim Weihnachtsessen; Namen noch offen.
@@ -102,6 +129,27 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "elias-computer", name: "Elias’ Computer", x: .29, y: .38, display: { x: .275, y: .255 }, kind: "item", art: "landmark", text: "Computer und Programmieren waren schon am Anfang gemeinsame Gesprächsthemen. Die Einrichtung dieses Zimmers ist eine Spielinterpretation." },
     { id: "elias-shelf", name: "Regal", x: .22, y: .57, display: { x: .12, y: .52 }, kind: "item", art: "book", text: "Ein paar Bücher und freie Plätze im Regal. Diese Gegenstände gestalten den Raum, ohne weitere biografische Tatsachen zu behaupten." },
     { id: "elias-notes", name: "Platz für Gedanken", x: .67, y: .76, display: { x: .80, y: .745 }, kind: "item", art: "book", text: "Wünsche, Ideen, gemeinsame Erinnerungen. Manche Gespräche brauchen keine große Unternehmung." },
+  ],
+  hotel: [
+    { id: "hotel-window", name: "Fenster", x: .50, y: .52, display: { x: .50, y: .08 }, kind: "item", art: "landmark", text: "Kehl liegt direkt am Rhein. Auf der anderen Seite beginnt schon Straßburg." },
+    { id: "hotel-suitcase", name: "Koffer", x: .75, y: .68, display: { x: .75, y: .58 }, kind: "item", art: "landmark", text: "Fünf Tage Klassenfahrt passen erstaunlich gut in einen Koffer." },
+  ],
+  hotelboys: [
+    { id: "hotelboys-elias", name: "Elias", x: .40, y: .58, kind: "person", art: "elias", text: "Schön, dass du da bist. Bei uns ist immer was los. Freie Dialogrekonstruktion." },
+    { id: "hotelboys-paul", name: "Paul", x: .58, y: .68, kind: "person", art: "paul", text: "Ich sag’s ja: Das beste Zimmer im ganzen Hotel." },
+    { id: "hotelboys-justin", name: "Justin", x: .76, y: .40, kind: "person", art: "justin", text: "Der Fernseher läuft gleich. Setz dich ruhig dazu." },
+  ],
+  parliament: [
+    { id: "parliament-building", name: "Europäisches Parlament", x: .50, y: .45, display: { x: .50, y: .24 }, kind: "item", art: "landmark", text: "Das Europäische Parlament in Straßburg. Die Szene zeigt nur den Platz davor; was ihr drinnen erlebt habt, bleibt offen." },
+    { id: "parliament-river", name: "Die Ill", x: .22, y: .60, display: { x: .09, y: .55 }, kind: "item", art: "landmark", text: "Direkt am Parlament fließt Wasser vorbei. Ein guter Platz, um kurz stehen zu bleiben." },
+    { id: "parliament-flags", name: "Fahnen", x: .76, y: .54, display: { x: .76, y: .38 }, kind: "item", art: "sign", text: "Viele Fahnen nebeneinander. Ganz schön bunt für ein so ernstes Gebäude." },
+    { id: "parliament-nino", name: "Nino", x: .64, y: .70, kind: "person", art: "nino", text: "Krass, wie groß das alles ist. Freie Dialogrekonstruktion." },
+    { id: "parliament-richard", name: "Richard", x: .70, y: .76, kind: "person", art: "richard", text: "Hat jemand gesehen, wo Herr Kluger hin ist? Freie Dialogrekonstruktion." },
+  ],
+  europapark: [
+    { id: "europapark-coaster", name: "Achterbahn", x: .62, y: .46, display: { x: .68, y: .27 }, kind: "item", art: "landmark", text: "Eine Achterbahn als Pixelentwurf. Welche Bahn ihr gefahren seid, nennt das Spiel nicht." },
+    { id: "europapark-fountain", name: "Brunnen", x: .26, y: .58, display: { x: .26, y: .46 }, kind: "item", art: "landmark", text: "Ein Brunnen zwischen den Wegen. Hier kann man kurz durchatmen." },
+    { id: "europapark-stand", name: "Imbissstand", x: .70, y: .74, display: { x: .84, y: .64 }, kind: "item", art: "landmark", text: "Nach der Achterbahn ist ein Snack eine gute Idee." },
   ],
   radegast: [{ id: "radegast-way", name: "Weg zur Bushaltestelle", x: .56, y: .61, kind: "item", art: "sign", text: "Von Felices Wohnung geht es entlang der Häuser und am Grün vorbei zur Haltestelle. Der Weg ist für das Spiel verkürzt." }],
   zoerbig: [
@@ -291,7 +339,7 @@ function insideArea(x: number, y: number, points: Point[]) {
 export function canWalk(place: Place, x: number, y: number) {
   return (!SOLID_AREAS[place] || !SOLID_AREAS[place]!.some(points => insideArea(x,y,points))) && (!WALK_AREAS[place] || WALK_AREAS[place]!.some(points => insideArea(x,y,points))) && x >= .075 && x <= .94 && y >= .16 && y <= (place === "school" ? .96 : .92) && !PLACES[place].obstacles.some(o => x > o.left - .02 && x < o.right + .02 && y > o.top - .015 && y < o.bottom + .015);
 }
-export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 } };
+export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 }, hotel: { x: .50, y: .62 }, hotelboys: { x: .34, y: .74 }, parliament: { x: .50, y: .72 }, europapark: { x: .40, y: .80 } };
 
 /** Treffpunkt collisions (cropped v11 painting): big trees, the pavilion, the bushes and the houses beyond the road. */
 export function storyCanWalk(place: Place, x: number, y: number, options: { pasture?: boolean } = {}) {

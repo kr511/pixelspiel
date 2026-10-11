@@ -16,6 +16,11 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   // The winter playground and market pixel paintings are not delivered yet; the
   // SVG scenes the game already fell back to are referenced directly.
   christmasmarket: { background: "/rooms/story-christmasmarket-v09.svg", outdoors: true, light: "#ffe1a6", foreground: [] },
+  // Klassenfahrt: vorläufige Pixelentwürfe aus scripts/trip-scenes.py, bis finale Bilder geliefert sind.
+  hotel: { background: "/rooms/trip-hotel-v095.svg", outdoors: false, light: "#f4d9a8", foreground: [] },
+  hotelboys: { background: "/rooms/trip-hotelboys-v095.svg", outdoors: false, light: "#f4d9a8", foreground: [] },
+  parliament: { background: "/rooms/trip-parliament-v095.svg", outdoors: true, light: "#e3ecf0", foreground: [] },
+  europapark: { background: "/rooms/trip-europapark-v095.svg", outdoors: true, light: "#f1ead0", foreground: [] },
   eliasroom: { background: "/rooms/story-eliasroom-pixel-v10.webp", fallback: "/rooms/story-eliasroom-v09.svg", outdoors: false, light: "#f4c989", foreground: [] },
   bedroom: { background: "/rooms/felice-bedroom-v10.webp", outdoors: false, light: "#ffbd65", foreground: [rect(24.5,10,52.5,42),rect(52.5,10,74.5,30),rect(24.5,43,35.5,57),rect(69,31,79,57),rect(45.5,79,78,91,91)] },
   home: { background: "/rooms/home-v06.webp", winter: "/rooms/home-winter-v06.webp", outdoors: false, light: "#ffd49a", foreground: [rect(46,23.5,73,48),{ clip: "polygon(12% 17%,40% 17%,40% 30%,24.7% 30%,24.7% 43%,12% 43%)", depth:43 },rect(84,12,96,46)] },
@@ -90,6 +95,8 @@ export const CHARACTER_GRAPHICS = {
   elena: npc(2,1), jason: npc(3,0), luca: npc(1,1), wyatt: npc(3,1),
   ida: npc(0,0), helena: npc(2,0), linda: npc(0,1), lina: npc(2,1), alexandra: npc(0,1),
   paul: npc(3,0), justin: npc(1,1),
+  // Klassenfahrt: umgefärbte vorhandene Figuren, bis eigene Aussehen geliefert sind.
+  kaiser: { ...npc(0,0), variant: 2 }, kluger: { ...npc(1,0), variant: 1 }, nino: { ...npc(3,0), variant: 2 }, richard: { ...npc(1,1), variant: 1 },
   "pupil-one": { ...npc(0,0), width: 7.0 }, "pupil-two": { ...npc(3,0), width: 7.5 },
   "pupil-three": { ...npc(2,0), width: 7.3 }, "pupil-four": { ...npc(1,1), width: 7.4 },
   "pupil-five": { ...npc(0,1), width: 6.8 }, "pupil-six": { ...npc(2,1), width: 7.1 },
@@ -151,7 +158,7 @@ export const REST_GRAPHICS = {
 export function characterGraphic(id: string): CharacterGraphic { return CHARACTER_GRAPHICS[id as CharacterId] ?? CHARACTER_GRAPHICS.friend; }
 export function speakerGraphic(speaker: string): CharacterId | null {
   const speakers: Record<string, CharacterId> = { Felice: "felice", Elias: "elias", Anuk: "dog", "Felices Mutter": "mother", "Felices Stiefvater": "stepfather", "Felices Halbschwester": "halfsister", "Freund der Halbschwester": "partner-one", "Tochter des Stiefvaters": "stepsister", "Ihr Freund": "partner-two", Freunde: "friend", "Am Schießstand": "host", "Trainer Hans": "hans", Hans: "hans", "Trainer Fritz": "fritz", Fritz: "fritz" };
-  const friends: Record<string, CharacterId> = { Paul: "paul", Justin: "justin", Schulleiter: "host", Bürgermeister: "stepfather", Elena: "elena", Jason: "jason", Luca: "luca", Wyatt: "wyatt", Ida: "ida", Helena: "helena", Linda: "linda", Lina: "lina", Alexandra: "alexandra", Alexander: "alexander", Magdalena: "magdalena" };
+  const friends: Record<string, CharacterId> = { Paul: "paul", Justin: "justin", Schulleiter: "host", Bürgermeister: "stepfather", Elena: "elena", Jason: "jason", Luca: "luca", Wyatt: "wyatt", Ida: "ida", Helena: "helena", Linda: "linda", Lina: "lina", Alexandra: "alexandra", Alexander: "alexander", Magdalena: "magdalena", "Frau Kaiser": "kaiser", "Herr Kluger": "kluger", Nino: "nino", Richard: "richard" };
   return speaker === "Felice & Elias" ? "elias" : speakers[speaker] ?? friends[speaker] ?? null;
 }
 export const CHAPTER_GRAPHICS: Record<ChapterId, string> = { dog: "/rooms/garden-v06.webp", christmas: "/rooms/home-winter-v06.webp", school: "/rooms/zoerbig-market-v09.webp", shooting: "/rooms/goelzau-range-v1.webp", graduation: "/rooms/graduation-gym-v08.webp" };

@@ -2,6 +2,7 @@ import { CharacterArt, characterStyle } from "./WorldArt";
 import { REST_SPOTS } from "./day";
 import { resolveStoryIllustration } from "./PhoneHub";
 import { canWalk, type Point, type Place } from "./story";
+import { speakerGraphic } from "./graphics";
 import { STORY_EVENTS, type StoryBeat, type StoryEvent, type TimelineSave } from "./timeline";
 export type SceneAnimation = NonNullable<StoryBeat["animation"]>;
 export type StoryEffect = { id: string; kind: SceneAnimation; elapsed: number; sequence: boolean };
@@ -31,10 +32,10 @@ export function castPoint(beat: StoryBeat | undefined, player: Point, effect: St
   return otherPositions.find(p=>canWalk(place,p.x,p.y)) ?? point;
 }
 export function SequenceCast({event,beat,player,effect,place,conversing}: {event:StoryEvent;beat?:StoryBeat;player:Point;effect:StoryEffect|null;place:Place;conversing:boolean}) {
-  const cast=(event.cast??["Felice","Elias"]).filter(name=>name!=="Felice"
+  const cast=(beat?.cast??event.cast??["Felice","Elias"]).filter(name=>name!=="Felice"
     && !(name.includes("Familie") && (place === "bedroom" || place === "eliasroom")));
   return <>{cast.map((name,index)=>{
-    const id=name==="Elias"?"elias":name.includes("Familie")?"mother":name.includes("schüler")||name.includes("schülerin")?"elena":name.toLowerCase();
+    const id=speakerGraphic(name)??(name==="Elias"?"elias":name.includes("Familie")?"mother":name.includes("schüler")||name.includes("schülerin")?"elena":name.toLowerCase());
     const p=castPoint(beat,player,effect,place,index), close=Boolean(effect&&["hug","kiss","handhold"].includes(effect.kind));
     return <div key={name} className={`room-player sequence-actor${close?" couple-close":""}`} data-testid={id==="elias"?"story-elias":"story-npc"} style={{...characterStyle(id),left:`${p.x*100}%`,top:`${p.y*100}%`,zIndex:Math.round(p.y*100)+11}} aria-label={name}>
       <CharacterArt id={id} direction={conversing||effect?directionBetween(p,player):"front"} pose={effect&&["sit","kiss"].includes(effect.kind)&&index===0?"sitting":"standing"} walking={effect?.kind === "walk"} frame={effect?.kind === "walk" ? Math.floor(effect.elapsed / 120) % 3 : 0}/><span className="room-player-label">{name}</span>
@@ -57,6 +58,7 @@ export function StoryEffects({effect,timeline,finale}: {effect:StoryEffect|null;
     {effect.kind==="fireworks"&&Array.from({length:7},(_,i)=><span key={i} className="pixel-firework" style={{left:`${15+i*12}%`,top:`${12+i%3*13}%`,animationDelay:`${i*.15}s`}}>✺</span>)}
     {effect.kind==="reflection"&&<div className="memory-montage" aria-label="Freigeschaltete Erinnerungen im Rückblick">{remembered.map(e=><figure key={e.id}><img src={resolveStoryIllustration(e.illustration)} alt=""/><figcaption>{e.title}</figcaption></figure>)}</div>}
     {effect.kind==="kiss"&&<><span className="kiss-heart">♥</span><div className="kiss-fade" style={{opacity:Math.max(0,(effect.elapsed-2200)/1800)}}/></>}
+    {effect.kind==="fade"&&<div className="sleep-fade" style={{opacity:Math.min(.96,effect.elapsed/1600)}}><span>Dieser Moment gehört nur euch.</span></div>}
     {effect.kind==="sleep"&&<div className="sleep-fade" style={{opacity:Math.min(.93,effect.elapsed/1800)}}><span>Eine gemeinsame Nacht. Die Erinnerung bleibt persönlich.</span></div>}
   </div>;
 }

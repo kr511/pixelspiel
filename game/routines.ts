@@ -18,7 +18,13 @@ export function routineEntities(place: Place, minute: number, entities: Entity[]
 // Places that the story has not reached yet have no path: the Christmas market (06.12.2025) and Elias' room (20.03.2026).
 export const CHRISTMAS_MARKET_OPENS = "2025-12-06";
 export const ELIAS_ROOM_OPENS = "2026-03-20";
+// Die Klassenfahrt (20.–24.04.2026) ist nur während der Fahrt erreichbar; dazwischen schläft Felice im Hotel.
+export const TRIP = { from: "2026-04-20", to: "2026-04-24", places: ["hotel", "hotelboys", "parliament", "europapark"] as Place[] };
+export const onTrip = (date: string) => date >= TRIP.from && date <= TRIP.to;
+/** Where Felice wakes up: from the second trip morning on in the hotel, otherwise at home. */
+export const wakePlace = (date: string): Place => date > TRIP.from && date <= TRIP.to ? "hotel" : "bedroom";
 export function exitOpen(to: Place, date: string) {
+  if (TRIP.places.includes(to)) return onTrip(date);
   return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
 }
 
