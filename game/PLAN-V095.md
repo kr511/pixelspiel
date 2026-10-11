@@ -6,7 +6,7 @@ Stand: 11.10.2026, Basis `38b4a12` (main). Grundlage ist das Konzept „Felice �
 
 Das Konzept ist inhaltlich vernünftig, aber zu breit und an einigen Stellen ungenau:
 
-- **Der eigentliche Blocker ist das Datum, nicht die Technik.** Die Hauptgeschichte in `game/timeline.ts` ist eine automatische Kette: `mainline` wird nach Datum sortiert und jedes Ereignis bekommt `requires: [vorheriges]`. Ohne Datum lässt sich die Klassenfahrt nicht einordnen. Bis dahin baue ich sie mit `confirmed: false` als Entwurf, der niemanden blockiert.
+- **Datum ist geklärt: 20.04.2026 (Montag) bis 24.04.2026 (Freitag), fünf Tage.** Die Hauptgeschichte in `game/timeline.ts` ist eine automatische Kette: `mainline` wird nach Datum sortiert und jedes Ereignis bekommt `requires: [vorheriges]`. Die Fahrt landet damit in Kapitel 6 „Gemeinsame Zeit“ zwischen `spring-everyday` (01.04.) und `longer-visit-plan` (06.05.). Keine Rückblende, keine Erweiterung des Storyzeitraums nötig. Offen ist nur noch, welcher Tag wofür war; bis dahin bleiben die Ereignisse `confirmed: false`.
 - **Drei neue begehbare Karten plus 15 bis 25 Minuten Spielzeit ist viel.** Jede Karte braucht Bild, Kollisionen, Vordergrundmaske, Spawns, Ausgänge und Prüfung auf dem Handy. Das ist der teuerste Teil des Updates. Ankunft in Kehl wird deshalb keine eigene Karte, sondern ein Übergang ins Hotel.
 - **Export/Import ist im Konzept P1, gehört aber nach vorne.** Die Klassenfahrt verändert die Ereigniskette und damit Speicherstände. Ein Export vorher ist das Sicherheitsnetz. Außerdem ist es klein und unabhängig.
 - **„Orientierung“ braucht kein neues System.** `storyHint()` und `storyTrigger()` liefern schon den nächsten Schritt mit Ort und Text. Die Aufgabenanzeige wird nur eine sichtbare Fassung davon, damit Welt, Handy und Album garantiert dasselbe sagen.
@@ -17,7 +17,9 @@ Das Konzept ist inhaltlich vernünftig, aber zu breit und an einigen Stellen ung
 | Befund | Folge |
 | --- | --- |
 | `npm test` bricht unter Node 22.22 mit `bad option: --test-isolation=none` ab. CI nutzt Node 24 und läuft. `package.json` verspricht aber `node >= 22.13`. | Schritt 0: Skript auf `--experimental-test-isolation=none` umstellen oder `engines` auf 23+ anheben. Lokales Testen muss funktionieren. |
-| `eventStatus()` sperrt alles vor `STORY_START` (10.11.2025) und nach `STORY_END` (02.11.2026). | Liegt die Fahrt außerhalb, braucht es eine bewusste Ausnahme für Rückblenden. Liegt sie dazwischen: keine Änderung nötig. |
+| `eventStatus()` sperrt alles vor `STORY_START` (10.11.2025) und nach `STORY_END` (02.11.2026). | Die Fahrt (20. bis 24.04.2026) liegt im Zeitraum, keine Änderung nötig. |
+| `spring-everyday` hat `until: "2026-05-05"` und den Text „April & Anfang Mai“. | Beschreibung so anpassen, dass sie die Klassenfahrtwoche nicht überdeckt. |
+| `longer-visit-plan` (06.05.) plant „mehrere Tage zusammen“. | Dialog dort darf nicht klingen, als hätten die beiden noch nie mehrere Tage miteinander verbracht. Klar als privater Besuch abgrenzen. |
 | `nextEvent()` nimmt das früheste offene Ereignis. | Ein weit fortgeschrittener Spielstand bekommt nach dem Update die Klassenfahrt als nächste Erinnerung angezeigt, obwohl die Uhr schon weiter ist. Das ist gewollt, muss aber getestet werden (Abnahme 6). |
 | Neuladen setzt eine aktive Sequenz am gespeicherten `cursor` fort (`Game.tsx`, Startposition aus `progress[active].cursor`). | Fortsetzen nach Neuladen ist schon da. Die Fahrt muss nur in sinnvolle Schritte geschnitten werden. |
 | Sechs Speicher-Schlüssel: `story.v05`, `timeline.v09`, `day.v061` (alt), `names.v07`, `audio.v1`, `memories.v1`. | Export/Import muss alle erfassen und mit den vorhandenen `parse*`-Funktionen validieren. |
@@ -31,7 +33,7 @@ Das Konzept ist inhaltlich vernünftig, aber zu breit und an einigen Stellen ung
 - Jedes abgeschlossene Ereignis wird sofort gespeichert. Das ergibt die Checkpoints an Szenengrenzen ohne neues Speichermodell.
 - Die Kette über `requires` erzwingt die Reihenfolge automatisch.
 - Wiederholen funktioniert pro Abschnitt mit dem vorhandenen flüchtigen Wiederholungszustand.
-- Mehrtägig ist kein Sonderfall: jedes Ereignis bekommt sein echtes Datum.
+- Mehrtägig ist kein Sonderfall: jedes Ereignis bekommt sein echtes Datum zwischen 20. und 24.04.2026. Für Tage ohne eigenen Moment springt der Kalender per Schlafübergang weiter.
 
 Geplante Ereignisse (IDs stabil, Datum Platzhalter bis zur Bestätigung):
 
@@ -118,7 +120,7 @@ Fertig, wenn: die ganze Fahrt mit Platzhaltern von Abfahrt bis Album durchspielb
 | 0 Ausgangslage | sofort | nichts |
 | 1 Export/Import | sofort | nichts |
 | 2 Orientierung | sofort | nichts |
-| 3 Reisegerüst | nach 0 | grobe Reihenfolge der Tage |
+| 3 Reisegerüst | nach 0 | Reihenfolge der Tage (Datum steht) |
 | 4 Gruppen | nach 3 | nichts |
 | 5 Inhalte | nach 3 | deine Angaben |
 | 6 Grafik | nach 4 | Referenzen, abgenommene Layouts |
@@ -128,7 +130,7 @@ Kürzen bei Zeitdruck, in dieser Reihenfolge: Nebenaktionen, Minispiele, Reisevi
 
 ## 6. Was ich von dir brauche
 
-1. **Datum oder Zeitraum** der Fahrt. Das entscheidet, ob es eine normale Einordnung ist oder eine Rückblende.
+1. ~~Datum~~: 20.04. bis 24.04.2026, erledigt.
 2. **Reihenfolge der Tage**: an welchem Tag Straßburg, an welchem Europa-Park, wann der Hotelabend.
 3. **Anreise**: Bus oder Zug.
 4. **Wer soll sichtbar sein**: Freunde, Lehrkräfte.
