@@ -26,6 +26,7 @@ import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
 import "./chapter1.css";
+import "./clean-ui.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
 import { PUPIL_VARIANTS, variantSheet, WALK_ATLASES } from "./graphics07";
 import { pressedKeys, useInput } from "./input";
@@ -37,7 +38,7 @@ import { BenchArt, CharacterArt, WorldAtmosphere, WorldBackdrop, WorldNightLight
 import { advanceRest, beginRest, hasLeft, leaveRest, restPosition, type RestMotion } from "./rest";
 import { movementStep, walkingFrame } from "./motion";
 import { advanceActor, availableSeat, canChangePose, initialActors, requestPose, standingActor, type Actor, type Actors, type Pose } from "./actors";
-import { speakerGraphic } from "./graphics";
+import { sceneBackground, speakerGraphic } from "./graphics";
 import { cameraFor, offscreenGuide } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, activityAt, travelMinutes, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
@@ -786,7 +787,8 @@ export function Game() {
   const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
 
-  return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
+  return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09 version-095" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
+    <div className="scene-ambience" aria-hidden="true" style={{ backgroundImage: `url(${assetUrl(sceneBackground(save.place, sceneSeason))})` }}/>
     <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.webp")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.webp")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.webp")}/>
