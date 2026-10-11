@@ -1,4 +1,4 @@
-import { advanceClock, initialDay, parseDay, sleepUntilMorning, type DaySave, type Season } from "./day.ts";
+import { advanceClock, initialDay, parseDay, sleepUntilMorning, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
 import { CHAPTERS, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
@@ -152,7 +152,7 @@ const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
 const datedEvents: StoryEvent[] = [
   // Beat IDs and count stay stable so saved checkpoints keep their meaning.
   // The intro cinematic wakes Felice beside her bed and opens the first beat.
-  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: 300, end: 330, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
+  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: WAKE_MINUTE, end: WAKE_MINUTE + 30, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
     beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .42, y: .52 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
     beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
     beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .70, y: .66 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
@@ -372,7 +372,7 @@ export function calendarSeason(date: string): Season {
 export function storySeason(event: StoryEvent | undefined, clock: DaySave): Season { return calendarSeason(event?.date ?? clock.date); }
 export function boundClock(clock: DaySave): DaySave {
   clock = { ...clock, season: calendarSeason(clock.date < STORY_START ? STORY_START : clock.date > STORY_END ? STORY_END : clock.date) };
-  if (clock.date < STORY_START) return { ...clock, date: STORY_START, day: 1, minute: 300 };
+  if (clock.date < STORY_START) return { ...clock, date: STORY_START, day: 1, minute: WAKE_MINUTE };
   if (clock.date > STORY_END) {
     const overflowDays = Math.round((Date.parse(`${clock.date}T12:00Z`) - Date.parse(`${STORY_END}T12:00Z`)) / 86400000);
     return { ...clock, date: STORY_END, day: Math.max(1, clock.day - overflowDays), minute: 1439 };
@@ -383,9 +383,9 @@ export function advanceTimelineClock(clock: DaySave, minutes: number) {
   const result = advanceClock(clock, minutes);
   return { save: boundClock(result.save), notices: result.notices.filter(notice => notice.date < STORY_END || notice.date === STORY_END && notice.minute < 1440) };
 }
-export function sleepTimelineClock(clock: DaySave) { return clock.date === STORY_END && clock.minute >= 300 ? clock : boundClock(sleepUntilMorning(clock)); }
+export function sleepTimelineClock(clock: DaySave) { return clock.date === STORY_END && clock.minute >= WAKE_MINUTE ? clock : boundClock(sleepUntilMorning(clock)); }
 /**
- * Sleeping skips unimportant days: Felice wakes at 5:00 on the next day that
+ * Sleeping skips unimportant days: Felice wakes at 5:30 on the next day that
  * holds a memory. If a memory is still open today or already due, she only
  * sleeps until the next morning. The date never moves backwards.
  */
@@ -395,7 +395,7 @@ export function sleepToStoryDay(save: TimelineSave): DaySave {
   if (isRoutineDay(morning.date)) return morning;
   const next = nextEvent(save);
   if (save.active || !next?.date || next.date <= morning.date) return morning;
-  return clockAtLeast(morning, next.date, 300);
+  return clockAtLeast(morning, next.date, WAKE_MINUTE);
 }
 const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 export function weekday(date: string) { return WEEKDAYS[new Date(`${date}T12:00:00Z`).getUTCDay()]; }

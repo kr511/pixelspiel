@@ -2,6 +2,7 @@ import type { Place, Point } from "./story";
 
 export const DAY_KEY = "felice-elias.day.v061";
 export const ACTION_MINUTES = 10;
+export const WAKE_MINUTE = 5 * 60 + 30; // Aufstehzeit: jeden Morgen 5:30 Uhr
 export const TRAVEL_MINUTES = 15; // Fallback für Wege ohne eigenen Eintrag
 // Wegzeiten in Minuten je Strecke (in beide Richtungen). Kurze Wege im Haus, Bus als längster Abschnitt.
 const TRAVEL_TIMES: [Place, Place, number][] = [
@@ -27,7 +28,7 @@ export function initialDay(now = new Date()): DaySave {
   const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const month = now.getMonth();
   const season = month >= 2 && month <= 4 ? "Frühling" : month >= 5 && month <= 7 ? "Sommer" : month >= 8 && month <= 10 ? "Herbst" : "Winter";
-  return { version: 1, date, minute: 300, day: 1, season };
+  return { version: 1, date, minute: WAKE_MINUTE, day: 1, season };
 }
 function validDate(value: unknown): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -64,8 +65,8 @@ export function advanceClock(save: DaySave, minutes: number): { save: DaySave; n
 }
 // Sleep deliberately skips every notice until the next morning.
 export function sleepUntilMorning(save: DaySave): DaySave {
-  const days = save.minute < 300 ? 0 : 1;
-  return { ...save, date: nextDate(save.date, days), day: save.day + days, minute: 300 };
+  const days = save.minute < WAKE_MINUTE ? 0 : 1;
+  return { ...save, date: nextDate(save.date, days), day: save.day + days, minute: WAKE_MINUTE };
 }
 export function clockText(minute: number) {
   return `${Math.floor(minute / 60)}:${String(minute % 60).padStart(2, "0")}`;

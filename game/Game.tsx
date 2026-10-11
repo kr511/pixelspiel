@@ -635,7 +635,7 @@ export function Game() {
     setNotices([]); clearMovement();
     persistDay(clock);
     const skipped = daysBetween(from, clock.date);
-    morningText.current = skipped > 1 ? `${historicalDate(clock.date)}. Ein paar ruhige Tage sind vergangen. Es ist 5:00 Uhr – ein neuer Morgen.` : "Ein neuer Morgen. Es ist 5:00 Uhr. Ich bin ausgeschlafen.";
+    morningText.current = skipped > 1 ? `${historicalDate(clock.date)}. Ein paar ruhige Tage sind vergangen. Es ist 5:30 Uhr – ein neuer Morgen.` : "Ein neuer Morgen. Es ist 5:30 Uhr. Ich bin ausgeschlafen.";
     setCalendarFlip({ from, to: clock.date });
   }
 
