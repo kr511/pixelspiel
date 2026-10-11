@@ -6,7 +6,7 @@
 .scene-backdrop { z-index:0; background:#8c9877; }
 .story-pixel-backdrop,.story-pixel-backdrop image { image-rendering:pixelated; }
 .scene-foreground { pointer-events:none; }
-.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v9.png') center/100% 100%; }
+.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v10.png') center/100% 100%; }
 .character-art { width:100%; display:block; overflow:hidden; }
 .character-fallback { display:block; width:100%; }
 

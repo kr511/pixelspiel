@@ -15,7 +15,7 @@ export function resolveStoryIllustration(illustration: string): string {
     playground: "/rooms/story-playground-winter-v09.svg",
     christmasmarket: "/rooms/story-christmasmarket-v09.svg",
     eliasroom: "/rooms/story-eliasroom-pixel-v10.png",
-    pasture: "/rooms/radegast-walk-v075.png",
+    pasture: "/rooms/story-treffpunkt-v11.png",
   };
   return assetUrl(scenes[illustration] ?? illustration);
 }
