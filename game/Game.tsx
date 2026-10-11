@@ -15,7 +15,7 @@ import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
 import { advanceFollower, anukPresent, eliasPresent, exitOpen, routineEntities } from "./routines";
 import { SCHOOL_ELIAS_ID } from "./school";
-import { advanceSchoolDismissal, schoolDismissalElapsed, schoolDismissalPupils, type SchoolDismissalState } from "./school-dismissal";
+import { advanceSchoolDismissal, schoolDismissalElapsed, schoolDismissalPupils, schoolMorningArrivals, schoolMorningElapsed, type SchoolDismissalState } from "./school-dismissal";
 import { ROUTINE_ITEMS, ROUTINE_TASKS, isRoutineDay, routineDone, routineFlag, routineOpen, type RoutineTask } from "./routine";
 import { TimelineJournal } from "./TimelineJournal";
 import { EncounterElias, RadegastPasture } from "./StoryWorldArt";
@@ -26,7 +26,7 @@ import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
 import "./chapter1.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
-import { WALK_ATLASES } from "./graphics07";
+import { PUPIL_VARIANTS, variantSheet, WALK_ATLASES } from "./graphics07";
 import { pressedKeys, useInput } from "./input";
 import { useMemories } from "./memories/store";
 import { MemoryTransition } from "./memories/MemoryTransition";
@@ -165,7 +165,7 @@ export function Game() {
   // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
   const eliasHere = Boolean(save.chapter) || followingElias || visitingElias === save.place || eliasPresent(save.place, id => Boolean(timeline.progress[id]?.completedAt));
   const anukHere = Boolean(save.chapter) || anukPresent(id => Boolean(timeline.progress[id]?.completedAt));
-  const dismissedPupils = event || save.chapter ? [] : schoolDismissalPupils(save.place, day.minute, schoolDismissalElapsed(dismissal, day.date, day.minute));
+  const dismissedPupils = event || save.chapter ? [] : [...schoolDismissalPupils(save.place, day.minute, schoolDismissalElapsed(dismissal, day.date, day.minute)), ...schoolMorningArrivals(save.place, day.minute, schoolMorningElapsed(dismissal, day.date, day.minute))];
   const sceneActors: Actors = { ...actors, ...Object.fromEntries(dismissedPupils.map(pupil => [pupil.entity.id, pupil.actor])) };
   const sourceEntities = (event ? [] : [...routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias || visitingElias === save.place,!!save.chapter), ...dismissedPupils.map(pupil => pupil.entity)]).filter(entity => (entity.art !== "elias" || eliasHere || entity.id === SCHOOL_ELIAS_ID) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
   const sceneEntities = sourceEntities.filter(e => !rest?.elias || e.art !== "elias").map(e => cinema && !cinema.sequence && e.art === "elias" ? {...e,...castPoint(undefined,player,cinema,save.place)} : e.id === "anuk" && dogFollows ? { ...e, ...dog } : sceneActors[e.id] ? { ...e, ...sceneActors[e.id].position } : e);
@@ -779,7 +779,7 @@ export function Game() {
     <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.png")}/>
-    {Object.keys(WALK_ATLASES).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
+    {Object.keys(WALK_ATLASES).flatMap(sheet => [sheet, ...PUPIL_VARIANTS.map(variant => variantSheet(sheet, variant))]).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
     <div className={`pixel-viewport world-viewport ${save.place === "bedroom" ? "bedroom-viewport" : ""}`} hidden={!inWorld && phase !== "entering"} role="group" aria-label={PLACES[save.place].name}>
       <div key={save.place} className="world-scene world-camera" style={{ "--camera-x": `${camera.x*100}%`, "--camera-y": `${camera.y*100}%`, "--world-zoom": camera.zoom } as CSSProperties}>
         {event?.scene === "encounter" ? <RadegastPasture/> : <WorldBackdrop place={save.place} season={sceneSeason}/>}

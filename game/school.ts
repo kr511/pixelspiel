@@ -1,59 +1,59 @@
 import { SCHOOL_START } from "./day.ts";
-import type { Entity } from "./story.ts";
+import type { Entity, Point } from "./story.ts";
 
 export const SCHOOL_ARRIVAL = 6 * 60;
 export const SCHOOL_ELIAS_ID = "school-elias";
 
+// Pupils stand in small circles and look at each other.
+type Facing = NonNullable<Entity["facing"]>;
+export type Spot = Point & { facing: Facing };
+export function ringFormation(center: Point, count: number, radius: number, start = count === 3 ? 1 / 12 : count === 4 ? 1 / 8 : 0, stretch = 1.45): Spot[] {
+  if (count === 2) return [{ x: center.x - radius, y: center.y, facing: "right" }, { x: center.x + radius, y: center.y, facing: "left" }];
+  // Nobody stands straight above or below the middle, so everyone is seen from the side and nobody looks into the camera.
+  // The circle is stretched vertically so people in front and behind do not overlap.
+  return Array.from({ length: count }, (_, i) => {
+    const angle = (start + i / count) * Math.PI * 2;
+    const x = center.x + Math.sin(angle) * radius, y = center.y - Math.cos(angle) * radius * stretch;
+    return { x: +x.toFixed(3), y: +y.toFixed(3), facing: center.x > x ? "right" : "left" };
+  });
+}
+
 // Morning strangers use existing atlas frames without names or interactions.
 // Keep their stable IDs for old saves, but Felice does not know this group yet.
-type GroupMember = Pick<Entity, "x" | "y" | "art" | "facing">;
-function additionalGroup(group: number, members: GroupMember[]): Entity[] {
-  return members.map((member, index) => ({
-    ...member, id: `school-group-${group}-${index + 1}`, name: "Schülergruppe",
-    kind: "person", ambient: true, text: "Eine Gruppe wartet vor dem Unterricht auf dem Hof.",
+const ARRIVALS = ["school-group-2-3", "school-group-4-2", "school-group-5-3"];
+function additionalGroup(group: number, center: Point, art: string[], radius: number): Entity[] {
+  return ringFormation(center, art.length, radius).map((spot, index) => ({
+    ...spot, id: `school-group-${group}-${index + 1}`, art: art[index], name: "Schülergruppe",
+    kind: "person", ambient: true, text: ARRIVALS.includes(`school-group-${group}-${index + 1}`) ? "Guten Morgen! Ich bin gerade mit dem Bus angekommen." : "Eine Gruppe wartet vor dem Unterricht auf dem Hof.",
   }));
 }
 
 export const SCHOOL_ADDITIONAL_GROUPS: Entity[][] = [
-  additionalGroup(1, [
-    { x: .50, y: .38, art: "pupil-three", facing: "right" },
-    { x: .53, y: .43, art: "pupil-four", facing: "left" },
-  ]),
-  additionalGroup(2, [
-    { x: .35, y: .67, art: "pupil-two", facing: "right" },
-    { x: .41, y: .68, art: "pupil-five", facing: "left" },
-    { x: .38, y: .73, art: "pupil-six", facing: "back" },
-  ]),
-  additionalGroup(3, [
-    { x: .86, y: .50, art: "pupil-one", facing: "right" },
-    { x: .92, y: .50, art: "pupil-two", facing: "left" },
-    { x: .86, y: .56, art: "pupil-five", facing: "right" },
-    { x: .92, y: .56, art: "pupil-three", facing: "left" },
-  ]),
-  additionalGroup(4, [
-    { x: .57, y: .72, art: "pupil-four", facing: "right" },
-    { x: .63, y: .74, art: "pupil-six", facing: "left" },
-  ]),
-  additionalGroup(5, [
-    { x: .12, y: .65, art: "pupil-five", facing: "right" },
-    { x: .18, y: .65, art: "pupil-two", facing: "left" },
-    { x: .15, y: .70, art: "pupil-one", facing: "back" },
-  ]),
+  additionalGroup(1, { x: .505, y: .44 }, ["pupil-seven", "pupil-four"], .025),
+  additionalGroup(2, { x: .34, y: .73 }, ["pupil-nine", "pupil-thirteen", "pupil-sixteen"], .033),
+  additionalGroup(3, { x: .885, y: .53 }, ["pupil-twelve", "pupil-two", "pupil-seventeen", "pupil-three"], .042),
+  additionalGroup(4, { x: .50, y: .77 }, ["pupil-fourteen", "pupil-twelve"], .027),
+  additionalGroup(5, { x: .70, y: .80 }, ["pupil-six", "pupil-ten", "pupil-eleven"], .033),
 ];
 
+function trio(prefix: string, center: Point, people: { art: string; name: string; text: string }[]): Entity[] {
+  return ringFormation(center, people.length, .033).map((spot, i) => ({ ...spot, id: `${prefix}${i + 1}`, kind: "person", ambient: true, ...people[i] }));
+}
+const LEFT = ["Guten Morgen! Wir treffen uns vor der Schule immer hier auf dem Hof.", "Wir reden noch kurz, bevor es in die Klasse geht.", "Gleich geht der Unterricht los. Bis dahin bleiben wir noch zusammen draußen."];
+const RIGHT = ["Morgen! Ein paar Minuten zum Quatschen haben wir noch.", "Wir warten hier noch auf den Unterrichtsbeginn.", "Heute sind schon einige auf dem Pausenhof. Guten Morgen!"];
+const WAITING = "Drei Schüler warten zusammen vor dem Unterricht.";
+
 export const SCHOOL_MORNING_ENTITIES: Entity[] = [
-  { id: SCHOOL_ELIAS_ID, name: "Schüler", x: .83, y: .36, kind: "person", art: "elias", ambient: true, facing: "back", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-paul", name: "Schüler", x: .80, y: .30, kind: "person", art: "paul", ambient: true, facing: "right", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-justin", name: "Schüler", x: .86, y: .30, kind: "person", art: "justin", ambient: true, facing: "left", text: "Drei Schüler warten zusammen vor dem Unterricht." },
-  { id: "school-pupil-left-1", name: "Schülerin", x: .23, y: .58, kind: "person", art: "pupil-one", ambient: true, facing: "right", text: "Guten Morgen! Wir treffen uns vor der Schule immer hier auf dem Hof." },
-  { id: "school-pupil-left-2", name: "Schüler", x: .29, y: .58, kind: "person", art: "pupil-two", ambient: true, facing: "left", text: "Wir reden noch kurz, bevor es in die Klasse geht." },
-  { id: "school-pupil-left-3", name: "Schülerin", x: .26, y: .64, kind: "person", art: "pupil-three", ambient: true, facing: "back", text: "Gleich geht der Unterricht los. Bis dahin bleiben wir noch zusammen draußen." },
-  { id: "school-pupil-right-1", name: "Schüler", x: .84, y: .82, kind: "person", art: "pupil-four", ambient: true, facing: "right", text: "Morgen! Ein paar Minuten zum Quatschen haben wir noch." },
-  { id: "school-pupil-right-2", name: "Schülerin", x: .90, y: .82, kind: "person", art: "pupil-five", ambient: true, facing: "left", text: "Wir warten hier noch auf den Unterrichtsbeginn." },
-  { id: "school-pupil-right-3", name: "Schülerin", x: .87, y: .88, kind: "person", art: "pupil-six", ambient: true, facing: "back", text: "Heute sind schon einige auf dem Pausenhof. Guten Morgen!" },
+  ...ringFormation({ x: .83, y: .325 }, 3, .033).map((spot, i) => ({ ...spot, id: [SCHOOL_ELIAS_ID, "school-paul", "school-justin"][i], name: "Schüler", kind: "person" as const, art: ["elias", "paul", "justin"][i], ambient: true, text: WAITING })),
+  ...trio("school-pupil-left-", { x: .19, y: .60 }, [{ art: "pupil-one", name: "Schülerin", text: LEFT[0] }, { art: "pupil-fourteen", name: "Schüler", text: LEFT[1] }, { art: "pupil-fifteen", name: "Schülerin", text: LEFT[2] }]),
+  ...trio("school-pupil-right-", { x: .87, y: .86 }, [{ art: "pupil-eight", name: "Schüler", text: RIGHT[0] }, { art: "pupil-five", name: "Schülerin", text: RIGHT[1] }, { art: "pupil-eighteen", name: "Schülerin", text: RIGHT[2] }]),
   ...SCHOOL_ADDITIONAL_GROUPS.flat(),
 ];
 
 const morningIds = new Set(SCHOOL_MORNING_ENTITIES.map(entity => entity.id));
+const arrivalIds = new Set(ARRIVALS);
 export function isSchoolMorning(minute: number) { return minute >= SCHOOL_ARRIVAL && minute < SCHOOL_START; }
 export function isSchoolMorningEntity(id: string) { return morningIds.has(id); }
+/** These pupils come from the market after the others and join their group; see school-dismissal.ts. */
+export const SCHOOL_ARRIVAL_IDS = ARRIVALS;
+export function isSchoolArrival(id: string) { return arrivalIds.has(id); }
