@@ -10,7 +10,7 @@ export function RadegastPasture({ preview = false }: { preview?: boolean }) {
   if (!failed) return <svg className="scene-backdrop pasture-scene story-pixel-backdrop" viewBox="0 0 240 240" preserveAspectRatio="none" aria-hidden="true">
     <image href={assetUrl("/rooms/story-treffpunkt-v11.png")} x="-40" width="320" height="240" preserveAspectRatio="none" onError={() => setFailed(true)}/>
   </svg>;
-  return <svg className={preview ? "pasture-preview" : "scene-backdrop pasture-scene"} viewBox="0 0 240 240" preserveAspectRatio="none" shapeRendering="crispEdges" role={preview ? "img" : undefined} aria-label={preview ? "Herbstliche Pferdekoppel in Radegast" : undefined} aria-hidden={preview ? undefined : true}>
+  return <svg className={preview ? "pasture-preview" : "scene-backdrop pasture-scene"} viewBox="0 0 240 240" preserveAspectRatio="none" shapeRendering="crispEdges" role={preview ? "img" : undefined} aria-label={preview ? "Der Treffpunkt in Radegast" : undefined} aria-hidden={preview ? undefined : true}>
     <rect width="240" height="240" fill="#8a925a"/><rect y="200" width="240" height="40" fill="#727e50"/>
     <path d="M85 0H104L122 76 151 148 200 240H154L122 167 103 114Z" fill="#c3ad83"/><path d="M94 0L108 60 139 145 179 240" fill="none" stroke="#d8c39b" strokeWidth="8"/>
     {[12,34,56,78,100,122,144,166,188,210,232].flatMap((x,i) => [<path key={`g${i}`} d={`M${x} ${15+i*17%190}h3v3h-3M${(x+19)%230} ${65+i*13%140}h4v2h-4`} fill={i%2 ? "#aa9d65" : "#68774f"}/>, <rect key={`l${i}`} x={(x*3)%230} y={23+i*18} width="3" height="2" fill={i%2 ? "#c68947" : "#e0b05d"}/>])}
@@ -31,7 +31,7 @@ export function BicycleArt() {
 }
 
 export function EncounterElias({ position, arriving, cursor }: { position: Point; arriving: boolean; cursor: number }) {
-  return <div className={`room-player story-elias${arriving ? " arriving-on-bike" : ""}`} style={{ left: `${position.x*100}%`, top: `${position.y*100}%`, zIndex: Math.round(position.y*100)+9 }} data-testid="encounter-elias" data-arriving={arriving} aria-label={arriving ? "Elias kommt mit dem Fahrrad an" : "Elias bei den Pferden"}><CharacterArt id="elias" direction={arriving ? "back" : "left"}/><BicycleArt/><span className="room-player-label">Elias</span>{cursor >= 2 && cursor <= 3 && <span className="pixel-chocolate" aria-label="Mitgebrachte Schokolade"/>}{cursor >= 4 && <span className="emotional-pause" aria-label="Elias ist etwas verunsichert">…</span>}</div>;
+  return <div className={`room-player story-elias${arriving ? " arriving-on-bike" : ""}`} style={{ left: `${position.x*100}%`, top: `${position.y*100}%`, zIndex: Math.round(position.y*100)+9 }} data-testid="encounter-elias" data-arriving={arriving} aria-label={arriving ? "Elias kommt mit dem Fahrrad an" : "Elias am Treffpunkt"}><CharacterArt id="elias" direction={arriving ? "back" : "left"}/><BicycleArt/><span className="room-player-label">Elias</span>{cursor >= 2 && cursor <= 3 && <span className="pixel-chocolate" aria-label="Mitgebrachte Schokolade"/>}{cursor >= 4 && <span className="emotional-pause" aria-label="Elias ist etwas verunsichert">…</span>}</div>;
 }
 
 export function PhoneArt() {
