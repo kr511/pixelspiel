@@ -28,9 +28,8 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   }, outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ clip: "polygon(3% 9%,13% 6%,25% 10%,33% 20%,29% 28%,22% 30%,21% 38%,14% 38%,13% 30%,5% 27%,2% 20%)", depth:38 },{ clip:"polygon(69% 11%,79% 7%,94% 10%,98% 22%,91% 31%,86% 31%,86% 40%,79% 40%,77% 32%,68% 29%,65% 21%)",depth:40 }] },
   radegast: { background: "/rooms/radegast-walk-v075.png", outdoors: true, light: "#e4dbba", foreground: [] },
   bus: { background: "/rooms/radegast-stop-v075.png", outdoors: true, light: "#dbe8e5", foreground: [rect(50,26,89.5,40),rect(23.5,30,43.5,43),rect(0,0,100,24.5)] },
-  zoerbig: { background: "/rooms/zoerbig-market-v08.png", outdoors: true, light: "#e9dbb8", foreground: [
+  zoerbig: { background: "/rooms/zoerbig-market-v09.png", outdoors: true, light: "#e9dbb8", foreground: [
     { clip: "polygon(49% 21.5%,50% 21.5%,51% 33%,53.5% 36%,53.5% 38.5%,46.3% 38.5%,46.3% 36%,48% 33%)", depth: 38.5 },
-    { clip: "polygon(25% 42%,28% 38%,36% 37%,42% 42%,43% 48%,39% 52%,34% 52%,34% 57%,32% 57%,32% 52%,26% 50%)", depth: 57 },
     { clip: "polygon(25% 59%,29% 55%,35% 55%,40% 59%,41% 64%,36% 68%,32% 68%,32% 71%,30% 71%,30% 68%,25% 65%)", depth: 71 },
     { clip: "polygon(58% 48%,61% 44%,66% 44%,70% 49%,71% 54%,67% 58%,66% 58%,66% 59%,64% 59%,64% 58%,59% 55%)", depth: 59 },
     { clip: "polygon(60% 61%,64% 57%,69% 57%,73% 62%,73% 67%,70% 71%,69% 71%,69% 73%,67% 73%,67% 71%,61% 68%)", depth: 73 },
@@ -76,7 +75,7 @@ export function sceneBackground(place: Place, season: Season) {
   return scene.seasons?.[season] ?? (season === "Winter" ? scene.winter : undefined) ?? scene.background;
 }
 
-export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
+export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; variant?: number; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
 const npc = (column: number, row: number): CharacterGraphic => ({ sheet: "/characters/neighbors-v06.png", columns: 4, rows: 2, column, row, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/portraits-v06.png", columns: 4, rows: 2, column, row } });
 export const CHARACTER_GRAPHICS = {
   felice: { sheet: "/characters/felice-walk-v1.png", columns: 4, rows: 3, column: 0, row: 0, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/felice-walk-v1.png", columns: 4, rows: 3, column: 0, row: 0 } },
@@ -89,6 +88,13 @@ export const CHARACTER_GRAPHICS = {
   "pupil-one": { ...npc(0,0), width: 7.0 }, "pupil-two": { ...npc(3,0), width: 7.5 },
   "pupil-three": { ...npc(2,0), width: 7.3 }, "pupil-four": { ...npc(1,1), width: 7.4 },
   "pupil-five": { ...npc(0,1), width: 6.8 }, "pupil-six": { ...npc(2,1), width: 7.1 },
+  // Recolored pupils: other clothes and partly other hair (variant sheets, see graphics07.ts).
+  "pupil-seven": { ...npc(0,0), width: 7.0, variant: 1 }, "pupil-eight": { ...npc(3,0), width: 7.5, variant: 1 },
+  "pupil-nine": { ...npc(2,0), width: 7.3, variant: 1 }, "pupil-ten": { ...npc(1,1), width: 7.4, variant: 1 },
+  "pupil-eleven": { ...npc(0,1), width: 6.8, variant: 1 }, "pupil-twelve": { ...npc(2,1), width: 7.1, variant: 1 },
+  "pupil-thirteen": { ...npc(0,0), width: 7.1, variant: 2 }, "pupil-fourteen": { ...npc(3,0), width: 7.4, variant: 2 },
+  "pupil-fifteen": { ...npc(2,0), width: 7.2, variant: 2 }, "pupil-sixteen": { ...npc(1,1), width: 7.5, variant: 2 },
+  "pupil-seventeen": { ...npc(0,1), width: 6.9, variant: 2 }, "pupil-eighteen": { ...npc(2,1), width: 7.0, variant: 2 },
   alexander: npc(3,0), magdalena: npc(0,1), hans: npc(3,1), fritz: npc(1,0),
   dog: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0, width: 9, anchor: { x: .5, y: .94 }, portrait: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0 } },
 } satisfies Record<string, CharacterGraphic>;
@@ -143,4 +149,4 @@ export function speakerGraphic(speaker: string): CharacterId | null {
   const friends: Record<string, CharacterId> = { Paul: "paul", Justin: "justin", Schulleiter: "host", Bürgermeister: "stepfather", Elena: "elena", Jason: "jason", Luca: "luca", Wyatt: "wyatt", Ida: "ida", Helena: "helena", Linda: "linda", Lina: "lina", Alexandra: "alexandra", Alexander: "alexander", Magdalena: "magdalena" };
   return speaker === "Felice & Elias" ? "elias" : speakers[speaker] ?? friends[speaker] ?? null;
 }
-export const CHAPTER_GRAPHICS: Record<ChapterId, string> = { dog: "/rooms/garden-v06.png", christmas: "/rooms/home-winter-v06.png", school: "/rooms/zoerbig-market-v08.png", shooting: "/rooms/goelzau-range-v1.png", graduation: "/rooms/graduation-gym-v08.png" };
+export const CHAPTER_GRAPHICS: Record<ChapterId, string> = { dog: "/rooms/garden-v06.png", christmas: "/rooms/home-winter-v06.png", school: "/rooms/zoerbig-market-v09.png", shooting: "/rooms/goelzau-range-v1.png", graduation: "/rooms/graduation-gym-v08.png" };
