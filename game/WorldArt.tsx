@@ -3,20 +3,22 @@ import { SceneArt, PersonArt, DogArt } from "./SceneArt";
 import { CHARACTER_GRAPHICS, REST_GRAPHICS, POSE_ATLASES, SPRITE_FRAMES, SCENE_GRAPHICS, characterGraphic, sceneBackground, type SpriteRect } from "./graphics";
 import { neighborFrame } from "./graphics07";
 import type { Place } from "./story";
+import type { Season } from "./day";
 import { assetUrl } from "./assets";
 
-export const WorldBackdrop = memo(function WorldBackdrop({ place, winter, bedOccupied = false }: { place: Place; winter: boolean; bedOccupied?: boolean }) {
-  const primarySource = sceneBackground(place, winter);
+export const WorldBackdrop = memo(function WorldBackdrop({ place, season }: { place: Place; season: Season }) {
+  const winter = season === "Winter";
+  const primarySource = sceneBackground(place, season);
   const scene = SCENE_GRAPHICS[place];
-  const fallbackSource = winter ? scene.winterFallback ?? scene.fallback : scene.fallback;
+  const fallbackSource = (winter ? scene.winterFallback : undefined) ?? scene.fallback ?? scene.background;
   const [failedSources, setFailedSources] = useState<string[]>([]);
   const source = failedSources.includes(primarySource) && fallbackSource ? fallbackSource : primarySource;
   const crop = scene.crop;
   const framing = crop ? { x: -crop.x/crop.width*100, y: -crop.y/crop.height*100, width: 100/crop.width, height: 100/crop.height } : { x: 0, y: 0, width: 100, height: 100 };
   if (failedSources.includes(source)) return <div className={`scene-backdrop fallback-${place}`}><SceneArt place={place} christmas={winter}/></div>;
   return <>
-    <svg className={`scene-backdrop${scene.fallback ? " story-pixel-backdrop" : ""}${winter && scene.outdoors && !scene.winter ? " winter-town" : ""}`} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none" onError={() => setFailedSources(previous => previous.includes(source) ? previous : [...previous, source])}/></svg>
-    {SCENE_GRAPHICS[place].foreground.map((layer, index) => <svg key={index} className="scene-foreground" style={{ clipPath: layer.clip, zIndex: Math.round(layer.depth) + 9 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none"/></svg>)}
+    <svg className={`scene-backdrop${scene.seasons ? " seasonal-scene" : ""}${scene.fallback ? " story-pixel-backdrop" : ""}${winter && scene.outdoors && !scene.winter && !scene.seasons ? " winter-town" : ""}`} data-season={season} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none" onError={() => setFailedSources(previous => previous.includes(source) ? previous : [...previous, source])}/></svg>
+    {scene.foreground.map((layer, index) => <svg key={index} className={`scene-foreground${scene.seasons ? " seasonal-scene" : ""}`} style={{ clipPath: layer.clip, zIndex: Math.round(layer.depth) + 9 }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><image href={assetUrl(source)} {...framing} preserveAspectRatio="none"/></svg>)}
   </>;
 });
 
@@ -77,13 +79,29 @@ export function characterStyle(id: string): CSSProperties {
   return { width: `${graphic.width}%`, transform: `translate(${-graphic.anchor.x*100}%,${-graphic.anchor.y*100}%)` };
 }
 
-export const WorldAtmosphere = memo(function WorldAtmosphere({ place, winter }: { place: Place; winter: boolean }) {
+export const WorldAtmosphere = memo(function WorldAtmosphere({ place, season }: { place: Place; season: Season }) {
   const scene = SCENE_GRAPHICS[place];
+  const winter = season === "Winter";
   return <div className={`world-atmosphere ${scene.outdoors ? "is-outdoors" : "is-indoors"} ${winter ? "is-winter" : ""}`} aria-hidden="true" style={{ "--scene-light": scene.light } as CSSProperties}>
     {!scene.outdoors && <><span className="lamp-glow lamp-one"/><span className="lamp-glow lamp-two"/></>}
     {scene.outdoors && [0,1,2,3].map(i => <span key={i} className="drifting-leaf" style={{ "--leaf-index": i } as CSSProperties}/>)}
     {winter && (place === "home" || place === "bedroom") && <span className="christmas-lights">{[0,1,2,3,4,5,6,7].map(i=><i key={i} style={{ animationDelay: `${i*.37}s` }}/>)}</span>}
   </div>;
+});
+
+/** These lights sit above the night shade and follow the same smooth dusk/dawn. */
+export const WorldNightLights = memo(function WorldNightLights({ place, daylight }: { place: Place; daylight: number }) {
+  const glow = useId();
+  const lights = SCENE_GRAPHICS[place].nightLights;
+  if (!lights) return null;
+  return <svg className="world-night-lights" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ opacity: 1 - daylight }} aria-hidden="true">
+    <defs><radialGradient id={glow}><stop offset="0" stopColor="#ffcf80" stopOpacity=".65"/><stop offset=".25" stopColor="#ffc270" stopOpacity=".32"/><stop offset="1" stopColor="#ffc270" stopOpacity="0"/></radialGradient></defs>
+    {lights.windows.map((pane, index) => <rect key={`window-${index}`} {...pane} fill="#ffcd83" fillOpacity=".68"/>)}
+    {lights.lamps.map((lamp, index) => <g key={`lamp-${index}`}>
+      <ellipse cx={lamp.x * 100} cy={lamp.y * 100 + 1.5} rx="6" ry="7.5" fill={`url(#${glow})`}/>
+      <circle cx={lamp.x * 100} cy={lamp.y * 100} r=".25" fill="#fff1be"/>
+    </g>)}
+  </svg>;
 });
 
 // Explicit export for asset consumers and preview tools.

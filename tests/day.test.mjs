@@ -67,3 +67,15 @@ test("Gewählte Jahreszeit bleibt gespeichert und beeinflusst die Länge des Tag
 test("Jede Ruheposition hat einen begehbaren Anlauf- und Aufstehpunkt", () => {
   for (const spot of REST_SPOTS) assert.ok(canWalk(spot.place, spot.approach.x, spot.approach.y), spot.name);
 });
+
+test("Alle vier Jahreszeiten bieten helle Tage, dunkle Nächte und weiche Übergänge", () => {
+  for (const [season, dawn, dusk] of [["Frühling", 360, 1200], ["Sommer", 285, 1290], ["Herbst", 420, 1080], ["Winter", 480, 990]]) {
+    assert.equal(seasonalLight(season, 720).daylight, 1, `${season}: Mittag`);
+    assert.equal(seasonalLight(season, 1380).daylight, 0, `${season}: Nacht`);
+    for (const minute of [dawn, dusk]) assert.equal(seasonalLight(season, minute).daylight, .5, `${season}: Dämmerung`);
+    assert.equal(seasonalLight(season, dawn - 45).daylight, 0);
+    assert.equal(seasonalLight(season, dawn + 45).daylight, 1);
+    assert.equal(seasonalLight(season, dusk - 45).daylight, 1);
+    assert.equal(seasonalLight(season, dusk + 45).daylight, 0);
+  }
+});

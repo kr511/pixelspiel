@@ -32,7 +32,7 @@ import { useMemories } from "./memories/store";
 import { MemoryTransition } from "./memories/MemoryTransition";
 import { ShootingMemory } from "./memories/ShootingMemory";
 import { ItemArt } from "./SceneArt";
-import { BenchArt, CharacterArt, WorldAtmosphere, WorldBackdrop, characterStyle } from "./WorldArt";
+import { BenchArt, CharacterArt, WorldAtmosphere, WorldBackdrop, WorldNightLights, characterStyle } from "./WorldArt";
 import { advanceRest, beginRest, hasLeft, leaveRest, restPosition, type RestMotion } from "./rest";
 import { movementStep, walkingFrame } from "./motion";
 import { advanceActor, availableSeat, canChangePose, initialActors, requestPose, standingActor, type Actor, type Actors, type Pose } from "./actors";
@@ -782,7 +782,7 @@ export function Game() {
     {Object.keys(WALK_ATLASES).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
     <div className={`pixel-viewport world-viewport ${save.place === "bedroom" ? "bedroom-viewport" : ""}`} hidden={!inWorld && phase !== "entering"} role="group" aria-label={PLACES[save.place].name}>
       <div key={save.place} className="world-scene world-camera" style={{ "--camera-x": `${camera.x*100}%`, "--camera-y": `${camera.y*100}%`, "--world-zoom": camera.zoom } as CSSProperties}>
-        {event?.scene === "encounter" ? <RadegastPasture/> : <WorldBackdrop place={save.place} winter={winter} bedOccupied={bedOccupied}/>}
+        {event?.scene === "encounter" ? <RadegastPasture/> : <WorldBackdrop place={save.place} season={sceneSeason}/>}
         {event?.scene === "encounter" && <EncounterElias position={eliasPoint} arriving={eventState?.cursor === 0} cursor={eventState?.cursor ?? 0}/>}
         {event?.scene === "sequence" && <SequenceCast event={event} beat={sequenceBeat} player={player} effect={cinema} place={save.place} conversing={Boolean(dialogue)}/> }
         {sequenceBeat && <div className="story-target" data-testid="story-target" data-x={sequenceBeat.target.x} data-y={sequenceBeat.target.y} style={labelStyle(sequenceBeat.target)}><span>✦</span><small>{sequenceBeat.label}</small></div>}
@@ -801,9 +801,10 @@ export function Game() {
         </div>
         {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
         {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+10}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
-        <WorldAtmosphere place={save.place} winter={winter}/>
+        <WorldAtmosphere place={save.place} season={sceneSeason}/>
         {save.place === "kitchen" && kitchenEffect && <div className={`kitchen-effect kitchen-${kitchenEffect}`} role="status"><span>{kitchenEffect === "breakfast" ? "Frühstück steht bereit" : kitchenEffect === "warm-drink" ? "Dein Getränk ist fertig" : "Die Küche ist aufgeräumt"}</span><i/><i/><i/></div>}
-        <div className="daylight-shade" style={{ opacity: (1-light.daylight) * (["garden", "bus", "school", "radegast", "zoerbig","schoolway", "goelzau","playground","christmasmarket"].includes(save.place) ? .62 : .18) }} aria-hidden="true"/>
+        <div className="daylight-shade" style={{ opacity: (1-light.daylight) * (["garden", "school"].includes(save.place) ? .76 : ["bus", "radegast", "zoerbig","schoolway", "goelzau","playground","christmasmarket"].includes(save.place) ? .62 : .18) }} aria-hidden="true"/>
+        <WorldNightLights place={save.place} daylight={light.daylight}/>
       </div>
       <StoryEffects effect={cinema} timeline={timeline} finale={finale}/>
       {active && arrow && <div className="offscreen-guide" style={labelStyle(arrow)} role="status" aria-label={`Aufgabenziel: ${step?.label}`}><span style={{ transform: `rotate(${arrow.angle}deg)` }}>➜</span><small>{guide?.label ?? "Dein nächstes Ziel"}</small></div>}
