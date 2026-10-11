@@ -1,6 +1,14 @@
 # Felice × Elias World
 
-Version **0.9** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **01.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+Version **0.91** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **01.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+
+## Neu in V0.91
+
+- **Belebter Pausenhof vor Schulbeginn:** Ab 06:00 Uhr warten mehrere Schülergruppen auf dem Hof. Neben Elena, Jason, Luca und Wyatt am Fenstergitter stehen zwei weitere Gruppen auf dem Pflaster.
+- **Schulschluss um 13 Uhr:** Schüler kommen nacheinander aus dem Eingang. Drei sammeln sich auf dem Pausenhof, drei laufen durch das Hoftor zum Bus am Zörbiger Markt und warten dort bis 14 Uhr. Die Hofgruppe bleibt bis 18 Uhr. Pausieren hält die Bewegung an; spätere Besuche zeigen den fortgeschrittenen Tagesablauf.
+- **Elias mit zwei Freunden:** Vor dem Unterricht um 07:15 Uhr wartet Elias separat mit Paul und Justin. Felice kann ihn bereits an den ersten Schultagen sehen und begrüßen, ohne spätere Beziehungsszenen freizuschalten.
+- **Abwechslungsreiche Hintergrundschüler:** Sechs verschiedene Figuren mit unterschiedlichen Haaren, Kleidungsfarben, Größen und Blickrichtungen beleben den Hof. Sie haben keine Namensboxen oder Gesprächsaufforderungen und stehen nicht im Namenseditor. Elias und die benannten Freunde behalten ihre Namen und Interaktionen.
+- Die zusätzlichen Morgengruppen gehen zum Unterrichtsbeginn hinein. Die vorhandenen Pausenfiguren und eine ausdrücklich eingeladene Elias-Begleitung behalten ihre bisherigen Funktionen. Die namenlosen Schüler verwenden vorhandene Grafiken.
 
 ## Neu in V0.9
 

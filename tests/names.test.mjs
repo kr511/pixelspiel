@@ -12,6 +12,13 @@ test("Ein ergänzter Familienname wird gespeichert und ändert keine Figuren-ID"
   assert.equal(person.id, "family");
   assert.equal(displayName(person, renamePerson(save, person.id, "")), "Felices Mutter");
 });
+test("Hintergrundschüler fehlen im Namenseditor, bestehende Namensstände bleiben lesbar", () => {
+  assert.ok(!PEOPLE.some(person => person.id.startsWith("school-pupil-")));
+  assert.ok(PEOPLE.some(person => person.id === "school-paul"));
+  const save = parseNames(JSON.stringify({ ...initialNames(), names: { "school-pupil-left-1": "Alter Schülername", "school-paul": "Pauli" } }));
+  assert.equal(save.names["school-pupil-left-1"], "Alter Schülername");
+  assert.equal(displayName(PEOPLE.find(person => person.id === "school-paul"), save), "Pauli");
+});
 test("Unbekannte oder beschädigte Namensstände werden erkannt", () => {
   for (const value of ["broken", "null", JSON.stringify({ ...initialNames(), version: 2 }), JSON.stringify({ ...initialNames(), names: { wrong: "Name" } }), JSON.stringify({ ...initialNames(), names: { family: "x".repeat(33) } })]) assert.throws(() => parseNames(value));
 });
