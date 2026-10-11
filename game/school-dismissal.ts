@@ -23,7 +23,7 @@ const AFTER_SCHOOL_GROUPS: { prefix: string; destination: "courtyard" | "bus"; c
   { prefix: "school-pupil-left-", destination: "courtyard" },
   { prefix: "school-pupil-right-", destination: "bus", center: { x: .275, y: .295 }, radius: .04 },
   { prefix: "school-group-3-", destination: "courtyard" },
-  { prefix: "school-group-2-", destination: "bus", center: { x: .33, y: .205 }, radius: .033 },
+  { prefix: "school-group-2-", destination: "bus", center: { x: .35, y: .46 }, radius: .04 },
   { prefix: "school-group-5-", destination: "courtyard" },
   { prefix: "school-group-1-", destination: "bus", center: { x: .325, y: .355 }, radius: .025 },
   { prefix: "school-group-4-", destination: "bus", center: { x: .415, y: .355 }, radius: .025 },

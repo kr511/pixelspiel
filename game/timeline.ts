@@ -199,7 +199,7 @@ const datedEvents: StoryEvent[] = [
       { speaker: "Elias", text: "Und über den ersten Kuss können wir auch reden. Es muss kein perfekter Moment sein. Einer, in dem wir uns beide wohlfühlen.", emotion: "shy" },
     ], interactions: ["Am Bett oder Schreibtisch Platz nehmen", "Handy um 17:20 öffnen", "Das Geständnis senden", "Über Weihnachtsmarkt und ersten Kuss schreiben", "Erinnerung bewahren"],
   },
-  sequence({ id: "handholding-2025-11-25", title: "Deine Hand in meiner", date: "2025-11-25", order: 0, chapterNumber: 1, place: "schoolway", start: 870, end: 890, spawn: { x: .32, y: .20 }, illustration: "/rooms/zoerbig-market-v08.png", symbol: "♡", description: "Am 25. November halten wir Händchen. Der genaue Ort und die Uhrzeit sind nicht überliefert; der vorhandene Weg ist die Bühne für diese Erinnerung.", steps: [
+  sequence({ id: "handholding-2025-11-25", title: "Deine Hand in meiner", date: "2025-11-25", order: 0, chapterNumber: 1, place: "schoolway", start: 870, end: 890, spawn: { x: .32, y: .20 }, illustration: "/rooms/zoerbig-market-v09.png", symbol: "♡", description: "Am 25. November halten wir Händchen. Der genaue Ort und die Uhrzeit sind nicht überliefert; der vorhandene Weg ist die Bühne für diese Erinnerung.", steps: [
     beat("meet", "Auf Elias zugehen", "Ein Moment, in dem wir ein bisschen näher nebeneinander stehen.", { x: .32, y: .25 }, { emotion: "shy" }),
     beat("hand", "Elias die Hand geben", "Darf ich deine Hand nehmen?", { x: .32, y: .35 }, { emotion: "shy", choices: ["Seine Hand nehmen", "Lächeln und die Hand reichen"], animation: "handhold" }),
     beat("walk", "Ein Stück gemeinsam gehen", "Deine Hand in meiner. Den genauen Weg können wir offenlassen; dieses Gefühl bleibt.", { x: .34, y: .48 }, { speaker: "Felice", art: "felice", emotion: "love", animation: "walk" }),
@@ -337,7 +337,7 @@ export const STORY_EVENTS: StoryEvent[] = [
     id: `legacy-${chapter.id}`, title: chapter.title, date: null, period: chapter.id === "graduation" ? chapter.date : undefined, order: index, place: chapter.steps[0].place,
     scene: "legacy", requires: [], confirmed: false, source: "staged", chapter: chapter.id,
     description: chapter.id === "christmas" ? "Der vorhandene Weihnachtsentwurf bleibt mit seinen Abschlüssen erhalten. Die bestätigte Weihnachtsgeschichte vom 25. Dezember und der erste Kuss werden im Hauptkalender separat erlebt." : "Diese Geschichte gehört zu eurer Welt. Das historische Datum und der genaue Ablauf werden später mit bestätigten Angaben ergänzt. Der vorhandene Szenenentwurf bleibt spielbar.",
-    illustration: chapter.id === "dog" ? "/rooms/garden-v06.png" : chapter.id === "christmas" ? "/rooms/home-winter-v06.png" : chapter.id === "school" ? "/rooms/zoerbig-market-v08.png" : chapter.id === "graduation" ? "/rooms/graduation-gym-v08.png" : "/rooms/goelzau-range-v1.png",
+    illustration: chapter.id === "dog" ? "/rooms/garden-v06.png" : chapter.id === "christmas" ? "/rooms/home-winter-v06.png" : chapter.id === "school" ? "/rooms/zoerbig-market-v09.png" : chapter.id === "graduation" ? "/rooms/graduation-gym-v08.png" : "/rooms/goelzau-range-v1.png",
     staging: { start: 840, end: 900, spawn: { x: .5, y: .7 }, timeConfirmed: false },
     dialogue: chapter.steps.map(step => ({ speaker: "Erzählung", text: step.text })), interactions: chapter.steps.map(step => step.label),
   })),

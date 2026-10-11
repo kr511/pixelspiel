@@ -31,7 +31,7 @@ export const SCHOOL_ADDITIONAL_GROUPS: Entity[][] = [
   additionalGroup(1, { x: .515, y: .41 }, ["pupil-three", "pupil-four"], .03),
   additionalGroup(2, { x: .38, y: .69 }, ["pupil-two", "pupil-five", "pupil-six"], .04),
   additionalGroup(3, { x: .885, y: .53 }, ["pupil-one", "pupil-two", "pupil-five", "pupil-three"], .05),
-  additionalGroup(4, { x: .60, y: .73 }, ["pupil-four", "pupil-six"], .035),
+  additionalGroup(4, { x: .60, y: .73 }, ["pupil-one", "pupil-two"], .035),
   additionalGroup(5, { x: .15, y: .675 }, ["pupil-five", "pupil-two", "pupil-one"], .04),
 ];
 

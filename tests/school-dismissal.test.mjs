@@ -34,7 +34,7 @@ test("Zehn Schüler bleiben in drei Gruppen auf dem Hof, zehn warten in vier Gru
   for (const pupil of bus) {
     assert.equal(pupil.destination, "bus");
     assert.equal(pupil.actor.moving, false);
-    assert.ok(Math.hypot(pupil.entity.x - stop.x, pupil.entity.y - stop.y) < .2);
+    assert.ok(Math.hypot(pupil.entity.x - stop.x, pupil.entity.y - stop.y) < .25);
     assert.ok(pupil.entity.text.includes("warten"));
   }
   assert.equal(new Set([...courtyard, ...bus].map(pupil => pupil.entity.id)).size, 20);
