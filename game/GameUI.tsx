@@ -4,6 +4,7 @@ import { type PointerEvent, useRef, useSyncExternalStore } from "react";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useInput } from "./input";
 import { worldAudio } from "./audio";
+import { StartBackdrop } from "./StartBackdrop";
 
 export type MenuEntry = { label: string; shortcut?: string; onSelect: () => void };
 export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [] }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[] }) {
@@ -40,7 +41,8 @@ export function GameUI({ started, loading = null, onStart, roomActive = true, tr
         </div>
       )}
       {(!started || paused) && (
-        <div className="start-screen" data-game-control>
+        <div className={`start-screen${started ? "" : " with-backdrop"}`} data-game-control>
+          {!started && <StartBackdrop/>}
           <div className="start-card">
             <p>{started ? place : "Eure kleine Welt · Version 0.91"}</p>
             <h1>{started && paused ? "Kurze Pause?" : "Felice × Elias"}</h1>

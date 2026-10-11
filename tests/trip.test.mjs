@@ -6,7 +6,7 @@ import { speakerGraphic } from "../game/graphics.ts";
 import { TRIP, exitOpen, onTrip, wakePlace } from "../game/routines.ts";
 import { STORY_EVENTS, beginEvent, completeEvent, eventById, eventStatus, initialTimeline, jumpToNext, nextEvent, sleepToStoryDay } from "../game/timeline.ts";
 
-const TRIP_IDS = ["klassenfahrt-anreise", "klassenfahrt-parlament", "klassenfahrt-klopfstreich", "klassenfahrt-pokalabend", "klassenfahrt-europapark", "klassenfahrt-hotelabend", "klassenfahrt-heimreise"];
+const TRIP_IDS = ["klassenfahrt-anreise", "klassenfahrt-parlament", "klassenfahrt-pokalabend", "klassenfahrt-europapark", "klassenfahrt-hotelabend", "klassenfahrt-heimreise"];
 const player = { x: .5, y: .7 };
 const finish = save => {
   const event = eventById(save.active.id);
@@ -21,7 +21,7 @@ test("Klassenfahrt: bestätigter Wochenablauf in Kapitel 6 zwischen Frühling un
   assert.deepEqual(mainline.slice(start, start + TRIP_IDS.length), TRIP_IDS);
   assert.equal(mainline[start - 1], "spring-everyday");
   assert.equal(mainline[start + TRIP_IDS.length], "longer-visit-plan");
-  assert.deepEqual(TRIP_IDS.map(id => eventById(id).date), ["2026-04-20", "2026-04-21", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-23", "2026-04-24"]);
+  assert.deepEqual(TRIP_IDS.map(id => eventById(id).date), ["2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-23", "2026-04-24"]);
   for (const id of TRIP_IDS) {
     const event = eventById(id);
     assert.equal(event.chapterNumber, 6, id);
@@ -30,8 +30,11 @@ test("Klassenfahrt: bestätigter Wochenablauf in Kapitel 6 zwischen Frühling un
   }
   assert.equal(eventById("klassenfahrt-parlament").place, "parliament");
   assert.match(eventById("klassenfahrt-pokalabend").description, /Leverkusen gegen Bayern/);
-  // Pokalspiel und Pizza am Mittwoch; Klopfen Dienstag und Donnerstag.
+  // Dienstag nur Parlament, Pizza und Pokalspiel am Mittwoch, Klopfstreich am Donnerstagabend.
+  assert.equal(eventById("klassenfahrt-klopfstreich"), undefined);
+  assert.equal(STORY_EVENTS.filter(event => event.date === "2026-04-21").length, 1);
   assert.equal(eventById("klassenfahrt-pokalabend").date, "2026-04-22");
+  assert.match(eventById("klassenfahrt-hotelabend").steps[0].text, /klopfen/);
   assert.ok(eventById("klassenfahrt-hotelabend").staging.start > eventById("klassenfahrt-europapark").staging.start);
 });
 
@@ -104,4 +107,12 @@ test("Klassenfahrt: Szenenbilder existieren und sind gültiges SVG ohne unmaskie
     assert.match(svg, /^<svg [^>]*viewBox="0 0 320 320"/, place);
     assert.doesNotMatch(svg, /&(?!amp;|lt;|gt;|quot;|apos;|#)/, `${place}: unmaskiertes &`);
   }
+});
+
+test("Startbildschirm: Radegast, Schule und Markt Zörbig wechseln alle fünf Sekunden", async () => {
+  const { existsSync } = await import("node:fs");
+  const { START_SLIDES, START_SLIDE_MS } = await import("../game/start-slides.ts");
+  assert.equal(START_SLIDE_MS, 5000);
+  assert.deepEqual(START_SLIDES.map(slide => slide.caption), ["Radegast", "Sekundarschule Zörbig", "Zörbig · Markt"]);
+  for (const slide of START_SLIDES) assert.ok(existsSync(new URL(`../public${slide.src}`, import.meta.url)), slide.src);
 });
