@@ -52,7 +52,16 @@ Europa-Park und Hotelabend liegen am selben Tag: `staging.start` des Hotelabends
 
 Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, nicht. Deshalb zeigt die Szene den Außenbereich am Wasser mit dem markanten Rundbau, erkennbar, aber ohne exakte Nachbildung. Keine erfundene Führung, keine Plenarsitzung, keine Zitate, bis du mehr erzählst. Ein Innenraum kommt nur rein, wenn es dazu einen echten Moment gibt.
 
-**Beteiligte (bestätigt):** Lehrkräfte Frau Kaiser und Herr Kluger. Paul und Justin teilen sich das Zimmer mit Elias. Paul und Justin haben schon Figuren (`graphics.ts`, `conversations.ts`), Frau Kaiser und Herr Kluger brauchen neue Sprites und Porträts. Die Lehrkräfte starten die Abfahrt am Treffpunkt und sammeln die Gruppe bei Ortswechseln.
+**Beteiligte (bestätigt):** Fahrt der beiden 10. Klassen mit Frau Kaiser und Herrn Kluger. Elias teilt sich das Zimmer mit Paul und Justin. Außerdem dabei: Wyatt, Elena, Luca, Jason, Nino, Richard und weitere Mitschüler.
+
+| Figur | Stand im Spiel | Arbeit |
+| --- | --- | --- |
+| Paul, Justin, Wyatt, Elena, Luca, Jason | Sprites und Sprecherzuordnung vorhanden (`graphics.ts`) | Wiederverwenden, nur neue Dialoge |
+| Nino, Richard | fehlen | Neue Sprites, Porträts, Eintrag in `speakerGraphic` |
+| Frau Kaiser, Herr Kluger | fehlen | Neue Sprites und Porträts; starten die Abfahrt und sammeln die Gruppe bei Ortswechseln |
+| Weitere Mitschüler | generische `friend`-Figur | 4 bis 6 Hintergrundfiguren ohne Namen, nur warten, mitgehen, sitzen |
+
+Nicht alle Figuren stehen in jeder Szene. Pro Szene nur die, die dort wirklich etwas tun, sonst wird es auf dem Handy unübersichtlich und das Ansprechen in dichten Gruppen klappt nicht mehr. Busabfahrt und Bus sind die einzigen Szenen mit der vollen Gruppe.
 
 **Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: DFB-Pokal-Halbfinale Bayer Leverkusen gegen FC Bayern (bestätigt), laut DFB 0:2. Das Spiel kommt an den Abend, an dem es tatsächlich lief; die DFB-Quellen nennen teils den 21., teils den 22.04., daher vor dem Einbau einmal klären. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
 
