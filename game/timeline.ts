@@ -297,14 +297,6 @@ const datedEvents: StoryEvent[] = [
     beat("look", "Das Parlament ansehen", "Hier wird also über Europa entschieden. Irgendwie beeindruckend, das mal in echt zu sehen.", { x: .66, y: .58 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
     beat("back", "Zurück zum Bus", "Am Nachmittag geht es zurück nach Kehl ins Hotel.", { x: .50, y: .78 }, { speaker: "Erzählung", emotion: "neutral" }),
   ] }),
-  sequence({ id: "klassenfahrt-klopfstreich", title: "Klassenfahrt: Klopf, klopf", date: "2026-04-21", order: 1, chapterNumber: 6, place: "hotelboys", start: 1170, end: 1260, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotelboys-v095.svg", symbol: "✊", cast: ["Felice", "Elias", "Paul", "Justin"],
-    hint: "Heute Abend bin ich bei Elias, Paul und Justin im Zimmer. Die Tür ist gleich nebenan.",
-    description: "Am Dienstagabend ist Felice im Zimmer von Elias, Paul und Justin. Die drei klopfen als Streich an andere Türen. Dialoge sind rekonstruiert.", steps: [
-    beat("idea", "Paul hat eine Idee", "Leute. Wir klopfen bei den anderen und sind weg, bevor einer aufmacht.", { x: .40, y: .62 }, { speaker: "Paul", art: "paul", emotion: "laughing" }),
-    beat("door", "Mit Elias zur Tür", "Okay, aber leise. Wer zuerst lacht, verrät uns.", { x: .26, y: .80 }, { emotion: "laughing", choices: ["Ich halt mir den Mund zu", "Ihr seid unmöglich"] }),
-    beat("knock", "Den Streich miterleben", "Klopf, klopf. Und schnell zurück ins Zimmer, bevor jemand die Tür aufmacht.", { x: .30, y: .74 }, { speaker: "Erzählung", emotion: "laughing", animation: "walk" }),
-    beat("laugh", "Mit Justin lachen", "Die haben echt keine Ahnung, wer das war.", { x: .50, y: .62 }, { speaker: "Justin", art: "justin", emotion: "laughing" }),
-  ] }),
   sequence({ id: "klassenfahrt-pokalabend", title: "Klassenfahrt: Pizza und Pokalabend", date: "2026-04-22", chapterNumber: 6, place: "hotelboys", start: 1200, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotelboys-v095.svg", symbol: "⚽", cast: ["Felice", "Elias", "Paul", "Justin"],
     hint: "Heute Abend läuft das Pokalspiel. Die Jungs schauen es in ihrem Zimmer nebenan.",
     description: "Am Mittwochabend bestellen Felice, Elias, Paul und Justin Pizza und schauen im Hotelzimmer das DFB-Pokal-Halbfinale Leverkusen gegen Bayern. Dialoge sind rekonstruiert.", steps: [
@@ -324,8 +316,8 @@ const datedEvents: StoryEvent[] = [
   ] }),
   sequence({ id: "klassenfahrt-hotelabend", title: "Klassenfahrt: Der letzte Abend", date: "2026-04-23", order: 1, chapterNumber: 6, place: "hotelboys", start: 1230, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotel-v095.svg", symbol: "☾", cast: ["Felice", "Elias", "Paul", "Justin"],
     hint: "Der letzte Abend der Klassenfahrt. Ich schaue nochmal bei Elias vorbei.",
-    description: "Am Donnerstagabend wird nochmal an fremde Türen geklopft. Danach wird es ruhig: ein Moment nur für Felice und Elias, der persönlich bleibt. Dialoge sind rekonstruiert.", steps: [
-    beat("knock", "Nochmal Klopfen", "Am letzten Abend wird nochmal an fremde Türen geklopft. Ein bisschen Chaos gehört dazu.", { x: .30, y: .74 }, { speaker: "Erzählung", emotion: "laughing" }),
+    description: "Am Donnerstagabend klopfen Elias, Paul und Justin als Streich an fremde Türen. Danach wird es ruhig: ein Moment nur für Felice und Elias, der persönlich bleibt. Dialoge sind rekonstruiert.", steps: [
+    beat("knock", "Klopf, klopf", "Elias, Paul und Justin klopfen an fremde Türen und sind weg, bevor jemand aufmacht. Ein bisschen Chaos gehört dazu.", { x: .30, y: .74 }, { speaker: "Erzählung", emotion: "laughing" }),
     beat("talk", "Mit Elias allein reden", "Es war eine schöne Woche mit dir.", { x: .50, y: .62 }, { place: "hotel", emotion: "love", choices: ["Mit dir auch", "Ich will noch gar nicht nach Hause"], cast: ["Elias"] }),
     beat("private", "Ein Moment nur für euch", "Ein ruhiger Moment nur für euch zwei.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "love", animation: "fade", cast: ["Elias"] }),
     beat("later", "Später", "Später. Draußen ist es still, und morgen geht es nach Hause.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "neutral", cast: [] }),
@@ -333,7 +325,7 @@ const datedEvents: StoryEvent[] = [
   sequence({ id: "klassenfahrt-heimreise", title: "Unsere Klassenfahrt", date: "2026-04-24", chapterNumber: 6, place: "hotel", start: 480, end: 900, spawn: { x: .50, y: .62 }, illustration: "/rooms/trip-europapark-v095.svg", symbol: "🧳", cast: ["Felice", "Elias", "Frau Kaiser", "Herr Kluger"], leaveAt: { place: "school", point: { x: .52, y: .90 } },
     hint: "Heute geht es nach Hause. Erst mal den Koffer packen.",
     description: "Am Freitag fährt die Klasse mit dem Bus zurück. Fünf Tage Kehl, Straßburg und Europa-Park sind im Album bewahrt. Dialoge sind rekonstruiert.",
-    artifacts: [{ id: "klassenfahrt-2026", title: "Unsere Klassenfahrt: Straßburg, Kehl & Europa-Park", symbol: "🧳", description: "20. bis 24. April 2026. Bus, B&B Hotel in Kehl, Europäisches Parlament, Pizza und Pokalabend, Klopfstreiche und Achterbahn im Europa-Park." }], steps: [
+    artifacts: [{ id: "klassenfahrt-2026", title: "Unsere Klassenfahrt: Straßburg, Kehl & Europa-Park", symbol: "🧳", description: "20. bis 24. April 2026. Bus, B&B Hotel in Kehl, Europäisches Parlament, Pizza und Pokalabend, Achterbahn im Europa-Park und ein Klopfstreich." }], steps: [
     beat("pack", "Koffer packen", "Koffer packen. Fünf Tage gehen schneller vorbei, als man denkt.", { x: .75, y: .68 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect", cast: [] }),
     beat("home", "Ankunft in Zörbig", "Alle wieder da? Dann ab nach Hause. Danke für die schöne Fahrt!", { x: .50, y: .70 }, { place: "school", speaker: "Herr Kluger", art: "kluger", emotion: "happy", animation: "arrival", cast: ["Herr Kluger", "Frau Kaiser"] }),
     beat("thanks", "Elias verabschieden", "Danke für diese Woche. Ich werd sie nicht vergessen.", { x: .62, y: .78 }, { place: "school", emotion: "love", choices: ["Ich auch nicht", "Bis morgen schreiben wir"], cast: ["Elias"] }),

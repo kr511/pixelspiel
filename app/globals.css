@@ -49,6 +49,15 @@ button { font:inherit; }
 .mobile-hint { display:none; }
 .joystick { display:none; }
 .start-screen { pointer-events:auto; position:absolute; inset:0; display:grid; place-items:center; padding:24px; background:linear-gradient(180deg,rgba(25,28,32,.08),rgba(25,20,26,.44)); backdrop-filter:blur(3px); }
+.start-screen.with-backdrop { overflow:hidden; background:#1b1f24; }
+.start-backdrop { position:absolute; inset:0; overflow:hidden; }
+.start-backdrop img { position:absolute; inset:-2%; width:104%; height:104%; object-fit:cover; image-rendering:pixelated; opacity:0; transform:scale(1.02); transition:opacity 1.2s ease, transform 6s linear; }
+.start-backdrop img.active { opacity:1; transform:scale(1.07); }
+.start-backdrop::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(16,21,31,.25),rgba(16,21,31,.6)); }
+.start-backdrop-caption { position:absolute; z-index:1; left:50%; bottom:max(22px,env(safe-area-inset-bottom)); transform:translateX(-50%); padding:6px 12px; border:1px solid rgba(255,255,255,.22); border-radius:4px; background:rgba(25,22,28,.55); color:rgba(255,247,239,.85); font-size:.72rem; letter-spacing:.08em; white-space:nowrap; }
+.start-screen.with-backdrop .start-card { position:relative; z-index:1; }
+@media (max-height: 460px) { .start-backdrop-caption { display:none; } }
+@media (prefers-reduced-motion: reduce) { .start-backdrop img, .start-backdrop img.active { transform:none; transition:opacity .4s linear; } }
 .start-card { width:min(100%,450px); padding:38px 34px 32px; border:1px solid rgba(255,255,255,.3); border-radius:28px; background:linear-gradient(145deg,rgba(36,32,35,.65),rgba(50,38,38,.38)); box-shadow:0 28px 90px rgba(28,18,25,.28); backdrop-filter:blur(18px); text-align:center; }
 .start-card p { margin:0 0 13px; color:#ffcda8; font-size:.74rem; font-weight:750; letter-spacing:.14em; text-transform:uppercase; }
 .start-card h1 { margin:0; font-family:Georgia,"Times New Roman",serif; font-size:clamp(2.5rem,8vw,4.2rem); font-weight:500; letter-spacing:-.06em; line-height:.95; }
