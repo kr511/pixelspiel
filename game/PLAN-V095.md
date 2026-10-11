@@ -61,7 +61,7 @@ Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, 
 | Frau Kaiser, Herr Kluger | fehlen | Neue Sprites und Porträts; starten die Abfahrt und sammeln die Gruppe bei Ortswechseln |
 | Weitere Mitschüler | generische `friend`-Figur | 4 bis 6 Hintergrundfiguren ohne Namen, nur warten, mitgehen, sitzen |
 
-**Gruppen unterwegs (Straßburg, Europa-Park):** Elias mit Paul und Justin; Felice mit Elena, Luca und Jason. Ob das eine gemeinsame Siebenergruppe war oder zwei Gruppen, ist noch zu klären. Bei zwei Gruppen ist Elias in Felices Tagesszenen nicht ständig dabei, die Begegnungen mit ihm werden dann gezielte Momente statt Dauerbegleitung.
+**Gruppen unterwegs (Straßburg, Europa-Park), bestätigt:** zwei getrennte Gruppen. Felice ist mit Elena, Luca und Jason unterwegs, Elias mit Paul und Justin. Felices Gruppe ist ihre Begleitung in den Tagesszenen (Gruppenmittelpunkt, Abstände, Folgen wie bei den vier Freunden auf dem Schulhof). Elias folgt tagsüber nicht dauerhaft; seine Gruppe taucht an festen Treffpunkten auf, und diese Begegnungen sind die inszenierten gemeinsamen Momente. Wo genau sich die Gruppen getroffen haben, ist noch zu klären.
 
 Nicht alle Figuren stehen in jeder Szene. Pro Szene nur die, die dort wirklich etwas tun, sonst wird es auf dem Handy unübersichtlich und das Ansprechen in dichten Gruppen klappt nicht mehr. Busabfahrt und Bus sind die einzigen Szenen mit der vollen Gruppe.
 
