@@ -1,18 +1,28 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ACTION_MINUTES, REST_SPOTS, TRAVEL_MINUTES, activityAt, advanceClock, clockText, initialDay, parseDay, seasonalLight, sleepUntilMorning } from "../game/day.ts";
+import { ACTION_MINUTES, REST_SPOTS, SCHOOL_START, TRAVEL_MINUTES, activityAt, advanceClock, clockText, initialDay, parseDay, seasonalLight, sleepUntilMorning, travelMinutes } from "../game/day.ts";
 import { canWalk } from "../game/story.ts";
 
 const start = initialDay(new Date(2026, 9, 6));
 
-test("Start um 5 Uhr; Aktionen kosten 10 und Ortswechsel 30 Minuten", () => {
+test("Start um 5 Uhr; Aktionen kosten 10 Minuten, Ortswechsel je nach Strecke", () => {
   assert.equal(start.minute, 300);
   assert.equal(start.date, "2026-10-06");
   let next = advanceClock(start, ACTION_MINUTES);
   assert.equal(next.save.minute, 310);
-  next = advanceClock(next.save, TRAVEL_MINUTES);
-  assert.equal(clockText(next.save.minute), "5:40");
+  next = advanceClock(next.save, travelMinutes("bedroom", "home"));
+  assert.equal(clockText(next.save.minute), "5:15");
   assert.deepEqual(next.notices, []);
+});
+
+test("Wegzeiten sind symmetrisch und der Schulweg ist vor den Schülergruppen zu schaffen", () => {
+  assert.equal(travelMinutes("bus", "radegast"), travelMinutes("radegast", "bus"));
+  assert.equal(travelMinutes("bedroom", "school"), TRAVEL_MINUTES);
+  const route = ["bedroom", "home", "radegast", "bus", "zoerbig", "school"];
+  const total = route.slice(1).reduce((sum, place, i) => sum + travelMinutes(route[i], place), 0);
+  assert.equal(total, 50);
+  // Aufstehen um 5:00, danach noch Frischmachen (15 Min): Ankunft vor Unterrichtsbeginn
+  assert.ok(300 + 15 + total < SCHOOL_START);
 });
 
 test("Alle überschrittenen Hinweiszeiten werden einmal erfasst, auch bei Unterricht bis 13 Uhr", () => {
