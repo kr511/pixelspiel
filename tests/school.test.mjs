@@ -41,9 +41,14 @@ test("Alle Morgengruppen stehen in Gesprächsabstand und halten Wege frei", () =
     assert.ok(group.length >= 2 && group.length <= 4);
     for (const member of group) {
       assert.equal(member.ambient, true);
-      assert.ok(group.every(other => Math.hypot(other.x - member.x, other.y - member.y) < .15));
+      assert.ok(group.every(other => Math.hypot(other.x - member.x, other.y - member.y) < .075), `${member.id}: die ganze Gruppe bleibt kompakt`);
       const nearest = Math.min(...group.filter(other => other !== member).map(other => Math.hypot(other.x - member.x, other.y - member.y)));
-      assert.ok(nearest < .075, `${member.id}: ein Gesprächspartner steht in der Nähe`);
+      assert.ok(nearest < .047, `${member.id}: ein Gesprächspartner steht direkt nebenan`);
+      if (group.length === 4) {
+        for (const other of group.filter(other => other !== member)) {
+          assert.ok(Math.abs(other.x - member.x) > .012 || Math.abs(other.y - member.y) > .05, `${member.id}: keine Figur direkt hinter der anderen`);
+        }
+      }
     }
   }
   assert.equal(new Set(SCHOOL_MORNING_ENTITIES.map(entity => entity.id)).size, SCHOOL_MORNING_ENTITIES.length);
@@ -51,7 +56,7 @@ test("Alle Morgengruppen stehen in Gesprächsabstand und halten Wege frei", () =
     assert.ok(Math.hypot(pupil.x - SPAWNS.school.x, pupil.y - SPAWNS.school.y) > .10);
     assert.ok(Math.hypot(pupil.x - .50, pupil.y - .28) > .08, "Der Schuleingang bleibt frei");
     for (const other of SCHOOL_MORNING_ENTITIES) {
-      if (other.id !== pupil.id) assert.ok(Math.hypot(pupil.x - other.x, pupil.y - other.y) > .045, `${pupil.id} und ${other.id}`);
+      if (other.id !== pupil.id) assert.ok(Math.hypot(pupil.x - other.x, pupil.y - other.y) > .030, `${pupil.id} und ${other.id}: Platz für beide Figuren`);
     }
   }
 });
@@ -97,7 +102,15 @@ test("Elena, Luca, Jason und Wyatt stehen im Kreis und schauen zur Mitte", () =>
   const four = ["friends", "jason", "luca", "wyatt"].map(id => ENTITIES.school.find(entity => entity.id === id));
   const center = { x: four.reduce((sum, member) => sum + member.x, 0) / 4, y: four.reduce((sum, member) => sum + member.y, 0) / 4 };
   const radii = four.map(member => Math.hypot(member.x - center.x, member.y - center.y)); // Elena's circle is round, the others are stretched
-  for (const radius of radii) assert.ok(Math.abs(radius - radii[0]) < .005 && radius > .04 && radius < .08, "gleicher Abstand zur Mitte");
+  for (const radius of radii) assert.ok(Math.abs(radius - radii[0]) < .005 && radius > .020 && radius < .032, "gleicher, enger Abstand zur Mitte");
+  for (const member of four) {
+    const neighbors = four.filter(other => other !== member).map(other => Math.hypot(other.x - member.x, other.y - member.y));
+    assert.ok(Math.min(...neighbors) > .030 && Math.min(...neighbors) < .047, `${member.name}: direkt neben den Freunden`);
+    assert.ok(Math.max(...neighbors) < .075, `${member.name}: die Vierergruppe bleibt kompakt`);
+    for (const other of four.filter(other => other !== member)) {
+      assert.ok(Math.abs(other.x - member.x) > .012 || Math.abs(other.y - member.y) > .05, `${member.name}: alle vier Figuren bleiben sichtbar`);
+    }
+  }
   for (const member of four) assert.equal(member.facing, center.x > member.x ? "right" : "left", `${member.name} schaut seitlich zur Mitte, nicht in die Kamera`);
   for (const member of four) assert.ok(canWalk("school", member.x, member.y), member.name);
 });

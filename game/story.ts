@@ -84,7 +84,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
 
 // Bestätigt: acht Personen beim Weihnachtsessen; Namen noch offen.
 // Dialoge, Kleidung und genaue Szenengestaltung sind spielerische Entwürfe.
-const FRIENDS_RING = ringFormation({ x: .215, y: .35 }, 4, .045, 1 / 8, 1);
+const FRIENDS_RING = ringFormation({ x: .215, y: .35 }, 4, .028, 1 / 16, 1);
 export const ENTITIES: Record<Place, Entity[]> = {
   playground: [
     { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden. Dieses Gespräch ist eine freie Rekonstruktion." },

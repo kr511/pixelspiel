@@ -22,12 +22,12 @@ let arrivals: Journey[] | undefined;
 // each group clearly apart from the next.
 const AFTER_SCHOOL_GROUPS: { prefix: string; destination: "courtyard" | "bus"; center?: Point; radius?: number }[] = [
   { prefix: "school-pupil-left-", destination: "courtyard" },
-  { prefix: "school-pupil-right-", destination: "bus", center: { x: .36, y: .36 }, radius: .03 },
+  { prefix: "school-pupil-right-", destination: "bus", center: { x: .36, y: .36 }, radius: .020 },
   { prefix: "school-group-3-", destination: "courtyard" },
-  { prefix: "school-group-2-", destination: "bus", center: { x: .64, y: .32 }, radius: .03 },
+  { prefix: "school-group-2-", destination: "bus", center: { x: .64, y: .32 }, radius: .020 },
   { prefix: "school-group-5-", destination: "courtyard" },
-  { prefix: "school-group-1-", destination: "bus", center: { x: .51, y: .46 }, radius: .025 },
-  { prefix: "school-group-4-", destination: "bus", center: { x: .36, y: .51 }, radius: .025 },
+  { prefix: "school-group-1-", destination: "bus", center: { x: .51, y: .46 }, radius: .020 },
+  { prefix: "school-group-4-", destination: "bus", center: { x: .36, y: .51 }, radius: .020 },
 ];
 const GROUP_GAP = 4;
 const MEMBER_GAP = .5;

@@ -39,7 +39,7 @@ test("Zehn Schüler bleiben in drei Gruppen auf dem Hof, zehn warten in vier Gru
   }
   assert.equal(new Set([...courtyard, ...bus].map(pupil => pupil.entity.id)).size, 20);
   for (const pupils of [courtyard, bus]) for (const a of pupils) for (const b of pupils) {
-    if (a !== b) assert.ok(Math.hypot(a.entity.x - b.entity.x, a.entity.y - b.entity.y) > .045, `${a.entity.id} und ${b.entity.id} stehen nicht ineinander`);
+    if (a !== b) assert.ok(Math.hypot(a.entity.x - b.entity.x, a.entity.y - b.entity.y) > .030, `${a.entity.id} und ${b.entity.id} stehen nicht ineinander`);
   }
   for (const [pupils, groups] of [[courtyard, 3], [bus, 4]]) {
     const byGroup = Map.groupBy(pupils, pupil => pupil.entity.id.replace(/-\d$|\d$/, ""));
@@ -47,6 +47,9 @@ test("Zehn Schüler bleiben in drei Gruppen auf dem Hof, zehn warten in vier Gru
     for (const members of byGroup.values()) {
       const center = centerOf(members.map(member => member.entity));
       for (const { entity } of members) {
+        const distances = members.filter(other => other.entity.id !== entity.id).map(other => Math.hypot(other.entity.x - entity.x, other.entity.y - entity.y));
+        assert.ok(Math.min(...distances) < .047, `${entity.id}: auch nach Schulschluss direkt neben einem Gesprächspartner`);
+        assert.ok(Math.max(...distances) < .075, `${entity.id}: die ganze Gruppe bleibt kompakt`);
         assert.ok(Math.hypot(entity.x - center.x, entity.y - center.y) < .06, `${entity.id} steht in seiner Gruppe`);
         assert.equal(entity.facing, center.x > entity.x ? "right" : "left", `${entity.id} schaut zur Mitte`);
       }
