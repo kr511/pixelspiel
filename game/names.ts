@@ -4,8 +4,10 @@ export const NAMES_KEY = "felice-elias.names.v07";
 export const NAME_MODES = ["always", "nearby", "friends"] as const;
 export type NameMode = typeof NAME_MODES[number];
 export type NameSave = { version: 1; names: Record<string, string>; visibility: NameMode };
-export const PEOPLE = Object.entries(ENTITIES).flatMap(([place, entities]) => entities.filter(entity => entity.kind === "person" && entity.art !== "elias").map(entity => ({ ...entity, place: place as Place })));
-const ids = new Set(PEOPLE.map(entity => entity.id));
+const allPeople = Object.entries(ENTITIES).flatMap(([place, entities]) => entities.filter(entity => entity.kind === "person" && entity.art !== "elias").map(entity => ({ ...entity, place: place as Place })));
+export const PEOPLE = allPeople.filter(entity => !entity.ambient);
+// Keep accepting previously saved names when a figure becomes background scenery.
+const ids = new Set(allPeople.map(entity => entity.id));
 export function initialNames(): NameSave { return { version: 1, names: {}, visibility: "always" }; }
 export function displayName(entity: Entity, save: NameSave): string { return save.names[entity.id] ?? entity.name; }
 export function renamePerson(save: NameSave, id: string, value: string): NameSave {

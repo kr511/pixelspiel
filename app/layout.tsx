@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Felice × Elias",
-  description: "Felice × Elias World V0.9 – Unsere gemeinsame Geschichte in acht spielbaren Kapiteln, mit lebendigen Dialogen, Handy und Erinnerungsalbum.",
+  description: "Felice × Elias World V0.91 – Unsere gemeinsame Geschichte in acht spielbaren Kapiteln, mit lebendigen Dialogen, Handy und Erinnerungsalbum.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

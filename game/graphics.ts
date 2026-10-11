@@ -63,6 +63,9 @@ export const CHARACTER_GRAPHICS = {
   elena: npc(2,1), jason: npc(3,0), luca: npc(1,1), wyatt: npc(3,1),
   ida: npc(0,0), helena: npc(2,0), linda: npc(0,1), lina: npc(2,1), alexandra: npc(0,1),
   paul: npc(3,0), justin: npc(1,1),
+  "pupil-one": { ...npc(0,0), width: 7.0 }, "pupil-two": { ...npc(3,0), width: 7.5 },
+  "pupil-three": { ...npc(2,0), width: 7.3 }, "pupil-four": { ...npc(1,1), width: 7.4 },
+  "pupil-five": { ...npc(0,1), width: 6.8 }, "pupil-six": { ...npc(2,1), width: 7.1 },
   alexander: npc(3,0), magdalena: npc(0,1), hans: npc(3,1), fritz: npc(1,0),
   dog: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0, width: 9, anchor: { x: .5, y: .94 }, portrait: { sheet: "/characters/anuk-v06.png", columns: 1, rows: 1, column: 0, row: 0 } },
 } satisfies Record<string, CharacterGraphic>;

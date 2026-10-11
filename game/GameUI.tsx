@@ -42,7 +42,7 @@ export function GameUI({ started, onStart, roomActive = true, transitioning = fa
       {(!started || paused) && (
         <div className="start-screen" data-game-control>
           <div className="start-card">
-            <p>{started ? place : "Eure kleine Welt · Version 0.9"}</p>
+            <p>{started ? place : "Eure kleine Welt · Version 0.91"}</p>
             <h1>{started && paused ? "Kurze Pause?" : "Felice × Elias"}</h1>
             <span>{started && paused ? "Dein Moment wartet auf dich." : "Lange Abende am Handy. Ein Fahrrad, ein Stück Schokolade. Zwei Nachrichten, die bleiben. Erlebe euer gemeinsames Jahr in acht Kapiteln – vom ersten Schreiben bis zu den Erinnerungen, die bleiben."}</span>
             <button onClick={() => { void worldAudio.unlock(); setPaused(false); if (!started) onStart(); }}><Play size={17} fill="currentColor" />{started && paused ? "Zurück zum Spiel" : "Welt betreten"}</button>

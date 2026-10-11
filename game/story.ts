@@ -1,3 +1,5 @@
+import { SCHOOL_MORNING_ENTITIES } from "./school.ts";
+
 export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom";
 export type Point = { x: number; y: number };
 export const SCHOOL_WAY_CROP = { x: .08, y: .30, width: .84, height: .70 };
@@ -5,7 +7,7 @@ const schoolWayPoint = (x: number, y: number): Point => ({ x: (x-.08)/.84, y: (y
 export type ChapterId = "dog" | "christmas" | "school" | "shooting" | "graduation";
 export type Step = { id: string; place: Place; target: string; label: string; speaker: string; text: string; item?: string };
 export type Chapter = { id: ChapterId; title: string; date: string; icon: string; intro: string; ending: string; reward: string; steps: Step[] };
-export type Entity = Point & { id: string; name: string; kind: "person" | "dog" | "item"; art: string; text: string; display?: Point };
+export type Entity = Point & { id: string; name: string; kind: "person" | "dog" | "item"; art: string; text: string; display?: Point; ambient?: boolean; facing?: "front" | "left" | "back" | "right" };
 export type Exit = Point & { to: Place; label: string; spawn: Point };
 export type Obstacle = { left: number; right: number; top: number; bottom: number };
 export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit[]; obstacles: Obstacle[] }> = {
@@ -153,6 +155,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "ticket", name: "Fahrkarte", x: .39, y: .48, display: { x: .405, y: .40 }, kind: "item", art: "ticket", text: "Eine Fahrkarte für den gemeinsamen Weg." },
   ],
   school: [
+    ...SCHOOL_MORNING_ENTITIES,
     { id: "school-grille", name: "Treffpunkt am Fenstergitter", x: .225, y: .35, display: { x: .20, y: .51 }, kind: "item", art: "landmark", text: "Die niedrigen Gitter sitzen vor den unteren Fenstern des grauen Schulgebäudes. Hier stehen Elena, Jason, Luca und Wyatt in der Pause." },
     { id: "friends", name: "Elena", x: .18, y: .295, kind: "person", art: "elena", text: "Hey Felice! Wir treffen uns am Gitter beim Schulgebäude. Bleibst du noch ein bisschen bei mir?" },
     { id: "jason", name: "Jason", x: .25, y: .295, kind: "person", art: "jason", text: "Ich mache Fachabi. Neuer Abschnitt, aber unsere Sprüche bleiben natürlich dieselben." },

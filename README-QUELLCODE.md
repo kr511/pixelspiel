@@ -1,6 +1,14 @@
 # Felice × Elias World
 
-Version **0.9** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **01.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+Version **0.91** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **10.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+
+## Neu in V0.91
+
+- **Belebter Pausenhof vor Schulbeginn:** Ab 06:00 Uhr warten mehrere Schülergruppen auf dem Hof. Neben Elena, Jason, Luca und Wyatt am Fenstergitter stehen zwei weitere Gruppen auf dem Pflaster.
+- **Schulschluss um 13 Uhr:** Schüler kommen nacheinander aus dem Eingang. Drei sammeln sich auf dem Pausenhof, drei laufen durch das Hoftor zum Bus am Zörbiger Markt und warten dort bis 14 Uhr. Die Hofgruppe bleibt bis 18 Uhr. Pausieren hält die Bewegung an; spätere Besuche zeigen den fortgeschrittenen Tagesablauf.
+- **Elias mit zwei Freunden:** Vor dem Unterricht um 07:15 Uhr wartet Elias separat mit Paul und Justin. Felice kann ihn bereits an den ersten Schultagen sehen und begrüßen, ohne spätere Beziehungsszenen freizuschalten.
+- **Abwechslungsreiche Hintergrundschüler:** Sechs verschiedene Figuren mit unterschiedlichen Haaren, Kleidungsfarben, Größen und Blickrichtungen beleben den Hof. Sie haben keine Namensboxen oder Gesprächsaufforderungen und stehen nicht im Namenseditor. Elias und die benannten Freunde behalten ihre Namen und Interaktionen.
+- Die zusätzlichen Morgengruppen gehen zum Unterrichtsbeginn hinein. Die vorhandenen Pausenfiguren und eine ausdrücklich eingeladene Elias-Begleitung behalten ihre bisherigen Funktionen. Die namenlosen Schüler verwenden vorhandene Grafiken.
 
 ## Neu in V0.9
 
@@ -23,9 +31,9 @@ bisherige Serverfassung. Der separate Vite-Build enthält das Spiel und sämtlic
 Grafiken; es werden weder Node-Server noch Datenbank auf GitHub Pages benötigt.
 Die vorhandenen Sites-Buildbefehle bleiben erhalten.
 
-Einmalig in [Settings → Pages](https://github.com/kr511/pixelgame/settings/pages)
+Einmalig in [Settings → Pages](https://github.com/kr511/pixelspiel/settings/pages)
 als **Source: GitHub Actions** auswählen. Anschließend unter
-[Actions → Deploy GitHub Pages](https://github.com/kr511/pixelgame/actions/workflows/github-pages.yml)
+[Actions → Deploy GitHub Pages](https://github.com/kr511/pixelspiel/actions/workflows/github-pages.yml)
 **Run workflow** starten. Weitere Pushes auf `main` bauen und veröffentlichen
 automatisch. Solange Pages nicht aktiviert ist, erzeugt der Workflow bereits
 das herunterladbare `github-pages`-Artefakt und zeigt die Einrichtungshinweise.
@@ -33,7 +41,7 @@ Der Workflow verwendet Node 24, passend zu den Optionen des bestehenden Testskri
 Bei privaten Repositories muss der GitHub-Tarif Pages unterstützen; die
 Repository-Sichtbarkeit wird durch diesen Workflow nicht geändert.
 
-Die erwartete Spieladresse ist **https://kr511.github.io/pixelgame/**.
+Die erwartete Spieladresse ist **https://kr511.github.io/pixelspiel/**.
 Die `.html`-Datei im Repository ist der Build-Einstieg. Veröffentlicht wird
 **der gesamte Inhalt von `dist-pages/`**, einschließlich der gebauten
 `index.html`, Skripte, Styles und Grafiken; nur die Quelldatei hochzuladen reicht

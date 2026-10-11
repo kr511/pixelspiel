@@ -84,7 +84,7 @@ test("Eine neue Haltung während des Aufstehens ersetzt das alte Ziel zuverläss
 
 
 test("Elias bleibt außerhalb der vier Schulfreunde am Fenstergitter", () => {
-  assert.deepEqual(ENTITIES.school.filter(e=>e.kind==="person").map(e=>e.name).sort(),["Elena","Jason","Luca","Wyatt"]);
+  assert.deepEqual(ENTITIES.school.filter(e=>SCHOOL_ROUTES[e.id]).map(e=>e.name).sort(),["Elena","Jason","Luca","Wyatt"]);
   let elias=standingActor(SPAWNS.school);
   for(let i=0;i<2400;i++) elias=advanceActor("school","elias-guest",elias,1/60);
   assert.deepEqual(elias.position,SPAWNS.school);
