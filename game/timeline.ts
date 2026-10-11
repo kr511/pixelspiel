@@ -125,7 +125,7 @@ const chatEvents: StoryEvent[] = Array.from({ length: 12 }, (_, index) => {
     // Order 2: evening chats follow the school scene (0) and the pasture meeting (1).
     id: chatId(day), title: `Unsere Gespräche · Abend ${index + 1}`, date: `2025-11-${day}`, order: 2,
     place: "bedroom", scene: "chat", requires: [], confirmed: true, chapterNumber: 1, symbol: "☾", source: "historical", cast: ["Felice", "Elias"],
-    description: day === 19 ? "Nach dem Treffen bei den Pferden schreiben wir wieder. Felice macht deutlich: Schon Elias’ Anwesenheit hat ihr geholfen. Der genaue Wortlaut bleibt eine Rekonstruktion." : "Zwischen ungefähr 17 und 23 Uhr schreiben wir miteinander. Computer, das Weltall, große Fragen, Zukunft, Hobbys und Collin – aus vielen Abenden wird ein gemeinsamer Anfang.",
+    description: day === 19 ? "Nach dem Treffen in Radegast schreiben wir wieder. Felice macht deutlich: Schon Elias’ Anwesenheit hat ihr geholfen. Der genaue Wortlaut bleibt eine Rekonstruktion." : "Zwischen ungefähr 17 und 23 Uhr schreiben wir miteinander. Computer, das Weltall, große Fragen, Zukunft, Hobbys und Collin – aus vielen Abenden wird ein gemeinsamer Anfang.",
     illustration: "/rooms/felice-bedroom-v9.png", staging: { start: day === 24 ? 1100 : 1020, end: 1380, spawn: { x: .5, y: .6 }, timeConfirmed: false },
     dialogue: [{ speaker: "Erzählung", text: day === 19 ? "Nach dem Besuch bleibt Nähe. Felice sagt sinngemäß, dass allein Elias’ Anwesenheit ihr geholfen hat. Originalnachrichten liegen nicht vor." : index < 4 ? "Ein Handy leuchtet. Es ist noch vieles neu, aber die Gespräche werden länger." : index < 7 ? "Aus einzelnen Nachrichten werden vertraute gemeinsame Abende." : "Zwischen den Zeilen wächst Nähe. Ihr nehmt euch Zeit füreinander." }],
     interactions: ["Am Bett oder Schreibtisch Platz nehmen", "Handy öffnen", "Mindestens zwei Gesprächsthemen auswählen", "Abend bewahren"],
@@ -161,11 +161,11 @@ const datedEvents: StoryEvent[] = [
   {
     // Dated 19.11.2025 as confirmed by Elias (10.10.2026); the stable ID keeps saves valid.
     id: "radegast-chocolate", title: "Die Schokolade", date: "2025-11-19", order: 1, chapterNumber: 1, symbol: "▦", source: "historical", cast: ["Felice", "Elias"],
-    place: "radegast", scene: "encounter", requires: [], confirmed: true, rewards: ["chocolate"], hint: "Vielleicht sollte ich zu den Pferden gehen.",
+    place: "radegast", scene: "encounter", requires: [], confirmed: true, rewards: ["chocolate"], hint: "Vielleicht sollte ich zum Treffpunkt gehen.",
     description: "Elias kam mit dem Fahrrad aus Zörbig zu mir nach Radegast und brachte Schokolade mit. Mir war kalt und ich hatte keinen Appetit. Ich aß sie nicht, und er fühlte sich etwas unbeholfen. Trotzdem half mir schon seine Anwesenheit.",
     illustration: "pasture", staging: { start: 960, end: 990, spawn: { x: .66, y: .42 }, timeConfirmed: false },
     dialogue: [
-      { speaker: "Erzählung", text: "Felice ist bei den Pferden in Radegast. Ihr ist kalt. Elias kommt mit dem Fahrrad aus Zörbig, um sie zu besuchen.", emotion: "neutral" },
+      { speaker: "Erzählung", text: "Felice wartet am Treffpunkt in Radegast. Ihr ist kalt. Elias kommt mit dem Fahrrad aus Zörbig, um sie zu besuchen.", emotion: "neutral" },
       { speaker: "Felice", text: "Schön, dass du gekommen bist. Es ist ziemlich kalt hier.", emotion: "happy" },
       { speaker: "Elias", text: "Ich habe Schokolade für dich mitgebracht.", emotion: "shy" },
       { speaker: "Felice", text: "Danke. Ich habe gerade keinen Appetit, aber ich freue mich, dass du da bist.", emotion: "shy" },
@@ -440,7 +440,7 @@ const PLACE_HINTS: Partial<Record<Place, string>> = {
 const PASTURE_TRIGGER: Point = { x: .52, y: .50 };
 /** Where and how a waiting memory is started from the world instead of a menu. */
 export function storyTrigger(event: StoryEvent): StoryTrigger {
-  if (event.scene === "encounter") return { place: "radegast", point: PASTURE_TRIGGER, radius: .055, mode: "enter", label: "Zur Pferdekoppel", hint: event.hint ?? "Vielleicht sollte ich zu den Pferden gehen." };
+  if (event.scene === "encounter") return { place: "radegast", point: PASTURE_TRIGGER, radius: .055, mode: "enter", label: "Zum Treffpunkt", hint: event.hint ?? "Vielleicht sollte ich zum Treffpunkt gehen." };
   if (event.scene !== "sequence") return { place: "bedroom", point: { x: .60, y: .395 }, radius: .13, mode: "phone", label: "Handy", hint: event.hint ?? (event.scene === "chat" ? "Vielleicht schaue ich heute Abend auf mein Handy. Am Bett oder Schreibtisch kann ich in Ruhe schreiben." : "Mein Handy … Vielleicht ist eine Nachricht gekommen. Am Bett oder Schreibtisch kann ich nachsehen.") };
   const first = event.steps?.[0];
   const place = first?.place ?? event.place;
