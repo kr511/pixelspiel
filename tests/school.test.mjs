@@ -4,11 +4,17 @@ import { SCHOOL_START } from "../game/day.ts";
 import { ENTITIES, SPAWNS, canWalk } from "../game/story.ts";
 import { walkingRoute } from "../game/actors.ts";
 import { eliasPresent, routineEntities } from "../game/routines.ts";
-import { SCHOOL_ADDITIONAL_GROUPS, SCHOOL_ARRIVAL, SCHOOL_ELIAS_ID, SCHOOL_MORNING_ENTITIES } from "../game/school.ts";
+import { SCHOOL_ADDITIONAL_GROUPS, SCHOOL_ARRIVAL, SCHOOL_ARRIVAL_IDS, SCHOOL_ELIAS_ID, SCHOOL_MORNING_ENTITIES } from "../game/school.ts";
+import { schoolMorningArrivals } from "../game/school-dismissal.ts";
 
-test("Vor dem Unterricht warten 27 Figuren in mehreren Gruppen auf dem Hof", () => {
+test("Vor dem Unterricht stehen 27 Figuren in mehreren Gruppen auf dem Hof, drei davon kommen später vom Markt", () => {
   for (const minute of [SCHOOL_ARRIVAL, 6 * 60 + 30, SCHOOL_START - 1]) {
-    const pupils = routineEntities("school", minute, ENTITIES.school).filter(entity => entity.kind === "person");
+    const standing = routineEntities("school", minute, ENTITIES.school).filter(entity => entity.kind === "person");
+    assert.equal(standing.length, 24, "Die Nachzügler stehen nicht von Anfang an da");
+    assert.equal(schoolMorningArrivals("school", minute, 0).length, 0);
+    const arrived = schoolMorningArrivals("school", minute, 60).map(pupil => pupil.entity);
+    assert.deepEqual(arrived.map(entity => entity.id).sort(), [...SCHOOL_ARRIVAL_IDS].sort());
+    const pupils = [...standing, ...arrived];
     assert.equal(pupils.length, 27);
     for (const name of ["Elena", "Jason", "Luca", "Wyatt"]) {
       assert.ok(pupils.some(entity => entity.name === name), `${name} um ${minute}`);
@@ -79,13 +85,27 @@ test("Alle Morgengruppen stehen auf begehbarem Pflaster und sind vom Hofeingang 
   }
 });
 
-test("Elena, Luca, Jason und Wyatt stehen eng zusammen und schauen einander an", () => {
+test("Elena, Luca, Jason und Wyatt stehen im Kreis und schauen zur Mitte", () => {
   const four = ["friends", "jason", "luca", "wyatt"].map(id => ENTITIES.school.find(entity => entity.id === id));
-  for (const member of four) {
-    assert.ok(["left", "right"].includes(member.facing), `${member.name} schaut zur Gruppe`);
-    for (const other of four) if (other !== member) assert.ok(Math.hypot(member.x - other.x, member.y - other.y) < .09, `${member.name} und ${other.name}`);
-    assert.ok(canWalk("school", member.x, member.y), member.name);
+  const center = { x: four.reduce((sum, member) => sum + member.x, 0) / 4, y: four.reduce((sum, member) => sum + member.y, 0) / 4 };
+  const radii = four.map(member => Math.hypot(member.x - center.x, member.y - center.y));
+  for (const radius of radii) assert.ok(Math.abs(radius - radii[0]) < .005 && radius > .04 && radius < .08, "gleicher Abstand zur Mitte");
+  assert.deepEqual(four.map(member => member.facing), ["front", "left", "back", "right"], "oben, rechts, unten, links schauen zur Mitte");
+  for (const member of four) assert.ok(canWalk("school", member.x, member.y), member.name);
+});
+
+test("Das Schild \"Treffpunkt am Fenstergitter\" ist weg", () => {
+  assert.ok(!ENTITIES.school.some(entity => /Treffpunkt|Gitter/.test(entity.name + entity.text)));
+});
+
+test("Die Morgengruppen stehen in Kreisen, die Schüler schauen einander an", () => {
+  const groups = [...SCHOOL_ADDITIONAL_GROUPS, ...["school-pupil-left-", "school-pupil-right-"].map(prefix => SCHOOL_MORNING_ENTITIES.filter(entity => entity.id.startsWith(prefix)))];
+  for (const group of groups) {
+    const center = { x: group.reduce((sum, member) => sum + member.x, 0) / group.length, y: group.reduce((sum, member) => sum + member.y, 0) / group.length };
+    for (const member of group) {
+      const dx = center.x - member.x, dy = center.y - member.y;
+      const expected = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back";
+      assert.equal(member.facing, expected, member.id);
+    }
   }
-  const [elena, jason, luca, wyatt] = four;
-  assert.ok(elena.facing === "right" && jason.facing === "left" && luca.facing === "right" && wyatt.facing === "left");
 });
