@@ -61,6 +61,8 @@ Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, 
 | Frau Kaiser, Herr Kluger | fehlen | Neue Sprites und Porträts; starten die Abfahrt und sammeln die Gruppe bei Ortswechseln |
 | Weitere Mitschüler | generische `friend`-Figur | 4 bis 6 Hintergrundfiguren ohne Namen, nur warten, mitgehen, sitzen |
 
+**Gruppen unterwegs (Straßburg, Europa-Park):** Elias mit Paul und Justin; Felice mit Elena, Luca und Jason. Ob das eine gemeinsame Siebenergruppe war oder zwei Gruppen, ist noch zu klären. Bei zwei Gruppen ist Elias in Felices Tagesszenen nicht ständig dabei, die Begegnungen mit ihm werden dann gezielte Momente statt Dauerbegleitung.
+
 Nicht alle Figuren stehen in jeder Szene. Pro Szene nur die, die dort wirklich etwas tun, sonst wird es auf dem Handy unübersichtlich und das Ansprechen in dichten Gruppen klappt nicht mehr. Busabfahrt und Bus sind die einzigen Szenen mit der vollen Gruppe.
 
 **Zimmerabend:** Felice war dabei, die Szene wird also normal aus ihrer Sicht gespielt. Fußball: DFB-Pokal-Halbfinale Bayer Leverkusen gegen FC Bayern (bestätigt), laut DFB 0:2. Das Spiel kommt an den Abend, an dem es tatsächlich lief; die DFB-Quellen nennen teils den 21., teils den 22.04., daher vor dem Einbau einmal klären. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
