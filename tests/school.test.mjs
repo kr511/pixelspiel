@@ -88,9 +88,9 @@ test("Alle Morgengruppen stehen auf begehbarem Pflaster und sind vom Hofeingang 
 test("Elena, Luca, Jason und Wyatt stehen im Kreis und schauen zur Mitte", () => {
   const four = ["friends", "jason", "luca", "wyatt"].map(id => ENTITIES.school.find(entity => entity.id === id));
   const center = { x: four.reduce((sum, member) => sum + member.x, 0) / 4, y: four.reduce((sum, member) => sum + member.y, 0) / 4 };
-  const radii = four.map(member => Math.hypot(member.x - center.x, member.y - center.y));
+  const radii = four.map(member => Math.hypot(member.x - center.x, member.y - center.y)); // Elena's circle is round, the others are stretched
   for (const radius of radii) assert.ok(Math.abs(radius - radii[0]) < .005 && radius > .04 && radius < .08, "gleicher Abstand zur Mitte");
-  assert.deepEqual(four.map(member => member.facing), ["front", "left", "back", "right"], "oben, rechts, unten, links schauen zur Mitte");
+  for (const member of four) assert.equal(member.facing, center.x > member.x ? "right" : "left", `${member.name} schaut seitlich zur Mitte, nicht in die Kamera`);
   for (const member of four) assert.ok(canWalk("school", member.x, member.y), member.name);
 });
 
@@ -103,9 +103,7 @@ test("Die Morgengruppen stehen in Kreisen, die Schüler schauen einander an", ()
   for (const group of groups) {
     const center = { x: group.reduce((sum, member) => sum + member.x, 0) / group.length, y: group.reduce((sum, member) => sum + member.y, 0) / group.length };
     for (const member of group) {
-      const dx = center.x - member.x, dy = center.y - member.y;
-      const expected = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back";
-      assert.equal(member.facing, expected, member.id);
+      assert.equal(member.facing, center.x > member.x ? "right" : "left", `${member.id} schaut seitlich zur Mitte, nicht in die Kamera`);
     }
   }
 });
@@ -133,4 +131,11 @@ test("Gleiche Grundfiguren stehen nie direkt nebeneinander, auch nicht aus versc
   for (const list of scenes) for (const a of list) for (const b of list) {
     if (a.id < b.id && base(a.art) === base(b.art)) assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= .12, `${a.id} und ${b.id}`);
   }
+});
+
+test("In den Gruppen schaut niemand in die Kamera", async () => {
+  const { schoolDismissalPupils } = await import("../game/school-dismissal.ts");
+  const standing = [...SCHOOL_MORNING_ENTITIES, ...ENTITIES.school.filter(entity => ["friends", "jason", "luca", "wyatt"].includes(entity.id)),
+    ...["school", "zoerbig"].flatMap(place => schoolDismissalPupils(place, 13 * 60 + 20, 60).map(pupil => pupil.entity))];
+  for (const person of standing) assert.ok(["left", "right"].includes(person.facing), `${person.id}: ${person.facing}`);
 });

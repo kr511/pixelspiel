@@ -38,6 +38,9 @@ test("Zehn Schüler bleiben in drei Gruppen auf dem Hof, zehn warten in vier Gru
     assert.ok(pupil.entity.text.includes("warten"));
   }
   assert.equal(new Set([...courtyard, ...bus].map(pupil => pupil.entity.id)).size, 20);
+  for (const pupils of [courtyard, bus]) for (const a of pupils) for (const b of pupils) {
+    if (a !== b) assert.ok(Math.hypot(a.entity.x - b.entity.x, a.entity.y - b.entity.y) > .045, `${a.entity.id} und ${b.entity.id} stehen nicht ineinander`);
+  }
   for (const [pupils, groups] of [[courtyard, 3], [bus, 4]]) {
     const byGroup = Map.groupBy(pupils, pupil => pupil.entity.id.replace(/-\d$|\d$/, ""));
     assert.equal(byGroup.size, groups);
@@ -45,8 +48,7 @@ test("Zehn Schüler bleiben in drei Gruppen auf dem Hof, zehn warten in vier Gru
       const center = centerOf(members.map(member => member.entity));
       for (const { entity } of members) {
         assert.ok(Math.hypot(entity.x - center.x, entity.y - center.y) < .06, `${entity.id} steht in seiner Gruppe`);
-        const dx = center.x - entity.x, dy = center.y - entity.y;
-        assert.equal(entity.facing, Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back", `${entity.id} schaut zur Mitte`);
+        assert.equal(entity.facing, center.x > entity.x ? "right" : "left", `${entity.id} schaut zur Mitte`);
       }
     }
   }

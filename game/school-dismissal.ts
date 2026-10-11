@@ -21,12 +21,12 @@ let arrivals: Journey[] | undefined;
 // some stay on the courtyard, the others wait on the market square below the bus stop (not on the road).
 const AFTER_SCHOOL_GROUPS: { prefix: string; destination: "courtyard" | "bus"; center?: Point; radius?: number }[] = [
   { prefix: "school-pupil-left-", destination: "courtyard" },
-  { prefix: "school-pupil-right-", destination: "bus", center: { x: .33, y: .40 }, radius: .035 },
+  { prefix: "school-pupil-right-", destination: "bus", center: { x: .36, y: .375 }, radius: .03 },
   { prefix: "school-group-3-", destination: "courtyard" },
-  { prefix: "school-group-2-", destination: "bus", center: { x: .34, y: .495 }, radius: .035 },
+  { prefix: "school-group-2-", destination: "bus", center: { x: .37, y: .50 }, radius: .03 },
   { prefix: "school-group-5-", destination: "courtyard" },
-  { prefix: "school-group-1-", destination: "bus", center: { x: .43, y: .405 }, radius: .025 },
-  { prefix: "school-group-4-", destination: "bus", center: { x: .43, y: .48 }, radius: .025 },
+  { prefix: "school-group-1-", destination: "bus", center: { x: .45, y: .405 }, radius: .025 },
+  { prefix: "school-group-4-", destination: "bus", center: { x: .455, y: .48 }, radius: .025 },
 ];
 const GROUP_GAP = 4;
 const MEMBER_GAP = .5;
