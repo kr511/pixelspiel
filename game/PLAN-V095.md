@@ -6,7 +6,7 @@ Stand: 11.10.2026, Basis `38b4a12` (main). Grundlage ist das Konzept „Felice �
 
 Das Konzept ist inhaltlich vernünftig, aber zu breit und an einigen Stellen ungenau:
 
-- **Datum ist geklärt: 20.04.2026 (Montag) bis 24.04.2026 (Freitag), fünf Tage.** Die Hauptgeschichte in `game/timeline.ts` ist eine automatische Kette: `mainline` wird nach Datum sortiert und jedes Ereignis bekommt `requires: [vorheriges]`. Die Fahrt landet damit in Kapitel 6 „Gemeinsame Zeit“ zwischen `spring-everyday` (01.04.) und `longer-visit-plan` (06.05.). Keine Rückblende, keine Erweiterung des Storyzeitraums nötig. Offen ist nur noch, welcher Tag wofür war; bis dahin bleiben die Ereignisse `confirmed: false`.
+- **Datum ist geklärt: 20.04.2026 (Montag) bis 24.04.2026 (Freitag), fünf Tage.** Die Hauptgeschichte in `game/timeline.ts` ist eine automatische Kette: `mainline` wird nach Datum sortiert und jedes Ereignis bekommt `requires: [vorheriges]`. Die Fahrt landet damit in Kapitel 6 „Gemeinsame Zeit“ zwischen `spring-everyday` (01.04.) und `longer-visit-plan` (06.05.). Keine Rückblende, keine Erweiterung des Storyzeitraums nötig. Der Tagesablauf steht ebenfalls (siehe Abschnitt 3). Die Ereignisse bleiben trotzdem `confirmed: false`, bis die Inhalte drin sind.
 - **Drei neue begehbare Karten plus 15 bis 25 Minuten Spielzeit ist viel.** Jede Karte braucht Bild, Kollisionen, Vordergrundmaske, Spawns, Ausgänge und Prüfung auf dem Handy. Das ist der teuerste Teil des Updates. Ankunft in Kehl wird deshalb keine eigene Karte, sondern ein Übergang ins Hotel.
 - **Export/Import ist im Konzept P1, gehört aber nach vorne.** Die Klassenfahrt verändert die Ereigniskette und damit Speicherstände. Ein Export vorher ist das Sicherheitsnetz. Außerdem ist es klein und unabhängig.
 - **„Orientierung“ braucht kein neues System.** `storyHint()` und `storyTrigger()` liefern schon den nächsten Schritt mit Ort und Text. Die Aufgabenanzeige wird nur eine sichtbare Fassung davon, damit Welt, Handy und Album garantiert dasselbe sagen.
@@ -35,16 +35,21 @@ Das Konzept ist inhaltlich vernünftig, aber zu breit und an einigen Stellen ung
 - Wiederholen funktioniert pro Abschnitt mit dem vorhandenen flüchtigen Wiederholungszustand.
 - Mehrtägig ist kein Sonderfall: jedes Ereignis bekommt sein echtes Datum zwischen 20. und 24.04.2026. Für Tage ohne eigenen Moment springt der Kalender per Schlafübergang weiter.
 
-Geplante Ereignisse (IDs stabil, Datum Platzhalter bis zur Bestätigung):
+Bestätigter Ablauf und geplante Ereignisse (IDs stabil):
 
-1. `klassenfahrt-abfahrt`: Treffpunkt, Gruppe, Abfahrt. Reise über `BusRide.tsx` oder kurze Pixelinszenierung, überspringbar.
-2. `klassenfahrt-ankunft-kehl`: Ankunft am Hotel, kurzer Innenraum, Orientierung.
-3. `klassenfahrt-strassburg`: kompakter Stadtbereich, 2 bis 4 Interaktionen.
-4. `klassenfahrt-europapark`: kompakter Parkbereich, ein bestätigtes gemeinsames Erlebnis.
-5. `klassenfahrt-hotelabend`: ruhige Szene, Ausblende, Übergang zum Morgen. Nichts Explizites, kein Albumtext dazu.
-6. `klassenfahrt-rueckkehr`: Rückreise, Albumkarte „Unsere Klassenfahrt – Straßburg, Kehl & Europa-Park“.
+| Tag | Datum | Ereignis | Inhalt |
+| --- | --- | --- | --- |
+| Mo | 20.04.2026 | `klassenfahrt-abfahrt` | Treffpunkt, Gruppe, Bus hin über `BusRide.tsx`, überspringbar. |
+| Mo | 20.04.2026 | `klassenfahrt-ankunft-kehl` | Ankunft am B&B Hotel in Kehl, kurzer Innenraum, Orientierung. |
+| Di | 21.04.2026 | `klassenfahrt-strassburg` | Kompakter Stadtbereich, 2 bis 4 Interaktionen. |
+| Mi | 22.04.2026 | (Schlafübergang) | Zweiter Straßburg-Tag nur als eigenes Ereignis, wenn es einen eigenen Moment gibt. Sonst gleiche Karte, Kalender springt weiter. |
+| Do | 23.04.2026 | `klassenfahrt-europapark` | Kompakter Parkbereich, ein bestätigtes gemeinsames Erlebnis. |
+| Do | 23.04.2026 | `klassenfahrt-hotelabend` | Ruhige Szene im Hotel, Ausblende, Übergang zum Morgen. Nichts Explizites, kein Albumtext dazu. |
+| Fr | 24.04.2026 | `klassenfahrt-rueckkehr` | Bus zurück, Albumkarte „Unsere Klassenfahrt – Straßburg, Kehl & Europa-Park“, 20.–24.04.2026. |
 
-Reihenfolge 3/4/5 richtet sich nach den echten Tagen.
+Europa-Park und Hotelabend liegen am selben Tag: `staging.start` des Hotelabends muss nach dem Ende des Parkbesuchs liegen, `order` regelt die Reihenfolge. Rückweg vom Park zum Hotel nur als kurzer Übergang, keine zweite Busfahrt.
+
+Busfahrt hin und zurück nutzt dieselbe Komponente. Deshalb muss die doppelte Abschlussauslösung in `BusRide.tsx` vorher sauber getestet sein.
 
 Optional ein eigenes Datenmodul `game/trip.ts`, das diese Ereignisse liefert und von `timeline.ts` nur eingebunden wird. So bleibt `timeline.ts` lesbar.
 
@@ -120,7 +125,7 @@ Fertig, wenn: die ganze Fahrt mit Platzhaltern von Abfahrt bis Album durchspielb
 | 0 Ausgangslage | sofort | nichts |
 | 1 Export/Import | sofort | nichts |
 | 2 Orientierung | sofort | nichts |
-| 3 Reisegerüst | nach 0 | Reihenfolge der Tage (Datum steht) |
+| 3 Reisegerüst | nach 0 | nichts mehr, Datum und Ablauf stehen |
 | 4 Gruppen | nach 3 | nichts |
 | 5 Inhalte | nach 3 | deine Angaben |
 | 6 Grafik | nach 4 | Referenzen, abgenommene Layouts |
@@ -131,8 +136,8 @@ Kürzen bei Zeitdruck, in dieser Reihenfolge: Nebenaktionen, Minispiele, Reisevi
 ## 6. Was ich von dir brauche
 
 1. ~~Datum~~: 20.04. bis 24.04.2026, erledigt.
-2. **Reihenfolge der Tage**: an welchem Tag Straßburg, an welchem Europa-Park, wann der Hotelabend.
-3. **Anreise**: Bus oder Zug.
+2. ~~Reihenfolge~~: Mo Anreise, Di und Mi Straßburg, Do Europa-Park und Hotelabend, Fr Rückreise. Erledigt.
+3. ~~Anreise~~: Bus hin und zurück. Erledigt.
 4. **Wer soll sichtbar sein**: Freunde, Lehrkräfte.
 5. **3 bis 5 Momente**, die unbedingt rein müssen, und im Europa-Park: was habt ihr wirklich gemacht?
 6. **Referenzen**: Fotos vom Hotel, Orten oder Gegenständen, falls vorhanden.
