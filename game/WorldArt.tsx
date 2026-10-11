@@ -36,7 +36,7 @@ export function CharacterArt({ id, portrait = false, direction = "front", walkin
   const column = !portrait && (id === "elias" || id === "felice") ? ["front","left","back","right"].indexOf(direction) : spec.column;
   const duo = id === "felice" || id === "elias";
   const resting = !portrait && pose !== "standing" && id !== "dog";
-  const neighbor = !portrait && !resting && !duo && id !== "dog" ? neighborFrame(spec.column, spec.row, direction, walking ? frame : 0) : null;
+  const neighbor = !portrait && !resting && !duo && id !== "dog" ? neighborFrame(spec.column, spec.row, direction, walking ? frame : 0, (spec as { variant?: number }).variant) : null;
   const sheet = resting ? duo ? REST_GRAPHICS.sheet : "/characters/neighbors-poses-v065.png" : neighbor?.sheet ?? spec.sheet;
   if (failedSource === sheet) return <span className={`character-fallback fallback-pose-${pose}`}>{id === "dog" ? <DogArt/> : <PersonArt variant={id}/>}</span>;
   const atlas = SPRITE_FRAMES[spec.sheet];

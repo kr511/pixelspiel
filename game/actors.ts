@@ -11,15 +11,12 @@ export function standingActor(position: Point, wait = 0): Actor {
   return { position, pose: "standing", moving: false, frame: 0, direction: "front", distance: 0, waypoint: 1, wait, route: [] };
 }
 
-// Each friend takes a few steps in their own part of the conversation group.
-// Keep both rows together instead of letting the patrols drift across the yard.
-// Elias is invited to the separate seating area and has no group patrol.
-export const SCHOOL_ROUTES: Record<string, Point[]> = {
-  friends: [{ x: .200, y: .308 }, { x: .205, y: .306 }, { x: .206, y: .311 }, { x: .201, y: .313 }],
-  jason: [{ x: .239, y: .308 }, { x: .244, y: .306 }, { x: .245, y: .311 }, { x: .240, y: .313 }],
-  luca: [{ x: .200, y: .347 }, { x: .205, y: .345 }, { x: .206, y: .350 }, { x: .201, y: .352 }],
-  wyatt: [{ x: .239, y: .347 }, { x: .244, y: .345 }, { x: .245, y: .350 }, { x: .240, y: .352 }],
-};
+// The four friends stand in a circle by the basement window grilles and do not walk around;
+// after sitting down they return to their place in the circle. Elias is invited to the separate seating area.
+export const SCHOOL_ROUTES: Record<string, Point[]> = Object.fromEntries(["friends", "jason", "luca", "wyatt"].map(id => {
+  const entity = ENTITIES.school.find(e => e.id === id)!;
+  return [id, [{ x: entity.x, y: entity.y }]];
+}));
 export function initialActors(): Actors {
   return Object.fromEntries(Object.values(ENTITIES).flat().filter(e => e.kind === "person" && canChangePose(e.art)).map((e, i) => [e.id, standingActor({ x: e.x, y: e.y }, 1.5 + i % 4)]));
 }
@@ -81,7 +78,7 @@ export function advanceActor(place: Place, id: string, actor: Actor, seconds: nu
   if (actor.pose !== "standing") return actor;
   if (actor.wait > 0) return { ...actor, wait: Math.max(0, actor.wait - seconds), moving: false };
   const patrol = place === "school" ? SCHOOL_ROUTES[id] : undefined;
-  const target = actor.route[0] ?? patrol?.[actor.waypoint];
+  const target = actor.route[0] ?? (patrol?.length === 1 ? patrol[0] : patrol?.[actor.waypoint]);
   if (!target) return actor.moving ? { ...actor, moving: false } : actor;
   const dx = target.x - actor.position.x, dy = target.y - actor.position.y, length = Math.hypot(dx, dy);
   // After a rest outside the group, return around the courtyard's sitting
@@ -96,6 +93,7 @@ export function advanceActor(place: Place, id: string, actor: Actor, seconds: nu
       const next: Actor = { ...actor, position: target, route, departing: actor.departing === target ? undefined : actor.departing, pose: !route.length && actor.pending ? actor.pending : "standing", pending: route.length ? actor.pending : undefined, moving: false };
       return route.length ? advanceActor(place, id, next, seconds) : next;
     }
+    if (patrol!.length === 1) return !actor.moving && actor.position.x === target.x && actor.position.y === target.y ? actor : { ...actor, position: target, moving: false };
     return { ...actor, position: target, waypoint: (actor.waypoint + 1) % patrol!.length, wait: id === "jason" || id === "luca" ? 3.5 : 1.6, moving: false };
   }
   // Final steps onto a seat are allowed to cross its furniture footprint.

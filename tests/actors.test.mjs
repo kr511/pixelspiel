@@ -5,31 +5,15 @@ import { REST_SPOTS } from "../game/day.ts";
 import { canWalk, ENTITIES, SPAWNS } from "../game/story.ts";
 import { POSE_ATLASES } from "../game/graphics.ts";
 
-test("Schulfreunde bewegen sich mit echten Zwischenbildern auf begehbaren Wegen", () => {
+test("Elena und ihre Gruppe stehen still im Kreis und bewegen sich von selbst nicht", () => {
   for (const id of Object.keys(SCHOOL_ROUTES)) {
-    let actor = initialActors()[id];
-    const frames = new Set(), positions = new Set();
-    for (let i = 0; i < 7200; i++) {
+    const start = initialActors()[id];
+    let actor = start;
+    for (let i = 0; i < 2400; i++) {
       actor = advanceActor("school", id, actor, 1 / 60);
-      assert.ok(canWalk("school", actor.position.x, actor.position.y), id);
-      if (actor.moving) frames.add(actor.frame);
-      positions.add(`${actor.position.x.toFixed(3)},${actor.position.y.toFixed(3)}`);
+      assert.equal(actor.moving, false, id);
     }
-    assert.ok(frames.has(1) && frames.has(2), id);
-    assert.ok(positions.size > 10, id);
-  }
-});
-
-test("Die vier Schulfreunde bleiben auch während ihrer Bewegung als Gruppe zusammen", () => {
-  const actors = initialActors(), ids = Object.keys(SCHOOL_ROUTES);
-  for (let i = 0; i < 7200; i++) {
-    for (const id of ids) actors[id] = advanceActor("school", id, actors[id], 1 / 60);
-    for (let a = 0; a < ids.length; a++) for (let b = a + 1; b < ids.length; b++) {
-      const first = actors[ids[a]].position, second = actors[ids[b]].position;
-      const distance = Math.hypot(first.x - second.x, first.y - second.y);
-      assert.ok(distance >= .03, `${ids[a]} und ${ids[b]} behalten eine eigene Standfläche`);
-      assert.ok(distance <= .07, `${ids[a]} und ${ids[b]} bleiben in Gesprächsabstand`);
-    }
+    assert.deepEqual(actor.position, start.position, id);
   }
 });
 
@@ -96,19 +80,12 @@ test("Eine neue Haltung während des Aufstehens ersetzt das alte Ziel zuverläss
 });
 
 
-test("Elias bleibt außerhalb der vier Schulfreunde am Fenstergitter", () => {
+test("Elias bleibt außerhalb der vier Schulfreunde", () => {
   assert.deepEqual(ENTITIES.school.filter(e=>SCHOOL_ROUTES[e.id]).map(e=>e.name).sort(),["Elena","Jason","Luca","Wyatt"]);
   let elias=standingActor(SPAWNS.school);
   for(let i=0;i<2400;i++) elias=advanceActor("school","elias-guest",elias,1/60);
   assert.deepEqual(elias.position,SPAWNS.school);
   assert.equal(elias.moving,false);
-  for(const id of Object.keys(SCHOOL_ROUTES)) {
-    let actor=initialActors()[id];
-    for(let i=0;i<2400;i++) {
-      actor=advanceActor("school",id,actor,1/60);
-      assert.ok(actor.position.x>=.17 && actor.position.x<=.295 && actor.position.y>=.28 && actor.position.y<=.435,id);
-    }
-  }
 });
 
 test("Der Weg zur grünen Sitzecke umgeht schmale Mauern zwischen den Rasterpunkten", () => {
@@ -122,7 +99,7 @@ test("Der Weg zur grünen Sitzecke umgeht schmale Mauern zwischen den Rasterpunk
   }
 });
 
-test("Elena kehrt nach dem Aufstehen um die Sitzmauern zur Fenstergitter-Gruppe zurück", () => {
+test("Elena kehrt nach dem Aufstehen um die Sitzmauern an ihren Platz im Kreis zurück", () => {
   const actors=initialActors();
   let actor=requestPose("school",actors.friends,"sitting",availableSeat("school","sitting",actors.friends.position,actors));
   for(let i=0;i<3000 && actor.pose!=="sitting";i++) actor=advanceActor("school","friends",actor,1/60);
@@ -133,7 +110,8 @@ test("Elena kehrt nach dem Aufstehen um die Sitzmauern zur Fenstergitter-Gruppe 
     if (!actor.departing) assert.ok(canWalk("school",actor.position.x,actor.position.y));
   }
   assert.equal(actor.pose,"standing");
-  assert.ok(actor.position.x>=.17 && actor.position.x<=.295 && actor.position.y>=.28 && actor.position.y<=.34);
+  assert.deepEqual(actor.position,actors.friends.position);
+  assert.equal(actor.moving,false);
 });
 
 

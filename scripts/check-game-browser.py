@@ -51,6 +51,10 @@ def school_pupils(page):
     return page.locator('[data-entity^="school-pupil-"]').count()
 
 
+def dismissed_pupils(page):
+    return page.locator('.entity-person[data-entity^="school-"]').count()
+
+
 def mobile_layout(page):
     return page.evaluate("""() => {
       const rect = e => {
@@ -145,24 +149,31 @@ def main():
 
             for minute in (434, 435):
                 context, page = open_scenario(fixture("school", minute))
+                assert page.locator('[data-entity="school-grille"]').count() == 0
+                assert page.locator('.world-exit').filter(has_text="In die kleine Turnhalle").count() == 0
+                assert page.locator('.world-exit').filter(has_text="Zurück zum Markt").count() == 1
                 morning = page.locator('[data-entity^="school-group-"]').count()
                 assert morning > 0 if minute == 434 else morning == 0
                 assert school_pupils(page) == (6 if minute == 434 else 0)
+                if minute == 434:
+                    friend_points = page.locator('[data-group-name]').evaluate_all("""elements =>
+                      Object.fromEntries(elements.map(e => [e.dataset.groupName,
+                        {x:parseFloat(e.style.left)/100,y:parseFloat(e.style.top)/100}]))""")
                 page.screenshot(path=str(args.output / f"school-{minute}.png"))
                 checked(f"School morning groups at {minute // 60}:{minute % 60:02}")
                 context.close()
 
             context, page = open_scenario(fixture("school", 780))
             page.wait_for_timeout(200)
-            first = school_pupils(page)
+            first = dismissed_pupils(page)
             page.wait_for_timeout(2200)
-            assert school_pupils(page) > first
+            assert dismissed_pupils(page) > first
             checked("School dismissal releases pupils in sequence")
             context.close()
             for place in ("school", "zoerbig"):
                 context, page = open_scenario(fixture(place, 810))
-                assert school_pupils(page) == 3
-                checked(f"Three dismissed pupils settle in {place}")
+                assert dismissed_pupils(page) == 10
+                checked(f"Ten dismissed pupils settle in {place}")
                 context.close()
 
             for size in ((844, 390), (667, 375)):
@@ -205,7 +216,8 @@ def main():
                 context.close()
 
             if args.fixture_url:
-                for name, x, y in (("Elena", .203, .3105), ("Jason", .242, .3105), ("Luca", .203, .3495), ("Wyatt", .242, .3495)):
+                for id, name in (("friends", "Elena"), ("jason", "Jason"), ("luca", "Luca"), ("wyatt", "Wyatt")):
+                    x, y = friend_points[id]["x"], friend_points[id]["y"]
                     parts = urlsplit(args.fixture_url)
                     query = dict(parse_qsl(parts.query)) | {"place": "school", "x": str(x), "y": str(y)}
                     url = urlunsplit(parts._replace(query=urlencode(query)))
@@ -224,7 +236,7 @@ def main():
                     state["felice-elias.names.v07"] = {"version": 1, "names": {}, "visibility": mode}
                     if near:
                         parts = urlsplit(args.fixture_url)
-                        query = dict(parse_qsl(parts.query)) | {"place": "school", "x": ".203", "y": ".3105"}
+                        query = dict(parse_qsl(parts.query)) | {"place": "school", "x": str(friend_points["friends"]["x"]), "y": str(friend_points["friends"]["y"])}
                         url = urlunsplit(parts._replace(query=urlencode(query)))
                     else:
                         url = args.base_url

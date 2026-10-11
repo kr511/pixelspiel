@@ -1,4 +1,4 @@
-import { SCHOOL_MORNING_ENTITIES } from "./school.ts";
+import { ringFormation, SCHOOL_MORNING_ENTITIES } from "./school.ts";
 
 export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom";
 export type Point = { x: number; y: number };
@@ -8,7 +8,7 @@ export type ChapterId = "dog" | "christmas" | "school" | "shooting" | "graduatio
 export type Step = { id: string; place: Place; target: string; label: string; speaker: string; text: string; item?: string };
 export type Chapter = { id: ChapterId; title: string; date: string; icon: string; intro: string; ending: string; reward: string; steps: Step[] };
 export type Entity = Point & { id: string; name: string; kind: "person" | "dog" | "item"; art: string; text: string; display?: Point; ambient?: boolean; facing?: "front" | "left" | "back" | "right" };
-export type Exit = Point & { to: Place; label: string; spawn: Point };
+export type Exit = Point & { to: Place; label: string; spawn: Point; markerHidden?: boolean };
 export type Obstacle = { left: number; right: number; top: number; bottom: number };
 export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit[]; obstacles: Obstacle[] }> = {
   bedroom: { name: "Felices Zimmer", subtitle: "Hier beginnt eure Geschichte", exits: [{ x: .735, y: .66, to: "home", label: "Ins Wohnzimmer", spawn: { x: .2, y: .72 } }], obstacles: [
@@ -53,7 +53,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { ...schoolWayPoint(.34,.43), to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } },
     { ...schoolWayPoint(.17,.76), to: "school", label: "Zum Pausenhof", spawn: { x: .52, y: .92 } },
   ], obstacles: [] },
-  school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Treffpunkt an den Fenstergittern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 } }, { x: .515, y: .95, to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } }], obstacles: [] },
+  school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Pausenhof zwischen Schulgebäude und Sitzmauern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 }, markerHidden: true }, { x: .515, y: .95, to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } }], obstacles: [] },
   gym: { name: "Zörbig · Kleine Turnhalle", subtitle: "Abschlusszeugnisse · Sommer 2026", exits: [{ x: .5, y: .90, to: "school", label: "Zurück auf den Schulhof", spawn: { x: .84, y: .73 } }], obstacles: [
     { left: .36, right: .65, top: .18, bottom: .25 },
     { left: .687, right: .74, top: .17, bottom: .25 },
@@ -84,6 +84,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
 
 // Bestätigt: acht Personen beim Weihnachtsessen; Namen noch offen.
 // Dialoge, Kleidung und genaue Szenengestaltung sind spielerische Entwürfe.
+const FRIENDS_RING = ringFormation({ x: .215, y: .35 }, 4, .045, 1 / 8, 1);
 export const ENTITIES: Record<Place, Entity[]> = {
   playground: [
     { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden. Dieses Gespräch ist eine freie Rekonstruktion." },
@@ -156,11 +157,10 @@ export const ENTITIES: Record<Place, Entity[]> = {
   ],
   school: [
     ...SCHOOL_MORNING_ENTITIES,
-    { id: "school-grille", name: "Treffpunkt am Fenstergitter", x: .225, y: .35, display: { x: .20, y: .51 }, kind: "item", art: "landmark", text: "Die niedrigen Gitter sitzen vor den unteren Fenstern des grauen Schulgebäudes. Hier stehen Elena, Jason, Luca und Wyatt in der Pause." },
-    { id: "friends", name: "Elena", x: .203, y: .3105, kind: "person", art: "elena", facing: "right", text: "Hey Felice! Wir treffen uns am Gitter beim Schulgebäude. Bleibst du noch ein bisschen bei mir?" },
-    { id: "jason", name: "Jason", x: .242, y: .3105, kind: "person", art: "jason", facing: "left", text: "Ich mache Fachabi. Neuer Abschnitt, aber unsere Sprüche bleiben natürlich dieselben." },
-    { id: "luca", name: "Luca", x: .203, y: .3495, kind: "person", art: "luca", facing: "right", text: "Hallo Felice. Heute ist es hier ziemlich ruhig. Das mag ich." },
-    { id: "wyatt", name: "Wyatt", x: .242, y: .3495, kind: "person", art: "wyatt", facing: "left", text: "Hey Felice! Schön, dass du da bist." },
+    { id: "friends", name: "Elena", ...FRIENDS_RING[0], kind: "person", art: "elena", text: "Hey Felice! Wir stehen hier immer beim Schulgebäude. Bleibst du noch ein bisschen bei mir?" },
+    { id: "jason", name: "Jason", ...FRIENDS_RING[1], kind: "person", art: "jason", text: "Ich mache Fachabi. Neuer Abschnitt, aber unsere Sprüche bleiben natürlich dieselben." },
+    { id: "luca", name: "Luca", ...FRIENDS_RING[2], kind: "person", art: "luca", text: "Hallo Felice. Heute ist es hier ziemlich ruhig. Das mag ich." },
+    { id: "wyatt", name: "Wyatt", ...FRIENDS_RING[3], kind: "person", art: "wyatt", text: "Hey Felice! Schön, dass du da bist." },
     { id: "notebook", name: "Vergessenes Heft", x: .60, y: .80, kind: "item", art: "book", text: "Jemand hat ein Heft liegen gelassen." },
     { id: "school-door", name: "Eingang der Sekundarschule", x: .50, y: .28, display: { x: .50, y: .18 }, kind: "item", art: "bell", text: "Der Unterricht ist vorbei. Zeit für den gemeinsamen Heimweg." },
   ],

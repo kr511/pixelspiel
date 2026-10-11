@@ -31,10 +31,14 @@ export const WALK_ATLASES: Record<string, Atlas> = {
   ] },
 };
 
-export function neighborFrame(column: number, row: number, direction: Direction, frame: number) {
+// Recolored copies of the walk sheets (scripts/recolor-pupils.py) give the pupils more looks; frames are identical.
+export const PUPIL_VARIANTS = [1, 2] as const;
+export const variantSheet = (sheet: string, variant?: number) => variant ? sheet.replace(/\.png$/, `-alt${variant}.png`) : sheet;
+
+export function neighborFrame(column: number, row: number, direction: Direction, frame: number, variant?: number) {
   const step = frame === 1 || frame === 2 ? frame : 0;
   const side = direction === "left" || direction === "right";
   const sheet = side ? step === 2 ? "/characters/neighbors-side-step-v07.png" : "/characters/neighbors-side-v07.png" : direction === "back" ? "/characters/neighbors-back-v07.png" : "/characters/neighbors-front-v07.png";
   const atlas = WALK_ATLASES[sheet];
-  return { sheet, size: atlas.size, rect: atlas.frames[row + (side && step === 2 ? 0 : step*2)][column], mirror: direction === "right" };
+  return { sheet: variantSheet(sheet, variant), size: atlas.size, rect: atlas.frames[row + (side && step === 2 ? 0 : step*2)][column], mirror: direction === "right" };
 }

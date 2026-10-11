@@ -35,13 +35,13 @@ Nachts leuchten die vorhandenen Außenlampen und ausgewählte Fenster. Der Über
 
 | Spielzeit | Was auf dem Hof passiert |
 | --- | --- |
-| **06:00–07:15 Uhr** | 27 Schülerfiguren warten auf dem Hof: Elena, Jason, Luca und Wyatt; eine unbekannte Dreiergruppe; 20 weitere Schüler in sieben Gruppen. Fünf Gruppen mit jeweils zwei bis vier Personen sind neu hinzugekommen. |
+| **06:00–07:15 Uhr** | 27 Schülerfiguren stehen in Gruppen auf dem Hof und bewegen sich nicht: Elena, Jason, Luca und Wyatt im Kreis; eine unbekannte Dreiergruppe; 20 weitere Schüler in sieben Gruppen. Alle Gruppen stehen im Kreis und schauen einander an. Drei Schüler kommen etwas später vom Bus am Markt dazu und schließen sich ihrer Gruppe an. |
 | **Ab 07:15 Uhr** | Die zusätzlichen Morgengruppen gehen in den Unterricht. Die vier bisherigen Schulfreunde behalten ihre Pausenfunktionen. |
-| **Ab 13:00 Uhr** | Sechs Schüler kommen nacheinander aus dem Eingang. Drei bleiben auf dem Hof, drei laufen zum Bus am Zörbiger Markt. |
-| **Bis 14:00 Uhr** | Die Busgruppe wartet an der Haltestelle. |
-| **Bis 18:00 Uhr** | Die zusätzliche Hofgruppe bleibt draußen. |
+| **Ab 13:00 Uhr** | Zwanzig Schüler kommen gruppenweise aus dem Eingang. Zehn bleiben in drei Gruppen auf dem Hof, zehn laufen in vier Gruppen zum Bus am Zörbiger Markt und stellen sich dort wieder im Kreis auf. |
+| **Bis 14:00 Uhr** | Die Busgruppen warten an der Haltestelle. |
+| **Bis 18:00 Uhr** | Die Hofgruppen bleiben draußen. |
 
-Die Hintergrundschüler haben unterschiedliche Grafikvarianten, Größen und Blickrichtungen. Elias, Paul und Justin erscheinen auf dem morgendlichen Schulhof ebenfalls ohne Namen oder Gesprächsaufforderungen, weil Felice sie dort noch nicht kennt. Die vier bisherigen Schulfreunde bleiben ansprechbar. Die neuen Gruppen gehen um 07:15 Uhr in den Unterricht; nach Schulschluss folgt die bisherige Sechsergruppe ihren Hof- und Buswegen. Eine Pause hält diese Bewegung an.
+Die Hintergrundschüler haben unterschiedliche Grafikvarianten, Größen und Blickrichtungen. Elias, Paul und Justin erscheinen auf dem morgendlichen Schulhof ebenfalls ohne Namen oder Gesprächsaufforderungen, weil Felice sie dort noch nicht kennt. Die vier bisherigen Schulfreunde bleiben ansprechbar. Die neuen Gruppen gehen um 07:15 Uhr in den Unterricht; nach Schulschluss gehen die Gruppen auf den Hof oder zum Bus. Eine Pause hält diese Bewegung an.
 
 ## Sofort lokal spielen
 
