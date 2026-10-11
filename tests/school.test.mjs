@@ -78,3 +78,14 @@ test("Alle Morgengruppen stehen auf begehbarem Pflaster und sind vom Hofeingang 
     }
   }
 });
+
+test("Elena, Luca, Jason und Wyatt stehen eng zusammen und schauen einander an", () => {
+  const four = ["friends", "jason", "luca", "wyatt"].map(id => ENTITIES.school.find(entity => entity.id === id));
+  for (const member of four) {
+    assert.ok(["left", "right"].includes(member.facing), `${member.name} schaut zur Gruppe`);
+    for (const other of four) if (other !== member) assert.ok(Math.hypot(member.x - other.x, member.y - other.y) < .09, `${member.name} und ${other.name}`);
+    assert.ok(canWalk("school", member.x, member.y), member.name);
+  }
+  const [elena, jason, luca, wyatt] = four;
+  assert.ok(elena.facing === "right" && jason.facing === "left" && luca.facing === "right" && wyatt.facing === "left");
+});
