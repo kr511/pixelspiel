@@ -110,15 +110,27 @@ test("Die Morgengruppen stehen in Kreisen, die Schüler schauen einander an", ()
   }
 });
 
-test("Die Schüler haben 18 verschiedene Looks, keine Gruppe hat einen Look doppelt", async () => {
+test("Die Schüler haben 18 verschiedene Looks, keine Gruppe hat dieselbe Grundfigur doppelt", async () => {
   const { CHARACTER_GRAPHICS } = await import("../game/graphics.ts");
   const { existsSync } = await import("node:fs");
   const pupils = SCHOOL_MORNING_ENTITIES.filter(entity => entity.art.startsWith("pupil-"));
   for (const pupil of pupils) assert.ok(CHARACTER_GRAPHICS[pupil.art], pupil.art);
   assert.ok(new Set(pupils.map(pupil => pupil.art)).size >= 18, "alle 18 Looks kommen vor");
   const groups = Map.groupBy(pupils, pupil => pupil.id.replace(/-\d$|\d$/, ""));
-  for (const [group, members] of groups) assert.equal(new Set(members.map(member => member.art)).size, members.length, group);
+  // Recolored looks share face and hair shape with their base figure, so a group never mixes two of the same base.
+  const base = art => `${CHARACTER_GRAPHICS[art].column},${CHARACTER_GRAPHICS[art].row}`;
+  for (const [group, members] of groups) assert.equal(new Set(members.map(member => base(member.art))).size, members.length, group);
   for (const sheet of ["front", "back", "side", "side-step"]) for (const variant of [1, 2]) {
     assert.ok(existsSync(new URL(`../public/characters/neighbors-${sheet}-v07-alt${variant}.png`, import.meta.url)), `${sheet} alt${variant}`);
+  }
+});
+
+test("Gleiche Grundfiguren stehen nie direkt nebeneinander, auch nicht aus verschiedenen Gruppen", async () => {
+  const { CHARACTER_GRAPHICS } = await import("../game/graphics.ts");
+  const { schoolDismissalPupils } = await import("../game/school-dismissal.ts");
+  const base = art => `${CHARACTER_GRAPHICS[art].column},${CHARACTER_GRAPHICS[art].row}`;
+  const scenes = [SCHOOL_MORNING_ENTITIES.filter(entity => entity.art.startsWith("pupil-")), ...["school", "zoerbig"].map(place => schoolDismissalPupils(place, 13 * 60 + 20, 60).map(pupil => pupil.entity))];
+  for (const list of scenes) for (const a of list) for (const b of list) {
+    if (a.id < b.id && base(a.art) === base(b.art)) assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= .12, `${a.id} und ${b.id}`);
   }
 });
