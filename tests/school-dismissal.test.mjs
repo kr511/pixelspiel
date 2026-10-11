@@ -123,3 +123,41 @@ test("Die Ankunft am Morgen läuft in Echtzeit, beginnt jeden Tag neu und endet 
   assert.equal(advanceSchoolDismissal(state, "2025-11-10", MORNING, 1), state, "Ohne Änderung bleibt der Zustand derselbe");
   assert.deepEqual(schoolMorningArrivals("school", SCHOOL_START, 60), []);
 });
+
+test("Alle stehen in klar getrennten Gruppen: morgens, nach der Schule auf dem Hof und am Markt", () => {
+  const friends = ENTITIES.school.filter(entity => ["friends", "jason", "luca", "wyatt"].includes(entity.id));
+  const groupOf = id => friends.some(friend => friend.id === id) ? "elena" : ["school-elias", "school-paul", "school-justin"].includes(id) ? "elias" : id.replace(/-\d+$/, "");
+  const scenes = {
+    morning: [...SCHOOL_MORNING_ENTITIES, ...friends],
+    courtyard: [...schoolDismissalPupils("school", SCHOOL_END + 20, 60).map(pupil => pupil.entity), ...friends],
+    market: schoolDismissalPupils("zoerbig", SCHOOL_END + 20, 60).map(pupil => pupil.entity),
+  };
+  for (const [scene, people] of Object.entries(scenes)) {
+    for (const [group, members] of Map.groupBy(people, person => groupOf(person.id))) {
+      assert.ok(members.length >= 2, `${scene}: ${group} steht nicht allein`);
+      const spacing = Math.max(...members.map(a => Math.min(...members.filter(b => b !== a).map(b => Math.hypot(a.x - b.x, a.y - b.y)))));
+      const others = people.filter(person => groupOf(person.id) !== group);
+      const gap = Math.min(...members.flatMap(a => others.map(b => Math.hypot(a.x - b.x, a.y - b.y))));
+      assert.ok(gap >= Math.max(.1, spacing * 1.5), `${scene}: ${group} braucht Abstand zur nächsten Gruppe (${gap.toFixed(3)} bei ${spacing.toFixed(3)} innen)`);
+    }
+  }
+});
+
+test("Keine stehende Gruppe wird von Baumkronen oder Gebäuden verdeckt", async () => {
+  const { SCENE_GRAPHICS } = await import("../game/graphics.ts");
+  const polygons = place => SCENE_GRAPHICS[place].foreground.filter(layer => layer.clip).map(layer => ({ depth: layer.depth / 100, points: [...layer.clip.matchAll(/([\d.]+)% ([\d.]+)%/g)].map(match => [+match[1] / 100, +match[2] / 100]) }));
+  const inside = (x, y, points) => {
+    let hit = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i], [xj, yj] = points[j];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  };
+  // Head and upper body of a standing figure; a layer only covers people standing behind its depth.
+  const hidden = (place, person) => polygons(place).some(layer => person.y < layer.depth && [-.015, 0, .015].some(dx => [-.06, -.045, -.03].some(dy => inside(person.x + dx, person.y + dy, layer.points))));
+  const friends = ENTITIES.school.filter(entity => ["friends", "jason", "luca", "wyatt"].includes(entity.id));
+  for (const [place, people] of [["school", [...SCHOOL_MORNING_ENTITIES, ...friends]], ["school", schoolDismissalPupils("school", SCHOOL_END + 20, 60).map(pupil => pupil.entity)], ["zoerbig", schoolDismissalPupils("zoerbig", SCHOOL_END + 20, 60).map(pupil => pupil.entity)]]) {
+    for (const person of people) assert.ok(!hidden(place, person), `${place}: ${person.id} steht unter einer Baumkrone`);
+  }
+});
