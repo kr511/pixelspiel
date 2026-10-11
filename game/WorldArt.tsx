@@ -37,11 +37,11 @@ export function CharacterArt({ id, portrait = false, direction = "front", walkin
   const duo = id === "felice" || id === "elias";
   const resting = !portrait && pose !== "standing" && id !== "dog";
   const neighbor = !portrait && !resting && !duo && id !== "dog" ? neighborFrame(spec.column, spec.row, direction, walking ? frame : 0, (spec as { variant?: number }).variant) : null;
-  const sheet = resting ? duo ? REST_GRAPHICS.sheet : "/characters/neighbors-poses-v065.png" : neighbor?.sheet ?? spec.sheet;
+  const sheet = resting ? duo ? REST_GRAPHICS.sheet : "/characters/neighbors-poses-v065.webp" : neighbor?.sheet ?? spec.sheet;
   if (failedSource === sheet) return <span className={`character-fallback fallback-pose-${pose}`}>{id === "dog" ? <DogArt/> : <PersonArt variant={id}/>}</span>;
   const atlas = SPRITE_FRAMES[spec.sheet];
   if (!portrait && (atlas || resting || neighbor)) {
-    const npcAtlas = POSE_ATLASES["/characters/neighbors-poses-v065.png"];
+    const npcAtlas = POSE_ATLASES["/characters/neighbors-poses-v065.webp"];
     let rect: SpriteRect;
     if (resting && duo) {
       const seated = id === "elias" ? REST_GRAPHICS.eliasSeated : REST_GRAPHICS.feliceSeated;
@@ -77,7 +77,7 @@ export function BenchArt({ winter = false }: { winter?: boolean }) {
   const clip = useId();
   return <svg viewBox="10.8 37.8 19 10.4" aria-hidden="true">
     <defs><clipPath id={clip}><path d="M11.5 38.5H29.2V45.5H11.5ZM11.1 39H12.1V47.8H11.1ZM28.4 39H29.6V47.8H28.4Z"/></clipPath></defs>
-    <image href={assetUrl(winter ? "/rooms/school-winter-v06.png" : "/rooms/school-v06.png")} width="100" height="100" clipPath={`url(#${clip})`}/>
+    <image href={assetUrl(winter ? "/rooms/school-winter-v06.webp" : "/rooms/school-v06.webp")} width="100" height="100" clipPath={`url(#${clip})`}/>
   </svg>;
 }
 

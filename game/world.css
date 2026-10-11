@@ -6,7 +6,7 @@
 .scene-backdrop { z-index:0; background:#8c9877; }
 .story-pixel-backdrop,.story-pixel-backdrop image { image-rendering:pixelated; }
 .scene-foreground { pointer-events:none; }
-.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v10.png') center/100% 100%; }
+.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v10.webp') center/100% 100%; }
 .character-art { width:100%; display:block; overflow:hidden; }
 .character-fallback { display:block; width:100%; }
 
@@ -260,14 +260,14 @@
 
 /* V0.8: graduation snapshots, one soft white fade and still photographs. */
 .graduation-photos { position:fixed; inset:0; z-index:160; display:grid; place-items:center; overflow:hidden; background:#172923; }
-.graduation-photo-background { position:absolute; inset:-30px; background:linear-gradient(#152b29b8,#142620ef),url('/rooms/graduation-gym-v08.png') center/cover; filter:blur(12px); }
+.graduation-photo-background { position:absolute; inset:-30px; background:linear-gradient(#152b29b8,#142620ef),url('/rooms/graduation-gym-v08.webp') center/cover; filter:blur(12px); }
 .snapshot-stack { position:relative; width:min(570px,72vw); height:min(720px,87dvh); }
 .graduation-snapshot { position:absolute; inset:0; margin:0; padding:14px 14px 26px; background:#f5eddb; box-shadow:0 22px 80px #0008; opacity:0; transform:rotate(-2deg); transition:opacity .7s ease; display:flex; flex-direction:column; }
 .graduation-snapshot.is-visible { opacity:1; }
 .snapshot-1 { transform:rotate(2deg); }
 .snapshot-2 { transform:rotate(-1deg); }
 .snapshot-picture { position:relative; overflow:hidden; flex:1; min-height:0; background:#d4be99; }
-.snapshot-gym { position:absolute; inset:0; background:url('/rooms/graduation-gym-v08.png') 50% 10%/180%; filter:blur(1px); }
+.snapshot-gym { position:absolute; inset:0; background:url('/rooms/graduation-gym-v08.webp') 50% 10%/180%; filter:blur(1px); }
 .snapshot-person { position:absolute; bottom:-3%; width:65%; aspect-ratio:5/7; }
 .snapshot-person>.character-art { width:100%; height:100%; }
 .snapshot-felice { left:-1%; }

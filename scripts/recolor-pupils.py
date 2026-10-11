@@ -1,6 +1,6 @@
 """Recolor the six pupil looks in the v07 walk sheets into two extra variants (clothes and some hair).
 
-Writes public/characters/neighbors-{front,back,side,side-step}-v07-alt{1,2}.png; run: python3 scripts/recolor-pupils.py
+Writes public/characters/neighbors-{front,back,side,side-step}-v07-alt{1,2}.webp (lossless); run: python3 scripts/recolor-pupils.py
 """
 import os, sys
 from PIL import Image
@@ -60,10 +60,10 @@ def recolor(crop, char, variant):
     return out
 for variant in VARIANTS:
     for sheet, frames in ATLAS.items():
-        im = np.asarray(Image.open(f'{ROOT}neighbors-{sheet}-v07.png').convert('RGBA')).copy()
+        im = np.asarray(Image.open(f'{ROOT}neighbors-{sheet}-v07.webp').convert('RGBA')).copy()
         for char, (col, row) in CHARS.items():
             for step in range(ROWS[sheet]):
                 x, y, w, h = frames[row + step * 2][col]
                 im[y:y + h, x:x + w] = recolor(im[y:y + h, x:x + w], char, variant)
-        Image.fromarray(im).save(f'{OUT}neighbors-{sheet}-v07-alt{variant}.png', optimize=True)
+        Image.fromarray(im).save(f'{OUT}neighbors-{sheet}-v07-alt{variant}.webp', lossless=True, exact=True, method=6)
 print('ok')
