@@ -43,13 +43,18 @@ Bestätigter Ablauf und geplante Ereignisse (IDs stabil):
 | Mo | 20.04.2026 | `klassenfahrt-ankunft-kehl` | Ankunft am B&B Hotel in Kehl, kurzer Innenraum, Orientierung. |
 | Di | 21.04.2026 | `klassenfahrt-strassburg` | Besuch im Europäischen Parlament (bestätigt). Kompakter Bereich, 2 bis 4 Interaktionen. |
 | Mi | 22.04.2026 | (Schlafübergang) | Zweiter Straßburg-Tag nur als eigenes Ereignis, wenn es einen eigenen Moment gibt. Sonst Kalender springt weiter. |
-| Do | 23.04.2026 | `klassenfahrt-europapark` | Kompakter Parkbereich, ein bestätigtes gemeinsames Erlebnis. |
+| Do | 23.04.2026 | `klassenfahrt-europapark` | Kompakter Parkbereich: gemeinsam rumlaufen, Achterbahn fahren (bestätigt). Welche Achterbahn, bleibt offen; die Fahrt wird als kurze Inszenierung gezeigt, kein Nachbau einer echten Bahn. |
 | Do | 23.04.2026 | `klassenfahrt-hotelabend` | Ruhige Szene im Hotel, Ausblende, Übergang zum Morgen. Nichts Explizites, kein Albumtext dazu. |
+| ? | 20. bis 23.04.2026 | `klassenfahrt-zimmerabend` | Fußballabend im Zimmer von Elias, Paul und Justin, Pizza bestellen, Elias, Paul und Justin klopfen als Streich an andere Türen. Welcher Abend und ob Felice dabei war: offen. |
 | Fr | 24.04.2026 | `klassenfahrt-rueckkehr` | Bus zurück, Albumkarte „Unsere Klassenfahrt – Straßburg, Kehl & Europa-Park“, 20.–24.04.2026. |
 
 Europa-Park und Hotelabend liegen am selben Tag: `staging.start` des Hotelabends muss nach dem Ende des Parkbesuchs liegen, `order` regelt die Reihenfolge. Rückweg vom Park zum Hotel nur als kurzer Übergang, keine zweite Busfahrt.
 
 Europäisches Parlament: Das Gebäude ist bestätigt, was drinnen passiert ist, nicht. Deshalb zeigt die Szene den Außenbereich am Wasser mit dem markanten Rundbau, erkennbar, aber ohne exakte Nachbildung. Keine erfundene Führung, keine Plenarsitzung, keine Zitate, bis du mehr erzählst. Ein Innenraum kommt nur rein, wenn es dazu einen echten Moment gibt.
+
+**Beteiligte (bestätigt):** Lehrkräfte Frau Kaiser und Herr Kluger. Paul und Justin teilen sich das Zimmer mit Elias. Paul und Justin haben schon Figuren (`graphics.ts`, `conversations.ts`), Frau Kaiser und Herr Kluger brauchen neue Sprites und Porträts. Die Lehrkräfte starten die Abfahrt am Treffpunkt und sammeln die Gruppe bei Ortswechseln.
+
+**Zimmerabend:** Wird aus Felices Sicht gespielt. War Felice nicht im Zimmer, zeigt das Spiel den Abend nicht als erlebte Szene, sondern über Nachrichten oder als kurze Erzählung, damit nichts erfunden wird. Klopfstreich bleibt harmlos und lustig, keine erfundene Erwischt-Szene mit den Lehrkräften.
 
 Busfahrt hin und zurück nutzt dieselbe Komponente. Deshalb muss die doppelte Abschlussauslösung in `BusRide.tsx` vorher sauber getestet sein.
 
@@ -140,7 +145,7 @@ Kürzen bei Zeitdruck, in dieser Reihenfolge: Nebenaktionen, Minispiele, Reisevi
 1. ~~Datum~~: 20.04. bis 24.04.2026, erledigt.
 2. ~~Reihenfolge~~: Mo Anreise, Di und Mi Straßburg, Do Europa-Park und Hotelabend, Fr Rückreise. Erledigt.
 3. ~~Anreise~~: Bus hin und zurück. Erledigt.
-4. **Wer soll sichtbar sein**: Freunde, Lehrkräfte.
+4. ~~Beteiligte~~: Frau Kaiser, Herr Kluger, Paul, Justin. Erledigt.
 5. **3 bis 5 Momente**, die unbedingt rein müssen, und im Europa-Park: was habt ihr wirklich gemacht?
 6. **Referenzen**: Fotos vom Hotel, Orten oder Gegenständen, falls vorhanden.
 
