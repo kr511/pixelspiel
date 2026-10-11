@@ -16,9 +16,9 @@ button { font:inherit; }
 .game-shell canvas { display:block; width:100%!important; height:100%!important; outline:none; }
 .pixel-game { display:grid; place-items:center; background:radial-gradient(circle at 50% 38%,#374452 0,#151e2a 64%,#101821 100%); }
 .pixel-viewport { position:relative; width:min(100vw,calc(100dvh - 16px),920px); aspect-ratio:1; overflow:hidden; border:1px solid rgba(203,146,102,.35); background:#211c20; box-shadow:0 18px 72px rgba(0,0,0,.58); }
-.pixel-room { --camera-x:0%; --camera-y:0%; position:absolute; inset:0; width:100%; height:100%; background:#6c432f url("/rooms/felice-bedroom-v10.png") center/100% 100% no-repeat; image-rendering:pixelated; transform:translate(var(--camera-x),var(--camera-y)) scale(1.5); transform-origin:center; transition:transform 260ms ease-out; will-change:transform; }
+.pixel-room { --camera-x:0%; --camera-y:0%; position:absolute; inset:0; width:100%; height:100%; background:#6c432f url("/rooms/felice-bedroom-v10.webp") center/100% 100% no-repeat; image-rendering:pixelated; transform:translate(var(--camera-x),var(--camera-y)) scale(1.5); transform-origin:center; transition:transform 260ms ease-out; will-change:transform; }
 .room-player { position:absolute; width:13%; min-width:48px; max-width:120px; transform:translate(-50%,-100%); z-index:2; filter:drop-shadow(2px 5px 2px rgba(27,23,24,.65)); }
-.room-player-art { display:block; width:100%; aspect-ratio:1; background-image:url("/characters/felice-walk-v1.png"); background-size:400% 300%; background-repeat:no-repeat; background-position-y:0; image-rendering:pixelated; }
+.room-player-art { display:block; width:100%; aspect-ratio:1; background-image:url("/characters/felice-walk-v1.webp"); background-size:400% 300%; background-repeat:no-repeat; background-position-y:0; image-rendering:pixelated; }
 .facing-front .room-player-art { background-position-x:0; }
 .facing-left .room-player-art { background-position-x:33.333%; }
 .facing-back .room-player-art { background-position-x:66.667%; }
@@ -55,6 +55,8 @@ button { font:inherit; }
 .start-card span { display:block; max-width:330px; margin:19px auto 25px; color:rgba(255,247,239,.76); font-size:1rem; line-height:1.55; }
 .start-card button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:48px; padding:0 21px; border:0; border-radius:999px; color:#45271f; background:#ffd2ad; font-weight:760; cursor:pointer; box-shadow:0 10px 26px rgba(62,31,22,.24); transition:transform .18s ease,background .18s ease; }
 .start-card button:hover { transform:translateY(-2px); background:#ffe0c5; }
+.start-card button:disabled { cursor:progress; }
+.start-card button:disabled:hover { transform:none; background:#ffd2ad; }
 .loading-screen { position:fixed; inset:0; display:grid; place-content:center; gap:12px; background:linear-gradient(#cf745f,#293842); color:#fff9f2; text-align:center; }
 .loading-screen span { font-family:Georgia,serif; font-size:2.6rem; }
 .loading-screen p { margin:0; color:rgba(255,255,255,.72); }

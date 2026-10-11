@@ -10,7 +10,7 @@ import { assetUrl } from "./assets";
 
 export function Player({ bodyRef }: { bodyRef: RefObject<RapierRigidBody | null> }) {
   const visual = useRef<THREE.Group>(null);
-  const texture = useTexture(assetUrl("/characters/felice-v1.png"));
+  const texture = useTexture(assetUrl("/characters/felice-v1.webp"));
 
   useEffect(() => {
     texture.colorSpace = THREE.SRGBColorSpace;

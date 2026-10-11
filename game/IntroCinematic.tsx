@@ -99,10 +99,10 @@ export function IntroCinematic({ paused, onDone }: { paused: boolean; onDone: ()
   const dateTitle = window_(elapsed, 27200, 33200, 1000);
 
   return <div className="intro-cinematic" role="dialog" aria-modal="true" aria-label="Intro: Ein Jahr später blickt Elias auf einen Herbstmorgen in Radegast zurück" data-testid="intro-cinematic" data-elapsed={Math.round(elapsed)} style={{ opacity: 1 - curtain }}>
-    <div className="intro-layer intro-zoerbig" style={zoerbigStyle}><img src={assetUrl("/rooms/zoerbig-market-v09.png")} alt=""/><div className="intro-autumn-grade"/></div>
-    <div className="intro-layer intro-town" style={townStyle}><img src={assetUrl("/rooms/radegast-walk-v075.png")} alt=""/><div className="intro-autumn-grade"/></div>
+    <div className="intro-layer intro-zoerbig" style={zoerbigStyle}><img src={assetUrl("/rooms/zoerbig-market-v09.webp")} alt=""/><div className="intro-autumn-grade"/></div>
+    <div className="intro-layer intro-town" style={townStyle}><img src={assetUrl("/rooms/radegast-walk-v075.webp")} alt=""/><div className="intro-autumn-grade"/></div>
     <div className="intro-leaves" style={{ opacity: Math.max(zoerbigOpacity, townOpacity) }} aria-hidden="true">{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37 + 9) % 104}%`, animationDelay: `${-((i * .61) % 7)}s`, animationDuration: `${4.5 + i % 5}s`, animationPlayState: paused ? "paused" : "running" }}/>)}</div>
-    <div className="intro-layer intro-room" style={roomStyle}><img src={assetUrl("/rooms/felice-bedroom-v10.png")} alt=""/><div className="intro-dawn"/></div>
+    <div className="intro-layer intro-room" style={roomStyle}><img src={assetUrl("/rooms/felice-bedroom-v10.webp")} alt=""/><div className="intro-dawn"/></div>
     <div className="intro-bars" aria-hidden="true"/>
     <p className="intro-year" style={{ opacity: yearLater }}>Ein Jahr später</p>
     {LINES.map(line => { const opacity = window_(elapsed, line.from, line.to, 800); return opacity > 0 ? <p key={line.from} className="intro-line" style={{ opacity, transform: `translateY(${(1 - opacity) * 6}px)` }}><small>Elias</small>{line.text}</p> : null; })}

@@ -6,9 +6,9 @@ import type { Point } from "./story";
 export function RadegastPasture({ preview = false }: { preview?: boolean }) {
   const [failed, setFailed] = useState(false);
   // The 4:3 meeting-place painting is shown as a square crop (x -40 of 320 units) that keeps the pavilion and the road.
-  if (preview && !failed) return <div className="pasture-preview" role="img" aria-label="Der Treffpunkt in Radegast" style={{ backgroundImage: `url(${assetUrl("/rooms/story-treffpunkt-v11.png")})` }}/>;
+  if (preview && !failed) return <div className="pasture-preview" role="img" aria-label="Der Treffpunkt in Radegast" style={{ backgroundImage: `url(${assetUrl("/rooms/story-treffpunkt-v11.webp")})` }}/>;
   if (!failed) return <svg className="scene-backdrop pasture-scene story-pixel-backdrop" viewBox="0 0 240 240" preserveAspectRatio="none" aria-hidden="true">
-    <image href={assetUrl("/rooms/story-treffpunkt-v11.png")} x="-40" width="320" height="240" preserveAspectRatio="none" onError={() => setFailed(true)}/>
+    <image href={assetUrl("/rooms/story-treffpunkt-v11.webp")} x="-40" width="320" height="240" preserveAspectRatio="none" onError={() => setFailed(true)}/>
   </svg>;
   return <svg className={preview ? "pasture-preview" : "scene-backdrop pasture-scene"} viewBox="0 0 240 240" preserveAspectRatio="none" shapeRendering="crispEdges" role={preview ? "img" : undefined} aria-label={preview ? "Der Treffpunkt in Radegast" : undefined} aria-hidden={preview ? undefined : true}>
     <rect width="240" height="240" fill="#8a925a"/><rect y="200" width="240" height="40" fill="#727e50"/>

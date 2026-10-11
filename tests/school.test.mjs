@@ -169,7 +169,7 @@ test("Die Schüler haben 18 verschiedene Looks, keine Gruppe hat dieselbe Grundf
   const base = art => `${CHARACTER_GRAPHICS[art].column},${CHARACTER_GRAPHICS[art].row}`;
   for (const [group, members] of groups) assert.equal(new Set(members.map(member => base(member.art))).size, members.length, group);
   for (const sheet of ["front", "back", "side", "side-step"]) for (const variant of [1, 2]) {
-    assert.ok(existsSync(new URL(`../public/characters/neighbors-${sheet}-v07-alt${variant}.png`, import.meta.url)), `${sheet} alt${variant}`);
+    assert.ok(existsSync(new URL(`../public/characters/neighbors-${sheet}-v07-alt${variant}.webp`, import.meta.url)), `${sheet} alt${variant}`);
   }
 });
 

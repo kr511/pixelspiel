@@ -1,6 +1,6 @@
 .room-memory-object { position:absolute; width:6.4%; aspect-ratio:1; transform:translate(-50%,-75%); z-index:1; pointer-events:none; }
 .memory-photo { display:block; position:absolute; inset:0 8% 12% 0; padding:9% 9% 20%; background:#f3e6c4; border:2px solid #624737; transform:rotate(-8deg); box-shadow:3px 4px 0 #342b2a; }
-.memory-photo>span { display:block; width:100%; height:100%; background:#bdbf9c url('/rooms/goelzau-range-v1.png') center/cover; image-rendering:pixelated; }
+.memory-photo>span { display:block; width:100%; height:100%; background:#bdbf9c url('/rooms/goelzau-range-v1.webp') center/cover; image-rendering:pixelated; }
 .memory-sparkle { position:absolute; right:-10%; top:-23%; color:#ffe2a1; font-size:clamp(13px,2vw,24px); animation:memory-glimmer 2.8s ease-in-out infinite; text-shadow:0 0 13px #ffd685; }
 .is-nearby .memory-photo { outline:2px solid #ffe0a3; outline-offset:3px; }
 .is-completed .memory-photo { border-color:#d8ab61; }

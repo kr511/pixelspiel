@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GameUI } from "./GameUI";
+import { usePreload } from "./preload";
 import { assetUrl } from "./assets";
 import { GraduationPhotos } from "./GraduationPhotos";
 import { personalConversation } from "./conversations";
@@ -179,6 +180,8 @@ export function Game() {
   const targetName = restTarget?.name ?? nearbyEntity?.name ?? nearbyExit?.label;
   const sceneMinute = event ? event.scene === "chat" ? Math.min(1380, Math.max(event.staging.start, 1020 + (eventState?.topics.length ?? 0) * 120)) : event.scene === "sequence" ? Math.round(event.staging.start+(event.staging.end-event.staging.start)*(eventState?.cursor??0)/Math.max(1,(event.steps?.length??1)-1)) : event.staging.start : save.chapter === "graduation" ? 840 : day.minute;
   const sceneSeason = save.chapter === "graduation" ? "Sommer" : save.chapter === "christmas" ? "Winter" : storySeason(event, day);
+  // The start button unlocks once the first scene is loaded; every other scene follows in the background.
+  const preload = usePreload(save.place, sceneSeason, !started);
   const light = seasonalLight(sceneSeason, sceneMinute);
   const winter = sceneSeason === "Winter";
   const upcoming = nextEvent(timeline);
@@ -779,9 +782,9 @@ export function Game() {
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
 
   return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
-    <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.png")}/>
-    <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.png")}/>
-    <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.png")}/>
+    <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.webp")}/>
+    <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.webp")}/>
+    <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.webp")}/>
     {Object.keys(WALK_ATLASES).flatMap(sheet => [sheet, ...PUPIL_VARIANTS.map(variant => variantSheet(sheet, variant))]).map(sheet => <link key={sheet} rel="preload" as="image" href={assetUrl(sheet)}/>)}
     <div className={`pixel-viewport world-viewport ${save.place === "bedroom" ? "bedroom-viewport" : ""}`} hidden={!inWorld && phase !== "entering"} role="group" aria-label={PLACES[save.place].name}>
       <div key={save.place} className="world-scene world-camera" style={{ "--camera-x": `${camera.x*100}%`, "--camera-y": `${camera.y*100}%`, "--world-zoom": camera.zoom } as CSSProperties}>
@@ -813,7 +816,7 @@ export function Game() {
       {active && arrow && <div className="offscreen-guide" style={labelStyle(arrow)} role="status" aria-label={`Aufgabenziel: ${step?.label}`}><span style={{ transform: `rotate(${arrow.angle}deg)` }}>➜</span><small>{guide?.label ?? "Dein nächstes Ziel"}</small></div>}
     </div>
     {(phase === "memory" || phase === "leaving") && <ShootingMemory blocked={paused || needsLandscape || transitioning} onComplete={completeShooting} onLeave={useMemories.getState().leave}/>}
-    <GameUI started={started} onStart={() => {
+    <GameUI started={started} loading={preload.ready ? null : preload.progress} onStart={() => {
       setStarted(true);
       const current = timelineRef.current;
       // A brand-new game opens with the autumn intro; returning players continue directly.
