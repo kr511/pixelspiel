@@ -55,6 +55,8 @@ button { font:inherit; }
 .start-card span { display:block; max-width:330px; margin:19px auto 25px; color:rgba(255,247,239,.76); font-size:1rem; line-height:1.55; }
 .start-card button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:48px; padding:0 21px; border:0; border-radius:999px; color:#45271f; background:#ffd2ad; font-weight:760; cursor:pointer; box-shadow:0 10px 26px rgba(62,31,22,.24); transition:transform .18s ease,background .18s ease; }
 .start-card button:hover { transform:translateY(-2px); background:#ffe0c5; }
+.start-card button:disabled { cursor:progress; }
+.start-card button:disabled:hover { transform:none; background:#ffd2ad; }
 .loading-screen { position:fixed; inset:0; display:grid; place-content:center; gap:12px; background:linear-gradient(#cf745f,#293842); color:#fff9f2; text-align:center; }
 .loading-screen span { font-family:Georgia,serif; font-size:2.6rem; }
 .loading-screen p { margin:0; color:rgba(255,255,255,.72); }

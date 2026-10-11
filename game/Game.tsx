@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GameUI } from "./GameUI";
+import { usePreload } from "./preload";
 import { assetUrl } from "./assets";
 import { GraduationPhotos } from "./GraduationPhotos";
 import { personalConversation } from "./conversations";
@@ -179,6 +180,8 @@ export function Game() {
   const targetName = restTarget?.name ?? nearbyEntity?.name ?? nearbyExit?.label;
   const sceneMinute = event ? event.scene === "chat" ? Math.min(1380, Math.max(event.staging.start, 1020 + (eventState?.topics.length ?? 0) * 120)) : event.scene === "sequence" ? Math.round(event.staging.start+(event.staging.end-event.staging.start)*(eventState?.cursor??0)/Math.max(1,(event.steps?.length??1)-1)) : event.staging.start : save.chapter === "graduation" ? 840 : day.minute;
   const sceneSeason = save.chapter === "graduation" ? "Sommer" : save.chapter === "christmas" ? "Winter" : storySeason(event, day);
+  // The start button unlocks once the first scene is loaded; every other scene follows in the background.
+  const preload = usePreload(save.place, sceneSeason, !started);
   const light = seasonalLight(sceneSeason, sceneMinute);
   const winter = sceneSeason === "Winter";
   const upcoming = nextEvent(timeline);
@@ -813,7 +816,7 @@ export function Game() {
       {active && arrow && <div className="offscreen-guide" style={labelStyle(arrow)} role="status" aria-label={`Aufgabenziel: ${step?.label}`}><span style={{ transform: `rotate(${arrow.angle}deg)` }}>➜</span><small>{guide?.label ?? "Dein nächstes Ziel"}</small></div>}
     </div>
     {(phase === "memory" || phase === "leaving") && <ShootingMemory blocked={paused || needsLandscape || transitioning} onComplete={completeShooting} onLeave={useMemories.getState().leave}/>}
-    <GameUI started={started} onStart={() => {
+    <GameUI started={started} loading={preload.ready ? null : preload.progress} onStart={() => {
       setStarted(true);
       const current = timelineRef.current;
       // A brand-new game opens with the autumn intro; returning players continue directly.

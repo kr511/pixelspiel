@@ -6,7 +6,7 @@ import { useInput } from "./input";
 import { worldAudio } from "./audio";
 
 export type MenuEntry = { label: string; shortcut?: string; onSelect: () => void };
-export function GameUI({ started, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [] }: { started: boolean; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[] }) {
+export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [] }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[] }) {
   const paused = useInput((state) => state.paused);
   const muted = useSyncExternalStore(worldAudio.subscribe, worldAudio.getMuted, worldAudio.getMuted);
   const setPaused = useInput((state) => state.setPaused);
@@ -45,7 +45,7 @@ export function GameUI({ started, onStart, roomActive = true, transitioning = fa
             <p>{started ? place : "Eure kleine Welt · Version 0.91"}</p>
             <h1>{started && paused ? "Kurze Pause?" : "Felice × Elias"}</h1>
             <span>{started && paused ? "Dein Moment wartet auf dich." : "Lange Abende am Handy. Ein Fahrrad, ein Stück Schokolade. Zwei Nachrichten, die bleiben. Erlebe euer gemeinsames Jahr in acht Kapiteln – vom ersten Schreiben bis zu den Erinnerungen, die bleiben."}</span>
-            <button onClick={() => { void worldAudio.unlock(); setPaused(false); if (!started) onStart(); }}><Play size={17} fill="currentColor" />{started && paused ? "Zurück zum Spiel" : "Welt betreten"}</button>
+            <button disabled={!started && loading !== null} onClick={() => { void worldAudio.unlock(); setPaused(false); if (!started) onStart(); }}><Play size={17} fill="currentColor" />{started && paused ? "Zurück zum Spiel" : loading !== null ? `Welt lädt … ${Math.round(loading * 100)} %` : "Welt betreten"}</button>
             {started && paused && menu.length > 0 && <nav className="pause-menu" aria-label="Spielmenü">{menu.map(entry => <button key={entry.label} onClick={() => { void worldAudio.unlock(); setPaused(false); entry.onSelect(); }}>{entry.label}{entry.shortcut && <kbd>{entry.shortcut}</kbd>}</button>)}</nav>}
             {started && paused && <small className="pause-autosave">Dein Fortschritt wird automatisch gespeichert.</small>}
           </div>
