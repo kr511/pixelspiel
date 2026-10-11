@@ -39,7 +39,7 @@ import { advanceActor, availableSeat, canChangePose, initialActors, requestPose,
 import { speakerGraphic } from "./graphics";
 import { cameraFor, offscreenGuide } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
-import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, TRAVEL_MINUTES, activityAt, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
+import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, activityAt, travelMinutes, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
 
@@ -430,7 +430,7 @@ export function Game() {
       }
       const firstSchoolBus = save.place === "bus" && nearbyExit.to === "zoerbig" && !event && dayRef.current.date === STORY_START && dayRef.current.minute < 10 * 60 && !timelineRef.current.flags.includes(BUS_RIDE_FLAG);
       if (firstSchoolBus) { setBusRide(nearbyExit); return; }
-      setSave({ ...save, place: nearbyExit.to }); position(nearbyExit.spawn); spendTime(TRAVEL_MINUTES, nearbyExit.to);
+      setSave({ ...save, place: nearbyExit.to }); position(nearbyExit.spawn); spendTime(travelMinutes(save.place, nearbyExit.to), nearbyExit.to);
     }
   }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, eliasHere, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint, triggerNear, triggerHere, upcoming]);
 
@@ -615,7 +615,7 @@ export function Game() {
     setBusRide(null);
     const current = timelineRef.current;
     if (!current.flags.includes(BUS_RIDE_FLAG)) persistTimeline({ ...current, flags: [...current.flags, BUS_RIDE_FLAG] });
-    clearMovement(); setSave({ ...save, place: exit.to }); position(exit.spawn); spendTime(TRAVEL_MINUTES, exit.to);
+    clearMovement(); setSave({ ...save, place: exit.to }); position(exit.spawn); spendTime(travelMinutes(save.place, exit.to), exit.to);
   }
 
   function finishIntro() {
@@ -635,7 +635,7 @@ export function Game() {
     setNotices([]); clearMovement();
     persistDay(clock);
     const skipped = daysBetween(from, clock.date);
-    morningText.current = skipped > 1 ? `${historicalDate(clock.date)}. Ein paar ruhige Tage sind vergangen. Es ist 5:00 Uhr – ein neuer Morgen.` : "Ein neuer Morgen. Es ist 5:00 Uhr. Ich bin ausgeschlafen.";
+    morningText.current = skipped > 1 ? `${historicalDate(clock.date)}. Ein paar ruhige Tage sind vergangen. Es ist 5:30 Uhr – ein neuer Morgen.` : "Ein neuer Morgen. Es ist 5:30 Uhr. Ich bin ausgeschlafen.";
     setCalendarFlip({ from, to: clock.date });
   }
 

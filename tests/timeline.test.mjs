@@ -23,7 +23,7 @@ const reach = id => {
 test("Neuer Kalender beginnt im Herbst; alle acht Kapitel haben eindeutige, konfigurierte Szenen", () => {
   const save = initialTimeline();
   assert.equal(save.clock.date, STORY_START);
-  assert.equal(save.clock.minute, 300);
+  assert.equal(save.clock.minute, 330);
   assert.equal(save.clock.season, "Herbst");
   assert.deepEqual(STORY_CHAPTERS.map(chapter => chapter.number), [1,2,3,4,5,6,7,8]);
   assert.deepEqual([...new Set(dated.map(event => event.chapterNumber))], [1,2,3,4,5,6,7,8]);
@@ -265,7 +265,7 @@ test("Schlafen springt zum nächsten relevanten Storytag, nie rückwärts und ni
   assert.equal(sleepToStoryDay({ ...save, clock: woke }).date, "2025-11-12");
   woke = sleepToStoryDay({ ...save, clock: { ...woke, date: "2025-11-12", day: woke.day + 1 } });
   assert.equal(woke.date, "2025-11-13");
-  assert.equal(woke.minute, 300);
+  assert.equal(woke.minute, 330);
   assert.equal(woke.day, save.clock.day + 3);
   assert.equal(woke.season, "Herbst");
   // Ein heute noch offenes Ereignis wird nicht übersprungen: nur bis zum nächsten Morgen.

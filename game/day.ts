@@ -2,7 +2,19 @@ import type { Place, Point } from "./story";
 
 export const DAY_KEY = "felice-elias.day.v061";
 export const ACTION_MINUTES = 10;
-export const TRAVEL_MINUTES = 30;
+export const WAKE_MINUTE = 5 * 60 + 30; // Aufstehzeit: jeden Morgen 5:30 Uhr
+export const TRAVEL_MINUTES = 15; // Fallback für Wege ohne eigenen Eintrag
+// Wegzeiten in Minuten je Strecke (in beide Richtungen). Kurze Wege im Haus, Bus als längster Abschnitt.
+const TRAVEL_TIMES: [Place, Place, number][] = [
+  ["bedroom", "home", 5], ["home", "kitchen", 5], ["home", "garden", 5], ["home", "radegast", 5], ["garden", "radegast", 5],
+  ["radegast", "bus", 10], ["radegast", "playground", 10],
+  ["bus", "zoerbig", 20], ["bus", "goelzau", 15], ["goelzau", "range", 10],
+  ["zoerbig", "school", 10], ["zoerbig", "schoolway", 5], ["schoolway", "school", 5], ["school", "gym", 5],
+  ["zoerbig", "christmasmarket", 10], ["zoerbig", "eliasroom", 10],
+];
+export function travelMinutes(from: Place, to: Place) {
+  return TRAVEL_TIMES.find(([a, b]) => a === from && b === to || a === to && b === from)?.[2] ?? TRAVEL_MINUTES;
+}
 export const SCHOOL_START = 7 * 60 + 15;
 export const SCHOOL_END = 13 * 60;
 export const NOTICE_TIMES = [8, 12, 15, 18, 21, 24].map(hour => hour * 60);
@@ -16,7 +28,7 @@ export function initialDay(now = new Date()): DaySave {
   const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const month = now.getMonth();
   const season = month >= 2 && month <= 4 ? "Frühling" : month >= 5 && month <= 7 ? "Sommer" : month >= 8 && month <= 10 ? "Herbst" : "Winter";
-  return { version: 1, date, minute: 300, day: 1, season };
+  return { version: 1, date, minute: WAKE_MINUTE, day: 1, season };
 }
 function validDate(value: unknown): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -53,8 +65,8 @@ export function advanceClock(save: DaySave, minutes: number): { save: DaySave; n
 }
 // Sleep deliberately skips every notice until the next morning.
 export function sleepUntilMorning(save: DaySave): DaySave {
-  const days = save.minute < 300 ? 0 : 1;
-  return { ...save, date: nextDate(save.date, days), day: save.day + days, minute: 300 };
+  const days = save.minute < WAKE_MINUTE ? 0 : 1;
+  return { ...save, date: nextDate(save.date, days), day: save.day + days, minute: WAKE_MINUTE };
 }
 export function clockText(minute: number) {
   return `${Math.floor(minute / 60)}:${String(minute % 60).padStart(2, "0")}`;
