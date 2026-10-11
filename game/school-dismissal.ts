@@ -18,15 +18,15 @@ let journeys: Journey[] | undefined;
 let arrivals: Journey[] | undefined;
 
 // After school the groups leave the door one after another and stand in circles again:
-// some stay on the courtyard, the others wait at the bus stop on the market.
+// some stay on the courtyard, the others wait on the market square below the bus stop (not on the road).
 const AFTER_SCHOOL_GROUPS: { prefix: string; destination: "courtyard" | "bus"; center?: Point; radius?: number }[] = [
   { prefix: "school-pupil-left-", destination: "courtyard" },
-  { prefix: "school-pupil-right-", destination: "bus", center: { x: .275, y: .295 }, radius: .04 },
+  { prefix: "school-pupil-right-", destination: "bus", center: { x: .33, y: .40 }, radius: .035 },
   { prefix: "school-group-3-", destination: "courtyard" },
-  { prefix: "school-group-2-", destination: "bus", center: { x: .35, y: .46 }, radius: .04 },
+  { prefix: "school-group-2-", destination: "bus", center: { x: .34, y: .495 }, radius: .035 },
   { prefix: "school-group-5-", destination: "courtyard" },
-  { prefix: "school-group-1-", destination: "bus", center: { x: .325, y: .355 }, radius: .025 },
-  { prefix: "school-group-4-", destination: "bus", center: { x: .415, y: .355 }, radius: .025 },
+  { prefix: "school-group-1-", destination: "bus", center: { x: .43, y: .405 }, radius: .025 },
+  { prefix: "school-group-4-", destination: "bus", center: { x: .43, y: .48 }, radius: .025 },
 ];
 const GROUP_GAP = 4;
 const MEMBER_GAP = .5;
