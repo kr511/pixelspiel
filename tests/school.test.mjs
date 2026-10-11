@@ -4,13 +4,13 @@ import { SCHOOL_START } from "../game/day.ts";
 import { ENTITIES, SPAWNS, canWalk } from "../game/story.ts";
 import { walkingRoute } from "../game/actors.ts";
 import { eliasPresent, routineEntities } from "../game/routines.ts";
-import { SCHOOL_ARRIVAL, SCHOOL_ELIAS_ID, SCHOOL_MORNING_ENTITIES } from "../game/school.ts";
+import { SCHOOL_ADDITIONAL_GROUPS, SCHOOL_ARRIVAL, SCHOOL_ELIAS_ID, SCHOOL_MORNING_ENTITIES } from "../game/school.ts";
 
-test("Vor dem Unterricht warten mehrere Gruppen und Elias mit Paul und Justin auf dem Hof", () => {
+test("Vor dem Unterricht warten 27 Figuren in mehreren Gruppen auf dem Hof", () => {
   for (const minute of [SCHOOL_ARRIVAL, 6 * 60 + 30, SCHOOL_START - 1]) {
     const pupils = routineEntities("school", minute, ENTITIES.school).filter(entity => entity.kind === "person");
-    assert.equal(pupils.length, 13);
-    for (const name of ["Elena", "Jason", "Luca", "Wyatt", "Elias", "Paul", "Justin"]) {
+    assert.equal(pupils.length, 27);
+    for (const name of ["Elena", "Jason", "Luca", "Wyatt"]) {
       assert.ok(pupils.some(entity => entity.name === name), `${name} um ${minute}`);
     }
     const elias = pupils.find(entity => entity.id === SCHOOL_ELIAS_ID);
@@ -20,6 +20,34 @@ test("Vor dem Unterricht warten mehrere Gruppen und Elias mit Paul und Justin au
     }
     assert.ok(pupils.filter(entity => entity.id.startsWith("school-pupil-left-")).length === 3);
     assert.ok(pupils.filter(entity => entity.id.startsWith("school-pupil-right-")).length === 3);
+  }
+});
+
+test("Fünf weitere Gruppen mit zwei bis vier Schülern stehen zusammen und halten Wege frei", () => {
+  assert.equal(SCHOOL_ADDITIONAL_GROUPS.length, 5);
+  for (const group of SCHOOL_ADDITIONAL_GROUPS) {
+    assert.ok(group.length >= 2 && group.length <= 4);
+    for (const member of group) {
+      assert.equal(member.ambient, true);
+      assert.ok(group.every(other => Math.hypot(other.x - member.x, other.y - member.y) < .15));
+    }
+  }
+  assert.equal(new Set(SCHOOL_MORNING_ENTITIES.map(entity => entity.id)).size, SCHOOL_MORNING_ENTITIES.length);
+  for (const pupil of SCHOOL_MORNING_ENTITIES) {
+    assert.ok(Math.hypot(pupil.x - SPAWNS.school.x, pupil.y - SPAWNS.school.y) > .10);
+    assert.ok(Math.hypot(pupil.x - .50, pupil.y - .28) > .08, "Der Schuleingang bleibt frei");
+    for (const other of SCHOOL_MORNING_ENTITIES) {
+      if (other.id !== pupil.id) assert.ok(Math.hypot(pupil.x - other.x, pupil.y - other.y) > .045, `${pupil.id} und ${other.id}`);
+    }
+  }
+});
+
+test("Felice kennt Elias, Paul und Justin auf dem frühen Schulhof noch nicht", () => {
+  for (const id of [SCHOOL_ELIAS_ID, "school-paul", "school-justin"]) {
+    const pupil = SCHOOL_MORNING_ENTITIES.find(entity => entity.id === id);
+    assert.equal(pupil.ambient, true, "Unbekannte Schüler haben keine Namensbox oder Gesprächsaufforderung");
+    assert.equal(pupil.name, "Schüler");
+    assert.ok(!/Elias|Paul|Justin|Felice/.test(pupil.text));
   }
 });
 

@@ -9,7 +9,7 @@ export const PEOPLE = allPeople.filter(entity => !entity.ambient);
 // Keep accepting previously saved names when a figure becomes background scenery.
 const ids = new Set(allPeople.map(entity => entity.id));
 export function initialNames(): NameSave { return { version: 1, names: {}, visibility: "always" }; }
-export function displayName(entity: Entity, save: NameSave): string { return save.names[entity.id] ?? entity.name; }
+export function displayName(entity: Entity, save: NameSave): string { return entity.ambient ? entity.name : save.names[entity.id] ?? entity.name; }
 export function renamePerson(save: NameSave, id: string, value: string): NameSave {
   if (!ids.has(id)) throw new Error("Unbekannte Figur");
   const name = value.trim().replace(/\s+/g, " ");

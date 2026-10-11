@@ -4,7 +4,7 @@ Ein 2D-Pixelspiel über Felice und Elias: Schule, gemeinsame Wege, lange Chatabe
 
 **Aktuelle Spielversion: 0.91** · Desktop und Smartphone · Spielstände im Browser
 
-![Der Pausenhof um 6:30 Uhr: Schulfreunde, Elias mit Paul und Justin sowie zwei zusätzliche Schülergruppen.](docs/screenshots/schulhof-v091.png)
+![Der Pausenhof um 6:30 Uhr mit bekannten Schulfreunden und mehreren namenlosen Schülergruppen.](docs/screenshots/schulhof-v091.png)
 
 ## Was dich erwartet
 
@@ -20,13 +20,13 @@ Ergänzte Dialoge und inszenierte Szenen sind im Spiel als Rekonstruktionen geke
 
 | Spielzeit | Was auf dem Hof passiert |
 | --- | --- |
-| **06:00–07:15 Uhr** | 13 Figuren warten auf dem Hof: Elena, Jason, Luca und Wyatt; Elias mit Paul und Justin; sechs weitere Schüler in zwei Gruppen. |
+| **06:00–07:15 Uhr** | 27 Schülerfiguren warten auf dem Hof: Elena, Jason, Luca und Wyatt; eine unbekannte Dreiergruppe; 20 weitere Schüler in sieben Gruppen. Fünf Gruppen mit jeweils zwei bis vier Personen sind neu hinzugekommen. |
 | **Ab 07:15 Uhr** | Die zusätzlichen Morgengruppen gehen in den Unterricht. Die vier bisherigen Schulfreunde behalten ihre Pausenfunktionen. |
 | **Ab 13:00 Uhr** | Sechs Schüler kommen nacheinander aus dem Eingang. Drei bleiben auf dem Hof, drei laufen zum Bus am Zörbiger Markt. |
 | **Bis 14:00 Uhr** | Die Busgruppe wartet an der Haltestelle. |
 | **Bis 18:00 Uhr** | Die zusätzliche Hofgruppe bleibt draußen. |
 
-Die sechs Hintergrundschüler haben unterschiedliche Grafikvarianten, Größen und Blickrichtungen. Sie erscheinen ohne Namensboxen und Gesprächsaufforderungen. Elias, Paul, Justin und die bisherigen Freunde bleiben ansprechbar. Eine Pause hält die Schulschluss-Bewegung an.
+Die Hintergrundschüler haben unterschiedliche Grafikvarianten, Größen und Blickrichtungen. Elias, Paul und Justin erscheinen auf dem morgendlichen Schulhof ebenfalls ohne Namen oder Gesprächsaufforderungen, weil Felice sie dort noch nicht kennt. Die vier bisherigen Schulfreunde bleiben ansprechbar. Die neuen Gruppen gehen um 07:15 Uhr in den Unterricht; nach Schulschluss folgt die bisherige Sechsergruppe ihren Hof- und Buswegen. Eine Pause hält diese Bewegung an.
 
 ## Sofort lokal spielen
 

@@ -4,10 +4,10 @@ Version **0.91** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammen
 
 ## Neu in V0.91
 
-- **Belebter Pausenhof vor Schulbeginn:** Ab 06:00 Uhr warten mehrere Schülergruppen auf dem Hof. Neben Elena, Jason, Luca und Wyatt am Fenstergitter stehen zwei weitere Gruppen auf dem Pflaster.
+- **Belebter Pausenhof vor Schulbeginn:** Ab 06:00 Uhr warten 27 Schülerfiguren auf dem Hof. Neben Elena, Jason, Luca und Wyatt am Fenstergitter stehen die unbekannte Dreiergruppe und sieben weitere Gruppen auf dem Pflaster. Fünf Gruppen mit je zwei bis vier Personen sind neu hinzugekommen.
 - **Schulschluss um 13 Uhr:** Schüler kommen nacheinander aus dem Eingang. Drei sammeln sich auf dem Pausenhof, drei laufen durch das Hoftor zum Bus am Zörbiger Markt und warten dort bis 14 Uhr. Die Hofgruppe bleibt bis 18 Uhr. Pausieren hält die Bewegung an; spätere Besuche zeigen den fortgeschrittenen Tagesablauf.
-- **Elias mit zwei Freunden:** Vor dem Unterricht um 07:15 Uhr wartet Elias separat mit Paul und Justin. Felice kann ihn bereits an den ersten Schultagen sehen und begrüßen, ohne spätere Beziehungsszenen freizuschalten.
-- **Abwechslungsreiche Hintergrundschüler:** Sechs verschiedene Figuren mit unterschiedlichen Haaren, Kleidungsfarben, Größen und Blickrichtungen beleben den Hof. Sie haben keine Namensboxen oder Gesprächsaufforderungen und stehen nicht im Namenseditor. Elias und die benannten Freunde behalten ihre Namen und Interaktionen.
+- **Unbekannte Dreiergruppe:** Vor dem Unterricht um 07:15 Uhr wartet Elias separat mit Paul und Justin. Weil Felice sie dort noch nicht kennt, erscheinen alle drei ohne Namen oder Gesprächsaufforderungen. Ihre späteren Story- und Abschlussauftritte behalten die vorgesehenen Namen und Interaktionen.
+- **Abwechslungsreiche Hintergrundschüler:** 20 weitere Schüler mit unterschiedlichen Haaren, Kleidungsfarben, Größen und Blickrichtungen beleben den Hof. Sie und die unbekannte Dreiergruppe haben keine Namensboxen oder Gesprächsaufforderungen und stehen nicht im Namenseditor. Vorher gespeicherte Namen bleiben lesbar, werden für die unbekannten Figuren aber nicht angezeigt.
 - Die zusätzlichen Morgengruppen gehen zum Unterrichtsbeginn hinein. Die vorhandenen Pausenfiguren und eine ausdrücklich eingeladene Elias-Begleitung behalten ihre bisherigen Funktionen. Die namenlosen Schüler verwenden vorhandene Grafiken.
 
 ## Neu in V0.9
