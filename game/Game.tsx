@@ -267,10 +267,10 @@ export function Game() {
     return () => worldAudio.stop();
   }, []);
   useEffect(() => {
-    const sync = () => worldAudio.setScene(inWorld ? save.place : "range", audioAllowed({ started, paused, hidden: document.hidden, landscape: !needsLandscape, transitioning }));
+    const sync = () => worldAudio.setScene(inWorld ? save.place : "range", audioAllowed({ started, paused, hidden: document.hidden, landscape: !needsLandscape, transitioning: transitioning || intro }));
     sync(); document.addEventListener("visibilitychange", sync);
     return () => { document.removeEventListener("visibilitychange", sync); worldAudio.stop(); };
-  }, [started, paused, needsLandscape, transitioning, save.place, inWorld]);
+  }, [started, paused, needsLandscape, transitioning, intro, save.place, inWorld]);
 
   useEffect(() => {
     const query = window.matchMedia("(orientation: portrait) and (max-width: 760px)");
