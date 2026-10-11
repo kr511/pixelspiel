@@ -1,7 +1,9 @@
 const SCHOOL_WAY_CROP = { x: .08, y: .30, width: .84, height: .70 };
 import type { ChapterId, Place, Point } from "./story";
+import type { Season } from "./day";
 
-export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; outdoors: boolean; light: string; foreground: { clip: string; depth: number }[] };
+type LitWindow = { x: number; y: number; width: number; height: number };
+export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; seasons?: Record<Season, string>; nightLights?: { lamps: Point[]; windows: LitWindow[] }; outdoors: boolean; light: string; foreground: { clip: string; depth: number }[] };
 // Each foreground copies only the specified furniture/tree silhouette from the same scene.
 const rect = (left: number, top: number, right: number, bottom: number, depth = bottom) => ({ clip: `polygon(${left}% ${top}%,${right}% ${top}%,${right}% ${bottom}%,${left}% ${bottom}%)`, depth });
 export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
@@ -13,7 +15,17 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   bedroom: { background: "/rooms/felice-bedroom-v10.png", outdoors: false, light: "#ffbd65", foreground: [rect(24.5,10,52.5,42),rect(52.5,10,74.5,30),rect(24.5,43,35.5,57),rect(69,31,79,57),rect(45.5,79,78,91,91)] },
   home: { background: "/rooms/home-v06.png", winter: "/rooms/home-winter-v06.png", outdoors: false, light: "#ffd49a", foreground: [rect(46,23.5,73,48),{ clip: "polygon(12% 17%,40% 17%,40% 30%,24.7% 30%,24.7% 43%,12% 43%)", depth:43 },rect(84,12,96,46)] },
   kitchen: { background: "/rooms/kitchen-v065.png", outdoors: false, light: "#ffd49a", foreground: [rect(8.7,9,91.4,28.4),rect(57.6,36,85.4,51.5),rect(61,51.5,70,58.5),rect(74,51.5,82,58.5)] },
-  garden: { background: "/rooms/garden-v06.png", winter: "/rooms/garden-winter-v06.png", outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ clip: "polygon(3% 9%,13% 6%,25% 10%,33% 20%,29% 28%,22% 30%,21% 38%,14% 38%,13% 30%,5% 27%,2% 20%)", depth:38 },{ clip:"polygon(69% 11%,79% 7%,94% 10%,98% 22%,91% 31%,86% 31%,86% 40%,79% 40%,77% 32%,68% 29%,65% 21%)",depth:40 }] },
+  garden: { background: "/rooms/garden-v06.png", winter: "/rooms/garden-winter-v06.png", seasons: {
+    Frühling: "/rooms/garden-spring-v092.png", Sommer: "/rooms/garden-v06.png", Herbst: "/rooms/garden-autumn-v092.png", Winter: "/rooms/garden-winter-v06.png",
+  }, nightLights: {
+    lamps: [{ x: .431, y: .055 }, { x: .570, y: .055 }],
+    windows: [
+      { x: 31.65, y: 2.7, width: 2.1, height: 1.5 }, { x: 34.75, y: 2.7, width: 2.1, height: 1.5 },
+      { x: 31.65, y: 4.8, width: 2.1, height: 1.6 }, { x: 34.75, y: 4.8, width: 2.1, height: 1.6 },
+      { x: 63.0, y: 2.7, width: 2.1, height: 1.5 }, { x: 66.2, y: 2.7, width: 2.1, height: 1.5 },
+      { x: 63.0, y: 4.8, width: 2.1, height: 1.6 }, { x: 66.2, y: 4.8, width: 2.1, height: 1.6 },
+    ],
+  }, outdoors: true, light: "#e0eabb", foreground: [rect(27,0,70,19),{ clip: "polygon(3% 9%,13% 6%,25% 10%,33% 20%,29% 28%,22% 30%,21% 38%,14% 38%,13% 30%,5% 27%,2% 20%)", depth:38 },{ clip:"polygon(69% 11%,79% 7%,94% 10%,98% 22%,91% 31%,86% 31%,86% 40%,79% 40%,77% 32%,68% 29%,65% 21%)",depth:40 }] },
   radegast: { background: "/rooms/radegast-walk-v075.png", outdoors: true, light: "#e4dbba", foreground: [] },
   bus: { background: "/rooms/radegast-stop-v075.png", outdoors: true, light: "#dbe8e5", foreground: [rect(50,26,89.5,40),rect(23.5,30,43.5,43),rect(0,0,100,24.5)] },
   zoerbig: { background: "/rooms/zoerbig-market-v09.png", outdoors: true, light: "#e9dbb8", foreground: [
@@ -25,7 +37,15 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   ] },
   schoolway: { background: "/rooms/zoerbig-walk-v075.png", crop: SCHOOL_WAY_CROP, outdoors: true, light: "#e9dbb8", foreground: [] },
   gym: { background: "/rooms/graduation-gym-v08.png", outdoors: false, light: "#f8ddb0", foreground: [rect(36,18,65,25),rect(68.7,17,74,25)] },
-  school: { background: "/rooms/school-court-secondary-v075.png", outdoors: true, light: "#e9dbb8", foreground: [
+  school: { background: "/rooms/school-court-secondary-v075.png", winter: "/rooms/school-court-winter-v092.png", seasons: {
+    Frühling: "/rooms/school-court-spring-v092.png", Sommer: "/rooms/school-court-secondary-v075.png", Herbst: "/rooms/school-court-autumn-v092.png", Winter: "/rooms/school-court-winter-v092.png",
+  }, nightLights: {
+    lamps: [{ x: .217, y: .112 }, { x: .419, y: .139 }, { x: .578, y: .139 }, { x: .774, y: .111 }, { x: .865, y: .111 }],
+    windows: [
+      { x: 14.1, y: 12.4, width: 1.6, height: 2.3 }, { x: 16.2, y: 12.4, width: 1.6, height: 2.3 }, { x: 18.3, y: 12.4, width: 1.7, height: 2.3 },
+      { x: 59.8, y: 12.4, width: 1.6, height: 2.3 }, { x: 62.0, y: 12.4, width: 1.6, height: 2.3 }, { x: 64.2, y: 12.4, width: 1.6, height: 2.3 },
+    ],
+  }, outdoors: true, light: "#e9dbb8", foreground: [
     rect(0,0,100,22.3),rect(42.1,17.6,57.8,25),
     { clip: "polygon(1.9% 6.1%,13.6% 6.1%,13.6% 23.3%,10.7% 25.2%,2.2% 23.9%)", depth:25.2 },
     { clip: "polygon(31.5% 28%,38% 25.5%,45% 28%,48% 33%,46% 38%,45% 40.3%,45.7% 41.5%,38.4% 45.5%,32.3% 42.6%,32.5% 40.2%,31.5% 35%)", depth:45.5 },
@@ -50,7 +70,10 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   goelzau: { background: "/rooms/goelzau-walk-v075.png", outdoors: true, light: "#dfe5ba", foreground: [rect(5,0,63,24.5),rect(71,0,100,43)] },
   range: { background: "/rooms/range-v06.png", outdoors: false, light: "#e3e3ba", foreground: [rect(10,4,90,34)] },
 };
-export function sceneBackground(place: Place, winter: boolean) { const scene = SCENE_GRAPHICS[place]; return winter && scene.winter ? scene.winter : scene.background; }
+export function sceneBackground(place: Place, season: Season) {
+  const scene = SCENE_GRAPHICS[place];
+  return scene.seasons?.[season] ?? (season === "Winter" ? scene.winter : undefined) ?? scene.background;
+}
 
 export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; variant?: number; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
 const npc = (column: number, row: number): CharacterGraphic => ({ sheet: "/characters/neighbors-v06.png", columns: 4, rows: 2, column, row, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/portraits-v06.png", columns: 4, rows: 2, column, row } });

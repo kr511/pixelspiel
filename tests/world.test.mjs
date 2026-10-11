@@ -6,6 +6,7 @@ import { CHARACTER_GRAPHICS, SCENE_GRAPHICS, CHAPTER_GRAPHICS, speakerGraphic, s
 import { WALK_ATLASES } from "../game/graphics07.ts";
 import { ENTITIES, PLACES, CHAPTERS } from "../game/story.ts";
 import { WorldAudio, AUDIO_KEY, audioAllowed, parseMuted } from "../game/audio.ts";
+import { SEASONS } from "../game/day.ts";
 
 test("Kamera zeigt an jeder Weltkante ausschließlich die Szene", () => {
   for(const zoom of [1,1.5,2]) for(const x of [0,.075,.5,.94,1]) for(const y of [0,.16,.5,.92,1]) {
@@ -31,8 +32,8 @@ test("Alle Orte, Figuren und Sprecher besitzen verfügbare und passende Grafiken
   for(const place of Object.keys(PLACES)) {
     const scene=SCENE_GRAPHICS[place]; assert.ok(scene); asset(scene.background);
     if(scene.winter) asset(scene.winter);
-    assert.equal(sceneBackground(place,false),scene.background);
-    assert.equal(sceneBackground(place,true),scene.winter??scene.background);
+    assert.equal(sceneBackground(place,"Sommer"),scene.background);
+    assert.equal(sceneBackground(place,"Winter"),scene.winter??scene.background);
     for(const entity of ENTITIES[place]) if(entity.kind!=="item") assert.ok(CHARACTER_GRAPHICS[entity.kind==="dog"?"dog":entity.art],entity.id);
   }
   for(const graphic of Object.values(CHARACTER_GRAPHICS)) { asset(graphic.sheet); asset(graphic.portrait.sheet); assert.ok(graphic.column<graphic.columns&&graphic.row<graphic.rows); assert.ok(graphic.anchor.x>=0&&graphic.anchor.x<=1&&graphic.anchor.y<=1); }
@@ -43,6 +44,24 @@ test("Alle Orte, Figuren und Sprecher besitzen verfügbare und passende Grafiken
   }
   for(const chapter of CHAPTERS) { asset(CHAPTER_GRAPHICS[chapter.id]); for(const step of chapter.steps) assert.ok(speakerGraphic(step.speaker),step.speaker); }
   assert.equal(speakerGraphic("Elias"),"elias"); assert.equal(speakerGraphic("Felices Stiefvater"),"stepfather");
+});
+
+test("Schulhof und Garten haben vier vollständige Jahreszeiten mit passenden Bildmaßen", () => {
+  for (const place of ["school", "garden"]) {
+    const scene = SCENE_GRAPHICS[place];
+    const original = readFileSync(new URL(`../public${scene.background}`, import.meta.url));
+    const sources = SEASONS.map(season => sceneBackground(place, season));
+    assert.equal(new Set(sources).size, 4, `${place}: vier unterschiedliche Jahreszeiten`);
+    for (const source of sources) {
+      const png = readFileSync(new URL(`../public${source}`, import.meta.url));
+      assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", source);
+      assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [original.readUInt32BE(16), original.readUInt32BE(20)], source);
+    }
+    assert.ok(scene.nightLights.lamps.length > 0, `${place}: Nachtbeleuchtung`);
+  }
+  // Existing places keep their available summer/winter artwork in every season.
+  assert.equal(sceneBackground("home", "Frühling"), SCENE_GRAPHICS.home.background);
+  assert.equal(sceneBackground("home", "Herbst"), SCENE_GRAPHICS.home.background);
 });
 
 function contextDouble() {

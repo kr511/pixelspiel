@@ -16,6 +16,21 @@ Ein 2D-Pixelspiel über Felice und Elias: Schule, gemeinsame Wege, lange Chatabe
 
 Ergänzte Dialoge und inszenierte Szenen sind im Spiel als Rekonstruktionen gekennzeichnet.
 
+## Schulhof und Felices Garten zu jeder Jahreszeit
+
+Beide Orte haben jeweils vier Jahreszeitenbilder und eine helle Tages- sowie dunkle Nachtansicht: **16 Kombinationen** insgesamt. Der Spielkalender wählt automatisch die Jahreszeit; die Spieluhr steuert Licht und Dämmerung.
+
+| Jahreszeit | Schulhof und Garten |
+| --- | --- |
+| **Frühling** | Frisches Grün, rosa und weiße Blüten |
+| **Sommer** | Dichte grüne Baumkronen und warmes Tageslicht |
+| **Herbst** | Goldene und orange Blätter, herbstliche Bodenfarben |
+| **Winter** | Schnee auf Bäumen, Dächern und Beeträndern, freie Wege |
+
+Nachts leuchten die vorhandenen Außenlampen und ausgewählte Fenster. Der Übergang bei Sonnenauf- und -untergang ist weich; im Winter wird es früher dunkel als im Sommer. Laufwege, Eingänge und Ruheplätze behalten ihre Positionen.
+
+![Schulhof und Felices Garten im Frühling, Sommer, Herbst und Winter, jeweils bei Tag und Nacht.](docs/screenshots/jahreszeiten-tag-nacht-v091.png)
+
 ## Neu in Version 0.91: Schüler auf dem Pausenhof
 
 | Spielzeit | Was auf dem Hof passiert |
