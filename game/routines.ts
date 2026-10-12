@@ -18,13 +18,17 @@ export function routineEntities(place: Place, minute: number, entities: Entity[]
 // Places that the story has not reached yet have no path: the Christmas market (06.12.2025) and Elias' room (20.03.2026).
 export const CHRISTMAS_MARKET_OPENS = "2025-12-06";
 export const ELIAS_ROOM_OPENS = "2026-03-20";
-// Die Klassenfahrt (20.–24.04.2026) ist nur während der Fahrt erreichbar; dazwischen schläft Felice im Hotel.
-export const TRIP = { from: "2026-04-20", to: "2026-04-24", places: ["hotel", "hotelboys", "parliament", "europapark"] as Place[] };
-export const onTrip = (date: string) => date >= TRIP.from && date <= TRIP.to;
-/** Where Felice wakes up: from the second trip morning on in the hotel, otherwise at home. */
-export const wakePlace = (date: string): Place => date > TRIP.from && date <= TRIP.to ? "hotel" : "bedroom";
-export function exitOpen(to: Place, date: string) {
-  if (TRIP.places.includes(to)) return onTrip(date);
+// Die Klassenfahrt (20.–24.04.2026) läuft von der Abfahrt bis zur Heimreise; dazwischen schläft Felice im Hotel.
+// Sie hängt am Spielfortschritt, nicht am Kalender: Ein verpasster Reisetag wird nachgeholt, und Hotel und
+// Ausflugsorte bleiben offen, bis die Heimreise gespielt ist.
+export const TRIP = { start: "klassenfahrt-anreise", end: "klassenfahrt-heimreise", places: ["hotel", "hotelboys", "parliament", "europapark"] as Place[] };
+type Progress = Record<string, { completedAt?: string } | undefined>;
+export const onTrip = (progress: Progress) => Boolean(progress[TRIP.start]?.completedAt) && !progress[TRIP.end]?.completedAt;
+/** Where Felice wakes up: in the hotel while the trip runs, otherwise at home. */
+export const wakePlace = (progress: Progress): Place => onTrip(progress) ? "hotel" : "bedroom";
+export function exitOpen(to: Place, date: string, from: Place, progress: Progress) {
+  // Between trip places the way stays open, so Felice can always get back to the hotel and its bus home.
+  if (TRIP.places.includes(to)) return onTrip(progress) || TRIP.places.includes(from);
   return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
 }
 
