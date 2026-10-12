@@ -49,7 +49,7 @@ const BUS_RIDE_FLAG = "bus-ride-first-day";
 const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
 const HOTEL_BED = REST_SPOTS.find(spot => spot.id === "hotel-bed")!;
 /** Felice's bed for a morning: on the class trip she wakes up in the hotel. */
-const bedFor = (date: string) => wakePlace(date) === "hotel" ? HOTEL_BED : BED;
+const bedFor = (progress: TimelineSave["progress"]) => wakePlace(progress) === "hotel" ? HOTEL_BED : BED;
 // Felice lying in her bed, ready for the existing rest system to walk her out.
 function lyingInBed(bed = BED): Rest {
   const actor = { ...standingActor({ x: bed.position.x, y: bed.approach.y - .04 }), pose: "lying" as Pose, restId: `${bed.id}:0`, approach: bed.approach };
@@ -164,7 +164,7 @@ export function Game() {
   const chapter = CHAPTERS.find(c => c.id === save.chapter);
   const step = currentStep(save);
   const draftPlaying = Boolean(legacyView || worldSave.chapter && currentStep(worldSave));
-  const exits = event ? [] : PLACES[save.place].exits.filter(exit => save.chapter || exitOpen(exit.to, day.date));
+  const exits = event ? [] : PLACES[save.place].exits.filter(exit => save.chapter || exitOpen(exit.to, day.date, save.place, timeline.progress));
   const guide = step && step.place !== save.place ? routeTo(save.place, step.place) : undefined;
   const dogFollows = save.place === "garden" && save.completed.includes("dog") && save.chapter !== "dog";
   // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
@@ -614,7 +614,7 @@ export function Game() {
 
   /** Felice lies in bed, then the rest system walks her out; `then` decides what follows. */
   function wakeInBed(then: "beginning" | "morning") {
-    const bed = bedFor(dayRef.current.date);
+    const bed = bedFor(timelineRef.current.progress);
     setSave({ ...worldSave, place: bed.place });
     const lying = lyingInBed(bed);
     position(restPosition(bed, lying.motion)); setDirection("front");

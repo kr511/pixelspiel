@@ -4,7 +4,7 @@ import { PLACES, SPAWNS, canWalk } from "../game/story.ts";
 import { REST_SPOTS } from "../game/day.ts";
 import { speakerGraphic } from "../game/graphics.ts";
 import { TRIP, exitOpen, onTrip, wakePlace } from "../game/routines.ts";
-import { STORY_EVENTS, beginEvent, completeEvent, eventById, eventStatus, initialTimeline, jumpToNext, nextEvent, sleepToStoryDay } from "../game/timeline.ts";
+import { STORY_EVENTS, beginEvent, completeEvent, eventById, eventStatus, initialTimeline, jumpToNext, nextEvent, sleepToStoryDay, storyTrigger } from "../game/timeline.ts";
 
 const TRIP_IDS = ["klassenfahrt-anreise", "klassenfahrt-parlament", "klassenfahrt-pokalabend", "klassenfahrt-europapark", "klassenfahrt-hotelabend", "klassenfahrt-heimreise"];
 const player = { x: .5, y: .7 };
@@ -38,16 +38,20 @@ test("Klassenfahrt: bestätigter Wochenablauf in Kapitel 6 zwischen Frühling un
   assert.ok(eventById("klassenfahrt-hotelabend").staging.start > eventById("klassenfahrt-europapark").staging.start);
 });
 
-test("Klassenfahrt: Orte nur während der Fahrt erreichbar, Felice wacht ab Dienstag im Hotel auf", () => {
+test("Klassenfahrt: Orte nur zwischen Abfahrt und Heimreise erreichbar, Felice wacht dazwischen im Hotel auf", () => {
+  const done = { completedAt: "2026-10-08T12:00:00Z" };
+  const before = {}, during = { [TRIP.start]: done }, after = { [TRIP.start]: done, [TRIP.end]: done };
   for (const place of TRIP.places) {
-    assert.equal(exitOpen(place, "2026-04-19"), false, place);
-    assert.equal(exitOpen(place, "2026-04-20"), true, place);
-    assert.equal(exitOpen(place, "2026-04-24"), true, place);
-    assert.equal(exitOpen(place, "2026-04-25"), false, place);
+    assert.equal(exitOpen(place, "2026-04-20", "zoerbig", before), false, place);
+    assert.equal(exitOpen(place, "2026-04-20", "zoerbig", during), true, place);
+    assert.equal(exitOpen(place, "2026-04-26", "zoerbig", during), true, `${place}: verspätet noch offen`);
+    assert.equal(exitOpen(place, "2026-04-24", "zoerbig", after), false, place);
+    // Zwischen den Reiseorten bleibt der Rückweg zum Hotel immer offen.
+    assert.equal(exitOpen("hotel", "2026-04-26", place, after), true, place);
   }
-  assert.equal(exitOpen("zoerbig", "2026-04-22"), true);
-  assert.deepEqual(["2026-04-20", "2026-04-21", "2026-04-24", "2026-04-25"].map(wakePlace), ["bedroom", "hotel", "hotel", "bedroom"]);
-  assert.ok(onTrip("2026-04-22") && !onTrip("2026-05-01"));
+  assert.equal(exitOpen("zoerbig", "2026-04-22", "hotel", during), true);
+  assert.deepEqual([before, during, after].map(wakePlace), ["bedroom", "hotel", "bedroom"]);
+  assert.ok(onTrip(during) && !onTrip(before) && !onTrip(after));
   const bed = REST_SPOTS.find(spot => spot.id === "hotel-bed");
   assert.equal(bed.place, "hotel");
   assert.equal(bed.kind, "bed");
@@ -82,6 +86,26 @@ test("Klassenfahrt: Schlafen geht Tag für Tag durch die Reise; jeder Abschnitt 
   }
   assert.deepEqual([...new Set(seen)], ["2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24"]);
   assert.equal(nextEvent(save).id, "longer-visit-plan");
+});
+
+test("Klassenfahrt: Wer einen Reisetag verschläft, holt ihn nach und bleibt bis zur Heimreise im Hotel", () => {
+  let save = initialTimeline();
+  while (nextEvent(save).id !== "klassenfahrt-anreise") save = finish(beginEvent(jumpToNext(save), nextEvent(save).id, player, "front"));
+  save = finish(beginEvent(jumpToNext(save), "klassenfahrt-anreise", player, "front"));
+  // Felice geht am 21.04. morgens wieder schlafen, statt auf das Parlament zu warten: der Ablauf rutscht um einen Tag.
+  save = { ...save, clock: sleepToStoryDay(save) };
+  save = { ...save, clock: sleepToStoryDay(save) };
+  assert.equal(save.clock.date, "2026-04-22");
+  for (const id of TRIP_IDS.slice(1)) {
+    assert.equal(nextEvent(save).id, id);
+    assert.equal(wakePlace(save.progress), "hotel", `${id}: Felice wacht im Hotel auf`);
+    const trigger = storyTrigger(eventById(id));
+    assert.ok(trigger.place === "hotel" || exitOpen(trigger.place, save.clock.date, "hotel", save.progress), `${id}: ${trigger.place} erreichbar`);
+    save = finish(beginEvent(save, id, player, "front"));
+    save = { ...save, clock: sleepToStoryDay(save) };
+  }
+  assert.ok(save.clock.date > "2026-04-25", "Die Heimreise lag nach dem 24.04.");
+  assert.equal(wakePlace(save.progress), "bedroom");
 });
 
 test("Klassenfahrt: Figuren haben Grafiken, der private Moment bleibt eine Ausblende ohne Albumtext", () => {
