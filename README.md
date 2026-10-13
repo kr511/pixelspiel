@@ -27,7 +27,7 @@ Beide Orte haben jeweils vier Jahreszeitenbilder und eine helle Tages- sowie dun
 | **Herbst** | Goldene und orange Blätter, herbstliche Bodenfarben |
 | **Winter** | Schnee auf Bäumen, Dächern und Beeträndern, freie Wege |
 
-Nachts leuchten die vorhandenen Außenlampen und ausgewählte Fenster. Der Übergang bei Sonnenauf- und -untergang ist weich; im Winter wird es früher dunkel als im Sommer. Laufwege, Eingänge und Ruheplätze behalten ihre Positionen.
+Nachts leuchten die vorhandenen Außenlampen und ausgewählte Fenster. Der Übergang bei Sonnenauf- und -untergang ist weich; im Winter wird es früher und deutlich dunkler als im Sommer, wo die Nächte heller bleiben. Laufwege, Eingänge und Ruheplätze behalten ihre Positionen.
 
 ![Schulhof und Felices Garten im Frühling, Sommer, Herbst und Winter, jeweils bei Tag und Nacht.](docs/screenshots/jahreszeiten-tag-nacht-v091.png)
 
