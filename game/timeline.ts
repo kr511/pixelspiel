@@ -1,5 +1,5 @@
 import { advanceClock, initialDay, parseDay, sleepUntilMorning, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
-import { CHAPTERS, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
+import { CHAPTERS, PLACES, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
 export const STORY_START = "2025-11-10";
@@ -511,6 +511,24 @@ export function storyHint(save: TimelineSave): { key: string; text: string } | n
   if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, text: "Ein ganz normaler Schultag. Frischmachen, Schule, Hausaufgaben – und danach ins Bett." };
   if (next.date === save.clock.date) return { key: `${next.id}:later`, text: "Heute passiert später noch etwas. Bis dahin kann ich mich umsehen – oder mich hinsetzen und ein bisschen warten." };
   return { key: `${next.id}:sleep`, text: "Heute ist ein ruhiger Tag. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag." };
+}
+export type NextStep = { key: string; status: "active" | "go" | "later" | "sleep" | "routine" | "complete"; event: StoryEvent | null; place: Place | null; title: string; detail: string };
+const minuteText = (minute: number) => `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+/** The one answer to "what now?". The world, the phone, the album and the map all show this. */
+export function nextStepInfo(save: TimelineSave): NextStep {
+  if (save.active) {
+    const event = eventById(save.active.id) ?? null;
+    return { key: `active:${save.active.id}`, status: "active", event, place: null, title: event?.title ?? "Laufende Erinnerung", detail: "Diese Erinnerung läuft gerade." };
+  }
+  const next = nextEvent(save);
+  if (!next?.date) return { key: "complete", status: "complete", event: null, place: null, title: "Unser Jahr ist bewahrt", detail: "Jede Erinnerung lässt sich im Album noch einmal erleben." };
+  if (canTrigger(save, next)) {
+    const trigger = storyTrigger(next);
+    return { key: `${next.id}:go`, status: "go", event: next, place: trigger.place, title: next.title, detail: trigger.mode === "phone" ? `Handy · ${PLACES[trigger.place].name}, am Bett oder Schreibtisch` : `Jetzt · ${PLACES[trigger.place].name}` };
+  }
+  if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, status: "routine", event: next, place: null, title: "Ein normaler Schultag", detail: "Tagesablauf erledigen, danach ins Bett." };
+  if (next.date === save.clock.date) return { key: `${next.id}:later`, status: "later", event: next, place: null, title: next.title, detail: `Heute ab ${minuteText(next.staging.start)} Uhr. Bis dahin umsehen oder warten.` };
+  return { key: `${next.id}:sleep`, status: "sleep", event: next, place: null, title: next.title, detail: `Am ${historicalDate(next.date)}. Schlafen gehen blättert den Kalender weiter.` };
 }
 /** Minutes to wait until today's next memory, or null when nothing is pending later today. */
 export function waitingMinutes(save: TimelineSave) {

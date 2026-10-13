@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { STORY_CHAPTERS, STORY_END, STORY_EVENTS, STORY_START, eventStatus, historicalDate, nextEvent, type StoryEvent, type TimelineSave } from "./timeline";
+import { STORY_CHAPTERS, STORY_END, STORY_EVENTS, STORY_START, eventStatus, historicalDate, nextEvent, nextStepInfo, type StoryEvent, type TimelineSave } from "./timeline";
 import { eventDateText, resolveStoryIllustration } from "./PhoneHub";
 import { RadegastPasture } from "./StoryWorldArt";
 import "./phone-album.css";
 
-export function TimelineJournal({ save, busyId, draftActive, onSelect, onJump, onDraft, onCalendarEnd }: {
-  save: TimelineSave; busyId?: string; draftActive: boolean; onSelect: (id: string) => void; onJump: () => void; onDraft: (event: StoryEvent) => void; onCalendarEnd?: () => void;
+export function TimelineJournal({ save, busyId, draftActive, onSelect, onJump, onDraft, onCalendarEnd, onCredits }: {
+  save: TimelineSave; busyId?: string; draftActive: boolean; onSelect: (id: string) => void; onJump: () => void; onDraft: (event: StoryEvent) => void; onCalendarEnd?: () => void; onCredits?: () => void;
 }) {
   const [openArtifact, setOpenArtifact] = useState<string | null>(null);
   const next = nextEvent(save);
@@ -36,7 +36,7 @@ export function TimelineJournal({ save, busyId, draftActive, onSelect, onJump, o
   return <>
     <section className="story-calendar" aria-label="Story-Kalender">
       <div><small>DER ZEITRAUM EURER GESCHICHTE</small><p>{historicalDate(STORY_START)} <span>—</span> {historicalDate(STORY_END)}</p><strong>{completed} von {dated.length} Erinnerungen bewahrt</strong><progress value={completed} max={dated.length} aria-label="Story-Fortschritt"/><p className="album-clock-note">Aktuelle Spielzeit: {historicalDate(save.clock.date)} · {String(Math.floor(save.clock.minute / 60)).padStart(2, "0")}:{String(save.clock.minute % 60).padStart(2, "0")} Uhr</p></div>
-      <div className="calendar-next"><small>{next ? "ALS NÄCHSTES" : "EIN JAHR VOLLER ERINNERUNGEN"}</small><p>{next ? `${eventDateText(next)} · ${next.title}` : "Unsere Geschichte ist noch lange nicht zu Ende. ❤️"}</p>{next ? <button className="memory-primary" disabled={blocked} onClick={eventStatus(save, next) === "verfügbar" ? () => onSelect(next.id) : onJump}>{eventStatus(save, next) === "verfügbar" ? "Nächste Erinnerung erleben" : "Zeit bis dahin weiterblättern"} →</button> : save.clock.date < STORY_END && onCalendarEnd && <button className="memory-primary" disabled={blocked} onClick={onCalendarEnd}>Zum 02.11.2026 weiterblättern →</button>}<p className="album-clock-note">Erneut erlebte Erinnerungen behalten ihr eigenes Datum. Deine aktuelle Spielzeit bleibt dabei erhalten.</p></div>
+      <div className="calendar-next"><small>{next ? "ALS NÄCHSTES" : "EIN JAHR VOLLER ERINNERUNGEN"}</small><p>{next ? `${eventDateText(next)} · ${next.title}` : "Unsere Geschichte ist noch lange nicht zu Ende. ❤️"}</p>{next && <p className="calendar-next-detail" data-testid="journal-next-step">{nextStepInfo(save).detail}</p>}{next ? <button className="memory-primary" disabled={blocked} onClick={eventStatus(save, next) === "verfügbar" ? () => onSelect(next.id) : onJump}>{eventStatus(save, next) === "verfügbar" ? "Nächste Erinnerung erleben" : "Zeit bis dahin weiterblättern"} →</button> : save.clock.date < STORY_END && onCalendarEnd ? <button className="memory-primary" disabled={blocked} onClick={onCalendarEnd}>Zum 02.11.2026 weiterblättern →</button> : onCredits && save.progress["our-story-finale"]?.completedAt && <button className="memory-primary" data-testid="open-credits" onClick={onCredits}>Abspann ansehen ♡</button>}<p className="album-clock-note">Erneut erlebte Erinnerungen behalten ihr eigenes Datum. Deine aktuelle Spielzeit bleibt dabei erhalten.</p></div>
     </section>
     <nav className="album-chapter-nav" aria-label="Kapitel im Erinnerungsalbum">{STORY_CHAPTERS.map(chapter => <button key={chapter.number} onClick={() => document.getElementById(`memory-chapter-${chapter.number}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" })}><span>{chapter.number}</span>{chapter.period}</button>)}</nav>
     {STORY_CHAPTERS.map(chapter => <section className="memory-chapter" id={`memory-chapter-${chapter.number}`} key={chapter.number} aria-labelledby={`memory-chapter-title-${chapter.number}`} data-chapter={chapter.number} data-chapter-number={chapter.number}>

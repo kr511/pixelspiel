@@ -17,3 +17,18 @@
 @keyframes pixel-kiss-felice{0%,15%{transform:translateX(0) rotate(0)}35%,75%{transform:translateX(5px) rotate(9deg)}100%{transform:translateX(0) rotate(0)}}
 @keyframes pixel-kiss-elias{0%,15%{transform:translateX(0) rotate(0)}35%,75%{transform:translateX(-5px) rotate(-9deg)}100%{transform:translateX(0) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.world-viewport:has(.effect-kiss) [data-testid="felice-player"]>.character-art,.world-viewport:has(.effect-kiss) [data-testid="story-elias"]>.character-art{animation:none}}
+.credits-modal{width:min(620px,calc(100vw - 32px));text-align:center}
+.credits-roll{padding:28px 24px 8px;max-height:calc(100dvh - 160px);overflow:auto}
+.credits-roll header small,.credits-roll h2 small{display:block;font:10px monospace;letter-spacing:.12em;text-transform:uppercase;color:#d9bd81}
+.credits-roll h1{font:34px/1.2 Georgia,serif;margin:8px 0 4px;color:#f9e9c6}
+.credits-roll h2{font:20px/1.3 Georgia,serif;margin:26px 0 8px;color:#f2ddba}
+.credits-roll ul{list-style:none;margin:0;padding:0;font-size:14px;line-height:1.9}
+.credits-roll li small{display:block;font:10px monospace;color:#b6c3a5;line-height:1.2;margin-bottom:6px}
+.credits-roll li span{margin-right:6px}
+.credits-stats{display:flex;justify-content:center;gap:22px;margin:20px 0 0}
+.credits-stats dt{font:10px monospace;text-transform:uppercase;color:#b6c3a5}.credits-stats dd{margin:2px 0 0;font:22px Georgia,serif;color:#f9e9c6}
+.credits-note{font-size:11px;color:#b6c3a5;margin-top:26px}
+.credits-end{font:20px/1.6 Georgia,serif;color:#f2ddba;margin:22px 0 10px}
+@media(max-height:520px){.credits-roll{padding:16px 14px 4px;max-height:calc(100dvh - 110px)}.credits-roll h1{font-size:24px}.credits-stats dd{font-size:18px}}
+.credits-modal .memory-secondary{color:#f4e7cc;border-color:#b9a17a;background:transparent}
+.credits-modal .memory-secondary:hover{background:rgba(255,255,255,.08)}

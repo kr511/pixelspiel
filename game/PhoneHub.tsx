@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PixelPortrait } from "./PixelPortrait";
 import { assetUrl } from "./assets";
-import { STORY_CHAPTERS, STORY_EVENTS, STORY_END, STORY_START, chatTopicForEvent, eventStatus, historicalDate, nextEvent, type StoryEvent, type TimelineSave } from "./timeline";
+import { STORY_CHAPTERS, STORY_EVENTS, STORY_END, STORY_START, chatTopicForEvent, eventStatus, historicalDate, nextEvent, nextStepInfo, type StoryEvent, type TimelineSave } from "./timeline";
 import "./phone-album.css";
 
 export type PhoneTab = "Nachrichten" | "Verlauf" | "Kalender" | "Erinnerungen";
@@ -64,7 +64,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
     {tab === "Kalender" && <>
       <div className="phone-page-heading"><small>AKTUELLE SPIELZEIT</small><h3>{historicalDate(timeline.clock.date)}</h3><p>{String(Math.floor(timeline.clock.minute / 60)).padStart(2,"0")}:{String(timeline.clock.minute % 60).padStart(2,"0")} Uhr · {timeline.clock.season}</p><small>{historicalDate(STORY_START)} — {historicalDate(STORY_END)}</small></div>
       <progress value={complete} max={dated.length} aria-label="Erinnerungsfortschritt"/><p className="phone-small-note">{complete} von {dated.length} Erinnerungen · Historische Szenen haben ihre eigene Zeit. Wiederholungen verändern die aktuelle Spielzeit nicht.</p>
-      {next && <div className="phone-next-date"><small>ALS NÄCHSTES</small><h4>{next.title}</h4><p>{eventDateText(next)}</p><button disabled={blocked || Boolean(activeId) || (eventStatus(timeline, next) === "verfügbar" ? !onSelectMemory : !onJump)} onClick={eventStatus(timeline, next) === "verfügbar" ? () => select(next) : onJump}>{eventStatus(timeline, next) === "verfügbar" ? "Erinnerung erleben" : "Zeit erzählerisch weiterblättern"} →</button></div>}
+      {next && <div className="phone-next-date"><small>ALS NÄCHSTES</small><h4>{next.title}</h4><p>{eventDateText(next)}</p><p className="phone-small-note" data-testid="phone-next-step">{nextStepInfo(timeline).detail}</p><button disabled={blocked || Boolean(activeId) || (eventStatus(timeline, next) === "verfügbar" ? !onSelectMemory : !onJump)} onClick={eventStatus(timeline, next) === "verfügbar" ? () => select(next) : onJump}>{eventStatus(timeline, next) === "verfügbar" ? "Erinnerung erleben" : "Zeit erzählerisch weiterblättern"} →</button></div>}
       <ol className="phone-chapter-calendar">{STORY_CHAPTERS.map(chapter => <li key={chapter.number}><span>{chapter.number}</span><div><strong>{chapter.title}</strong><small>{chapter.period}</small></div></li>)}</ol>
     </>}
     {tab === "Erinnerungen" && <>
