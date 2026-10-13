@@ -25,6 +25,7 @@ import { TIMELINE_KEY, STORY_END, STORY_START, STORY_EVENTS, STORY_CHAPTERS, INT
 import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
+import { SavePanel } from "./SavePanel";
 import "./chapter1.css";
 import "./clean-ui.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
@@ -102,6 +103,7 @@ export function Game() {
   const [busRide, setBusRide] = useState<Exit | null>(null);
   const [calendarFlip, setCalendarFlip] = useState<{ from: string; to: string } | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
   const [thought, setThought] = useState<{ key: string; text: string } | null>(null);
   const shownThought = useRef<string | null>(null);
   // After waking, either the tutorial begins or a quiet morning line follows.
@@ -159,7 +161,7 @@ export function Game() {
   const memoryError = useMemories(s => s.storageError);
   const transitioning = phase === "entering" || phase === "leaving";
   const inWorld = phase === "room";
-  const overlay = intro || Boolean(busRide) || Boolean(calendarFlip) || inventoryOpen;
+  const overlay = intro || Boolean(busRide) || Boolean(calendarFlip) || inventoryOpen || saveOpen;
   const active = started && !paused && !needsLandscape && inWorld && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay;
   const chapter = CHAPTERS.find(c => c.id === save.chapter);
   const step = currentStep(save);
@@ -832,6 +834,7 @@ export function Game() {
       { label: "Tasche", shortcut: "I", onSelect: () => { clearMovement(); setInventoryOpen(true); } },
       { label: "Erinnerungsalbum", shortcut: "J", onSelect: () => { clearMovement(); setJournal(true); } },
       { label: "Smartphone", onSelect: () => { clearMovement(); setPhone(true); } },
+      { label: "Spielstand", onSelect: () => { clearMovement(); setSaveOpen(true); } },
     ]}/>
     {started && inWorld && !paused && !transitioning && <>
       <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(day.minute)}</strong><small>{session ? "Aktuelle Spielzeit · während der Szene pausiert" : `Tag ${day.day} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span></div>
@@ -877,6 +880,7 @@ export function Game() {
     {intro && started && <IntroCinematic paused={paused || needsLandscape} onDone={finishIntro}/>}
     {busRide && started && <BusRide paused={paused || needsLandscape} onDone={finishBusRide}/>}
     {calendarFlip && <CalendarFlip from={calendarFlip.from} to={calendarFlip.to} paused={paused || needsLandscape} onDone={() => { setCalendarFlip(null); wakeInBed("morning"); }}/>}
+    {saveOpen && <SavePanel onClose={() => { setSaveOpen(false); clearMovement(); }}/>}
     {inventoryOpen && <InventoryPanel ids={timeline.inventory} onClose={() => { setInventoryOpen(false); clearMovement(); }} onOpenMemory={() => { setInventoryOpen(false); setJournal(true); }}/>}
     <MemoryTransition/>
     {needsLandscape && <div className="rotate-screen" role="status"><div className="rotate-phone">↻</div><strong>Handy bitte quer halten</strong><span>Im Querformat ist genug Platz für eure Welt und den Joystick.</span></div>}
