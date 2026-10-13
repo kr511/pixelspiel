@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ACTION_MINUTES, REST_SPOTS, SCHOOL_START, TRAVEL_MINUTES, WAKE_MINUTE, activityAt, advanceClock, clockText, initialDay, parseDay, seasonalLight, sleepUntilMorning, travelMinutes } from "../game/day.ts";
+import { ACTION_MINUTES, REST_SPOTS, SCHOOL_START, TRAVEL_MINUTES, WAKE_MINUTE, activityAt, advanceClock, clockText, initialDay, nightShade, parseDay, seasonalLight, sleepUntilMorning, travelMinutes } from "../game/day.ts";
 import { canWalk } from "../game/story.ts";
 
 const start = initialDay(new Date(2026, 9, 6));
@@ -89,4 +89,14 @@ test("Alle vier Jahreszeiten bieten helle Tage, dunkle Nächte und weiche Überg
     assert.equal(seasonalLight(season, dusk - 45).daylight, 1);
     assert.equal(seasonalLight(season, dusk + 45).daylight, 0);
   }
+});
+
+test("Nachts ist es im Winter dunkler als im Sommer, tagsüber bleibt alles hell", () => {
+  for (const place of ["garden", "school", "zoerbig", "bedroom"]) {
+    const night = ["Sommer", "Frühling", "Herbst", "Winter"].map(season => nightShade(place, season, 0));
+    assert.ok(night[0] < night[1] && night[1] < night[2] && night[2] < night[3], place);
+    assert.ok(night[3] <= .9);
+    for (const season of ["Sommer", "Winter"]) assert.equal(nightShade(place, season, 1), 0);
+  }
+  assert.ok(nightShade("garden", "Winter", 0) > nightShade("bedroom", "Winter", 0));
 });

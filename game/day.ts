@@ -100,6 +100,17 @@ export function seasonalLight(season: Season, minute: number) {
   return { daylight, season };
 }
 
+// How deep the night gets: winter nights are properly dark, short summer nights stay fairly bright.
+const NIGHT_DEPTH: Record<Season, number> = { Frühling: .78, Sommer: .55, Herbst: .92, Winter: 1.12 };
+const OUTDOOR_SHADE = .76; // Garten und Schulhof
+const TOWN_SHADE = .62; // restliche Außenorte
+const INDOOR_SHADE = .18;
+const TOWN_PLACES: Place[] = ["bus", "radegast", "zoerbig", "schoolway", "goelzau", "playground", "christmasmarket"];
+export function nightShade(place: Place, season: Season, daylight: number) {
+  const base = place === "garden" || place === "school" ? OUTDOOR_SHADE : TOWN_PLACES.includes(place) ? TOWN_SHADE : INDOOR_SHADE;
+  return Math.min(.9, (1 - daylight) * base * NIGHT_DEPTH[season]);
+}
+
 export const REST_SPOTS: RestSpot[] = [
   { id: "playground-bench", place: "playground", name: "Unsere Parkbank", kind: "bench", approach: { x: .43, y: .585 }, position: { x: .405, y: .515 }, companion: { x: .47, y: .515 } },
   { id: "market-bench", place: "christmasmarket", name: "Bank unter den Lichtern", kind: "bench", approach: { x: .78, y: .77 }, position: { x: .75, y: .715 }, companion: { x: .81, y: .715 } },

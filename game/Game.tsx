@@ -41,7 +41,7 @@ import { advanceActor, availableSeat, canChangePose, initialActors, requestPose,
 import { sceneBackground, speakerGraphic } from "./graphics";
 import { cameraFor, offscreenGuide } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
-import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, activityAt, travelMinutes, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
+import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, activityAt, travelMinutes, clockText, parseDay, seasonalLight, nightShade, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
 
@@ -816,7 +816,7 @@ export function Game() {
         {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+9}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
         <WorldAtmosphere place={save.place} season={sceneSeason}/>
         {save.place === "kitchen" && kitchenEffect && <div className={`kitchen-effect kitchen-${kitchenEffect}`} role="status"><span>{kitchenEffect === "breakfast" ? "Frühstück steht bereit" : kitchenEffect === "warm-drink" ? "Dein Getränk ist fertig" : "Die Küche ist aufgeräumt"}</span><i/><i/><i/></div>}
-        <div className="daylight-shade" style={{ opacity: (1-light.daylight) * (["garden", "school"].includes(save.place) ? .76 : ["bus", "radegast", "zoerbig","schoolway", "goelzau","playground","christmasmarket"].includes(save.place) ? .62 : .18) }} aria-hidden="true"/>
+        <div className="daylight-shade" style={{ opacity: nightShade(save.place, sceneSeason, light.daylight) }} aria-hidden="true"/>
         <WorldNightLights place={save.place} daylight={light.daylight}/>
       </div>
       <StoryEffects effect={cinema} timeline={timeline} finale={finale}/>
