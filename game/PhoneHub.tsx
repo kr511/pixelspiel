@@ -68,7 +68,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
       <ol className="phone-chapter-calendar">{STORY_CHAPTERS.map(chapter => <li key={chapter.number}><span>{chapter.number}</span><div><strong>{chapter.title}</strong><small>{chapter.period}</small></div></li>)}</ol>
     </>}
     {tab === "Erinnerungen" && <>
-      <div className="phone-page-heading"><small>DEIN ERINNERUNGSALBUM</small><h3>Unsere Geschichte</h3><p>{complete} gemeinsame Momente bewahrt.</p></div>
+      <div className="phone-page-heading"><small>DEIN ERINNERUNGSALBUM</small><h3>Unsere Geschichte</h3><p>{complete} {complete === 1 ? "gemeinsamer Moment" : "gemeinsame Momente"} bewahrt.</p></div>
       {onOpenAlbum && <button className="memory-primary phone-open-album" disabled={blocked} onClick={onOpenAlbum}>Das ganze Album öffnen ♡</button>}
       <div className="phone-memory-grid">{dated.map(event => {
         const status = eventStatus(timeline, event);
