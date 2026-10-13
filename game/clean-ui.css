@@ -5,7 +5,7 @@ main.pixel-game.version-095 { background:#101317; }
 .pixel-game.version-095 .world-viewport { border:0; outline:0; box-shadow:0 0 0 1px rgba(255,255,255,.04),0 30px 80px rgba(0,0,0,.45); border-radius:2px; }
 @media (prefers-reduced-motion:reduce) { .version-095 .scene-ambience { transition:none; } }
 /* Einheitliche, schlichte Bedienelemente: dunkles Glas statt grüner Kästen mit beigen Rahmen. */
-main.pixel-game.version-095 :is(.world-title,.story-session-bar,.day-clock,.quest-tracker,.felice-thought,.day-notice,.memory-interaction,.journal-button,.world-phone-button,.inventory-button,.audio-button,.pause-button,.controls-hint) {
+main.pixel-game.version-095 :is(.world-title,.story-session-bar,.day-clock,.routine-list,.quest-tracker,.felice-thought,.day-notice,.memory-interaction,.journal-button,.world-phone-button,.inventory-button,.audio-button,.pause-button,.controls-hint) {
   background:rgba(17,19,23,.74); border:1px solid rgba(255,255,255,.09); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.28); backdrop-filter:blur(10px);
 }
 main.pixel-game.version-095 .world-title>span { border:0; border-radius:8px; background:rgba(255,255,255,.1); }
@@ -13,3 +13,11 @@ main.pixel-game.version-095 :is(.journal-button,.world-phone-button,.inventory-b
 main.pixel-game.version-095 .felice-thought { border-left:3px solid rgba(255,210,173,.55); }
 main.pixel-game.version-095 .story-session-bar button { border:1px solid rgba(255,255,255,.14); border-radius:8px; background:rgba(255,255,255,.08); }
 main.pixel-game.version-095 .story-session-bar button:hover { background:rgba(255,255,255,.14); }
+/* Feinschliff: weicher Bodenschatten unter stehenden Figuren und leichtes Wippen beim Laufen. */
+main.pixel-game :is(.room-player.pose-standing,.world-entity.entity-person.pose-standing,.world-entity.entity-dog)::before {
+  content:""; position:absolute; left:50%; bottom:-3.5%; width:62%; height:11%; transform:translateX(-50%); border-radius:50%;
+  background:radial-gradient(closest-side,rgba(14,18,14,.5),rgba(14,18,14,.25) 55%,transparent); z-index:-1; pointer-events:none;
+}
+main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art { transition:transform .07s linear; }
+main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art[data-frame="0"] { transform:translateY(-1.6%); }
+@media (prefers-reduced-motion:reduce) { main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art[data-frame="0"] { transform:none; } }

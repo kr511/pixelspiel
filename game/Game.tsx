@@ -39,7 +39,7 @@ import { ShootingMemory } from "./memories/ShootingMemory";
 import { ItemArt } from "./SceneArt";
 import { BenchArt, CharacterArt, WorldAtmosphere, WorldBackdrop, WorldNightLights, characterStyle } from "./WorldArt";
 import { advanceRest, beginRest, hasLeft, leaveRest, restPosition, type RestMotion } from "./rest";
-import { movementStep, walkingFrame } from "./motion";
+import { easeInput, facing, movementStep, walkingFrame } from "./motion";
 import { advanceActor, availableSeat, canChangePose, initialActors, requestPose, standingActor, type Actor, type Actors, type Pose } from "./actors";
 import { sceneBackground, speakerGraphic } from "./graphics";
 import { cameraFor, offscreenGuide } from "./camera";
@@ -65,7 +65,9 @@ type Direction = "front" | "left" | "back" | "right";
 type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence" | "routine"; response?: boolean; actorId?: string; kitchenId?: string; routineId?: string; morning?: boolean };
 type Rest = { spot: RestSpot; elias: boolean; motion: RestMotion; companion?: RestMotion };
 type Notice = { date: string; minute: number; label: string };
-function clearMovement() { pressedKeys.clear(); useInput.getState().setMove(0, 0); }
+// Eased walking input; cleared together with the keys so no glide survives a menu, dialogue or teleport.
+const walkVelocity = { current: { x: 0, y: 0 } };
+function clearMovement() { pressedKeys.clear(); useInput.getState().setMove(0, 0); walkVelocity.current = { x: 0, y: 0 }; }
 function inhabitants(place: Place, visiting: Place | null) { return visiting === place && !ENTITIES[place].some(entity=>entity.art === "elias") ? [...ENTITIES[place],ELIAS_GUEST] : ENTITIES[place]; }
 
 export function Game() {
@@ -350,12 +352,17 @@ export function Game() {
       return;
     }
     const input = useInput.getState();
-    let dx = Math.abs(input.moveX) > .05 ? input.moveX : Number(pressedKeys.has("KeyD") || pressedKeys.has("ArrowRight")) - Number(pressedKeys.has("KeyA") || pressedKeys.has("ArrowLeft"));
-    let dy = Math.abs(input.moveY) > .05 ? -input.moveY : Number(pressedKeys.has("KeyS") || pressedKeys.has("ArrowDown")) - Number(pressedKeys.has("KeyW") || pressedKeys.has("ArrowUp"));
+    let tx = Math.abs(input.moveX) > .05 ? input.moveX : Number(pressedKeys.has("KeyD") || pressedKeys.has("ArrowRight")) - Number(pressedKeys.has("KeyA") || pressedKeys.has("ArrowLeft"));
+    let ty = Math.abs(input.moveY) > .05 ? -input.moveY : Number(pressedKeys.has("KeyS") || pressedKeys.has("ArrowDown")) - Number(pressedKeys.has("KeyW") || pressedKeys.has("ArrowUp"));
+    const targetMagnitude = Math.hypot(tx,ty);
+    if (targetMagnitude > 1) { tx /= targetMagnitude; ty /= targetMagnitude; }
+    // Soft start and stop; the eased value drives both speed and facing.
+    const eased = easeInput(walkVelocity.current, targetMagnitude <= .02 ? { x: 0, y: 0 } : { x: tx, y: ty }, seconds);
+    walkVelocity.current = eased;
+    const dx = eased.x, dy = eased.y;
     const magnitude = Math.hypot(dx,dy);
     if (magnitude <= .02) { setWalking(false); return; }
-    if (magnitude > 1) { dx /= magnitude; dy /= magnitude; }
-    setDirection(Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back");
+    if (targetMagnitude > .02) setDirection(previous => facing(previous, tx, ty));
     const p = playerRef.current;
     const { x, y } = movementStep(p, { x: dx, y: dy }, seconds, (x, y) => storyCanWalk(save.place, x, y, { pasture: event?.scene === "encounter" }));
     // Leaving a trigger zone re-arms it, so an interrupted memory can start again.

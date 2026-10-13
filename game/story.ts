@@ -114,19 +114,19 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
 const FRIENDS_RING = ringFormation({ x: .215, y: .35 }, 4, .028, 1 / 16, 1);
 export const ENTITIES: Record<Place, Entity[]> = {
   playground: [
-    { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden. Dieses Gespräch ist eine freie Rekonstruktion." },
+    { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden." },
     { id: "playground-swings", name: "Schaukeln", x: .70, y: .51, display: { x: .75, y: .37 }, kind: "item", art: "landmark", text: "Die Schaukeln bewegen sich leise im Wind. Der Spielplatz ist eine atmosphärische Interpretation, kein maßstabsgetreuer Ortsplan." },
     { id: "playground-leaves", name: "Ein kleiner Weg", x: .29, y: .70, kind: "item", art: "landmark", text: "Ein kurzer Spaziergang, eine Pause auf der Bank. Hier darf der Alltag einfach langsam sein." },
   ],
   christmasmarket: [
     { id: "market-elias", name: "Elias", x: .58, y: .74, kind: "person", art: "elias", text: "Die Lichter sehen schön aus. Wollen wir noch eine kleine Runde zusammen gehen? Freie Dialogrekonstruktion." },
-    { id: "market-lights", name: "Lichterketten", x: .56, y: .45, display: { x: .61, y: .185 }, kind: "item", art: "star", text: "Warme Lichter über dem Weg. Der Aufbau der Stände ist für das Spiel gestaltet; er behauptet keine historischen Einzelheiten." },
+    { id: "market-lights", name: "Lichterketten", x: .56, y: .45, display: { x: .61, y: .185 }, kind: "item", art: "star", text: "Warme Lichter über dem Weg. Alles glitzert ein bisschen." },
     { id: "market-tree", name: "Weihnachtsbaum", x: .49, y: .425, display: { x: .51, y: .225 }, kind: "item", art: "star", text: "Ein beleuchteter Baum, kalte Winterluft und Zeit zu zweit. Euer Besuch am 06.12.2025 gehört zur gemeinsamen Geschichte." },
     { id: "market-stall", name: "Ein warmer Stand", x: .32, y: .42, display: { x: .20, y: .295 }, kind: "item", art: "landmark", text: "An den Ständen wird es warm und gemütlich. Was ihr damals gegessen oder gekauft habt, bleibt offen." },
   ],
   eliasroom: [
     { id: "elias-room-elias", name: "Elias", x: .49, y: .56, kind: "person", art: "elias", text: "Schön, dass du hier bist. Wir können reden, den Computer ansehen oder uns einfach hinsetzen. Freie Dialogrekonstruktion." },
-    { id: "elias-computer", name: "Elias’ Computer", x: .29, y: .38, display: { x: .275, y: .255 }, kind: "item", art: "landmark", text: "Computer und Programmieren waren schon am Anfang gemeinsame Gesprächsthemen. Die Einrichtung dieses Zimmers ist eine Spielinterpretation." },
+    { id: "elias-computer", name: "Elias’ Computer", x: .29, y: .38, display: { x: .275, y: .255 }, kind: "item", art: "landmark", text: "Computer und Programmieren waren schon am Anfang gemeinsame Gesprächsthemen." },
     { id: "elias-shelf", name: "Regal", x: .22, y: .57, display: { x: .12, y: .52 }, kind: "item", art: "book", text: "Ein paar Bücher und freie Plätze im Regal. Diese Gegenstände gestalten den Raum, ohne weitere biografische Tatsachen zu behaupten." },
     { id: "elias-notes", name: "Platz für Gedanken", x: .67, y: .76, display: { x: .80, y: .745 }, kind: "item", art: "book", text: "Wünsche, Ideen, gemeinsame Erinnerungen. Manche Gespräche brauchen keine große Unternehmung." },
   ],
