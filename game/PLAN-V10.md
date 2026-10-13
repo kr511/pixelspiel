@@ -117,3 +117,20 @@ Wenn die Zeit knapp wird, in dieser Reihenfolge streichen: Statistik-Seite (D12)
 5. **Finale**: Soll der Abspann nur Text sein, oder mit Fotos und Musik? Welche Fotos sind okay?
 6. **Zeitrahmen**: Gibt es einen Termin, bis wann 1.0 fertig sein soll (zum Beispiel der 02.11.2026)? Das entscheidet, was gekürzt wird.
 7. **Innenräume im Winter**: Soll es drinnen nachts auch deutlich dunkler sein? (Offen aus dem Nachtlicht-Update.)
+
+## 8. Stand (13.10.2026)
+
+Umgesetzt, ohne dass es Angaben von dir brauchte:
+
+- **A1 Export/Import:** Pausenmenü → "Spielstand". Datei speichern und laden, mit Prüfung vor dem Schreiben und Rücksetzen bei Fehlern (`game/savefile.ts`).
+- **A2 Orientierung:** `nextStepInfo(save)` in `game/timeline.ts` ist die eine Quelle. Sie erscheint als Zeile "Als Nächstes" in der Uhr-Box, im Handy (Kalender), im Album und als Ziel auf der Karte. Abschaltbar im Pausenmenü, gespeichert unter `felice-elias.ui.v1`.
+- **C10 BusRide:** war schon über `finished`-Ref abgesichert, keine Änderung nötig.
+- **D11/D12 Finale und Abspann:** Nach dem Finale folgt ein Abspann (`game/Credits.tsx`, Daten aus `game/credits.ts`) mit Statistik und allen erlebten Erinnerungen nach Kapiteln. Danach freies Weiterspielen. Im Album nach dem Finale: "Abspann ansehen". Der Abspann listet nur Erlebtes und erfindet nichts.
+- **Version** steht jetzt an einer Stelle (`game/version.ts`), noch auf 0.91.
+- Screenshots in `docs/screenshots/v10/`.
+
+Bewusst noch nicht gemacht:
+
+- **Versionssprung auf 1.0.** Nach Abschnitt 1 ist 1.0 "Geschichte vollständig, keine Platzhalter". Das stimmt noch nicht (Klassenfahrt-Bilder, dünne Kapitel 3, 4, 7). Der Sprung ist eine Zeile in `game/version.ts` plus `package.json`, README und HTML-Meta.
+- **16 Lint-Fehler** aus den React-Compiler-Regeln in `Game.tsx` und `Player.tsx` (Refs im Render, Memoization). Bestehend, nicht neu; Umbau nur mit Browsertest des ganzen Spiels.
+- Alles aus B und C6 bis C9: braucht die offenen Fragen aus Abschnitt 7.

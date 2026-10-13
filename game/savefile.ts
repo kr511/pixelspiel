@@ -4,6 +4,7 @@ import { DAY_KEY, parseDay } from "./day.ts";
 import { NAMES_KEY, parseNames } from "./names.ts";
 import { AUDIO_KEY, parseMuted } from "./audio.ts";
 import { PROGRESS_KEY, readProgress } from "./memories/progress.ts";
+import { UI_KEY, parseUi } from "./ui-prefs.ts";
 
 export const SAVE_FORMAT = "felice-elias-save";
 export const SAVE_VERSION = 1;
@@ -22,6 +23,7 @@ const VALIDATORS: Record<string, (raw: string) => void> = {
   [NAMES_KEY]: raw => { parseNames(raw); },
   [AUDIO_KEY]: raw => { JSON.parse(raw); parseMuted(raw); },
   [PROGRESS_KEY]: raw => { readProgress({ getItem: () => raw, setItem: () => undefined }); },
+  [UI_KEY]: raw => { parseUi(raw); },
 };
 export const SAVE_KEYS = Object.keys(VALIDATORS);
 

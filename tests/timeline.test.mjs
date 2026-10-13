@@ -306,3 +306,25 @@ test("Gedanken-Hinweise ändern sich nur mit der Situation und bieten Warten am 
   assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 600);
   assert.equal(waitingMinutes(done), null);
 });
+
+test("Nächster Schritt: eine Quelle für Welt, Handy, Album und Karte", async () => {
+  const { nextStepInfo, initialTimeline, nextEvent, storyHint, storyTrigger, canTrigger, completeEvent, beginEvent } = await import("../game/timeline.ts");
+  let save = initialTimeline();
+  // Walk the first few memories: the visible step always matches Felice's thought and the trigger place.
+  for (let i = 0; i < 4; i++) {
+    const info = nextStepInfo(save), event = nextEvent(save);
+    assert.equal(info.key, storyHint(save).key, "Anzeige und Gedanke sagen dasselbe");
+    assert.equal(info.event?.id, event.id);
+    if (!canTrigger(save, event)) break;
+    assert.equal(info.status, "go");
+    assert.equal(info.place, storyTrigger(event).place, "Kartenziel ist der Ort des Auslösers");
+    const active = beginEvent(save, event.id, { x: .5, y: .5 }, "front");
+    assert.equal(nextStepInfo(active).status, "active");
+    const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" ? 2 : event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+    const state = { ...active.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
+    save = completeEvent({ ...active, progress: { ...active.progress, [event.id]: state } }, event.id, false, "2026-10-13T12:00:00Z");
+    assert.ok(save.progress[event.id].completedAt, event.id);
+  }
+  const done = { ...save, progress: Object.fromEntries((await import("../game/timeline.ts")).STORY_EVENTS.map(e => [e.id, { cursor: 0, line: 0, visits: 1, topics: [], topic: null, completedAt: "legacy" }])) };
+  assert.equal(nextStepInfo(done).status, "complete");
+});

@@ -294,3 +294,11 @@
   .snapshot-1 .snapshot-elias { right:2%; }
   .snapshot-2 .snapshot-person { width:52%; bottom:-3%; }
 }
+.map-node.is-target circle { fill:#ffb38a; stroke:#fff3c7; stroke-width:3; animation:map-target 1.6s ease-in-out infinite; }
+.map-node.is-target rect { fill:#5b3f34; stroke:#ffb38a; }
+@keyframes map-target { 50% { r:12; } }
+@media (prefers-reduced-motion:reduce) { .map-node.is-target circle { animation:none; } }
+.day-clock .next-step { display:block; margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.12); font-size:11px; line-height:1.4; color:#f4e7cc; }
+.day-clock .next-step b { display:block; font:10px monospace; letter-spacing:.1em; text-transform:uppercase; color:#d9bd81; }
+@media (max-height:500px), (max-width:760px) { .day-clock .next-step { font-size:10px; margin-top:4px; padding-top:4px; } .day-clock .next-step span { display:none; } }
+@media (max-height:500px), (max-width:760px) { .day-clock:has(.next-step) .calendar-season { display:none; } }
