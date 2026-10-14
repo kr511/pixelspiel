@@ -105,7 +105,7 @@ const NIGHT_DEPTH: Record<Season, number> = { Frühling: .78, Sommer: .55, Herbs
 const OUTDOOR_SHADE = .76; // Garten und Schulhof
 const TOWN_SHADE = .62; // restliche Außenorte
 const INDOOR_SHADE = .18;
-const TOWN_PLACES: Place[] = ["bus", "radegast", "zoerbig", "schoolway", "goelzau", "playground", "christmasmarket"];
+const TOWN_PLACES: Place[] = ["bus", "radegast", "zoerbig", "schoolway", "goelzau", "playground", "christmasmarket", "parliament", "europapark"];
 export function nightShade(place: Place, season: Season, daylight: number) {
   const base = place === "garden" || place === "school" ? OUTDOOR_SHADE : TOWN_PLACES.includes(place) ? TOWN_SHADE : INDOOR_SHADE;
   return Math.min(.9, (1 - daylight) * base * NIGHT_DEPTH[season]);

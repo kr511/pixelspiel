@@ -150,7 +150,7 @@ const sequence = (config: SequenceConfig): StoryEvent => ({
 const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
   id: `school-first-feelings-${day}`, title: day === 17 ? "Fragen auf dem Schulhof" : day === 19 ? "Ein kleines Kompliment" : "Gedanken über Umarmungen",
   date: `2025-11-${day}`, period: "17.–21.11.2025 · Rekonstruierte Schul- und Alltagsszene", source: "staged", chapterNumber: 1,
-  place: "school", start: 780, end: 800, spawn: { x: .52, y: .92 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "✎", cast: ["Felice", "Elias", "Mitschülerin"],
+  place: "school", start: 780, end: 800, spawn: { x: .60, y: .88 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "✎", cast: ["Felice", "Elias", "Mitschülerin"],
   description: "In diesen Tagen fragen Mitschüler, ob wir zusammen sind. Komplimente, kleine Unsicherheiten und Gedanken über Umarmungen begleiten unsere ersten Gefühle. Die Tageszuordnung und Dialoge sind rekonstruiert.", steps,
 });
 const datedEvents: StoryEvent[] = [
@@ -282,14 +282,14 @@ const datedEvents: StoryEvent[] = [
   // Klassenfahrt der beiden 10. Klassen, 20.–24.04.2026: Bus, B&B Hotel in Kehl, Europäisches Parlament,
   // Pokalabend, Europa-Park. Ablauf, Beteiligte und Abende sind bestätigt; Dialoge sind rekonstruiert.
   // Felice ist mit Elena, Luca und Jason unterwegs, Elias mit Paul und Justin.
-  sequence({ id: "klassenfahrt-anreise", title: "Klassenfahrt: Abfahrt nach Kehl", date: "2026-04-20", chapterNumber: 6, place: "school", start: 480, end: 840, spawn: { x: .52, y: .92 }, illustration: "/rooms/trip-hotel-v095.svg", symbol: "🚌", cast: ["Felice", "Elias", "Frau Kaiser"], leaveAt: { place: "hotel", point: { x: .50, y: .62 } },
+  sequence({ id: "klassenfahrt-anreise", title: "Klassenfahrt: Abfahrt nach Kehl", date: "2026-04-20", chapterNumber: 6, place: "school", start: 480, end: 840, spawn: { x: .60, y: .88 }, illustration: "/rooms/trip-hotel-v11.webp", symbol: "🚌", cast: ["Felice", "Elias", "Frau Kaiser"], leaveAt: { place: "hotel", point: { x: .50, y: .62 } },
     hint: "Heute beginnt die Klassenfahrt! Ich sollte zum Schulhof nach Zörbig, dort fährt der Bus ab.",
     description: "Am 20. April 2026 startet die Klassenfahrt der beiden 10. Klassen mit Frau Kaiser und Herrn Kluger. Mit dem Bus geht es nach Kehl ins B&B Hotel. Der Schulhof als Treffpunkt und die Dialoge sind rekonstruiert.", steps: [
     beat("meet", "Frau Kaiser am Treffpunkt", "Guten Morgen! Koffer in den Bus, dann wird durchgezählt. Fünf Tage Kehl, Straßburg und Europa-Park.", { x: .40, y: .80 }, { speaker: "Frau Kaiser", art: "kaiser", emotion: "happy", cast: ["Frau Kaiser", "Herr Kluger", "Nino", "Richard"] }),
     beat("elias", "Elias vor dem Bus treffen", "Fünf Tage zusammen unterwegs. Ich freu mich richtig drauf.", { x: .62, y: .78 }, { emotion: "happy", choices: ["Ich mich auch", "Hoffentlich wird die Fahrt nicht zu lang"], cast: ["Elias", "Paul", "Justin"] }),
     beat("arrive", "Im Hotel ankommen", "Nach der langen Busfahrt: Ankunft im B&B Hotel in Kehl. Straßburg liegt gleich auf der anderen Rheinseite.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "happy", animation: "arrival", cast: [] }),
   ] }),
-  sequence({ id: "klassenfahrt-parlament", title: "Klassenfahrt: Europäisches Parlament", date: "2026-04-21", chapterNumber: 6, place: "parliament", start: 600, end: 780, spawn: { x: .50, y: .72 }, illustration: "/rooms/trip-parliament-v095.svg", symbol: "★", cast: ["Felice", "Elena", "Luca", "Jason"],
+  sequence({ id: "klassenfahrt-parlament", title: "Klassenfahrt: Europäisches Parlament", date: "2026-04-21", chapterNumber: 6, place: "parliament", start: 600, end: 780, spawn: { x: .50, y: .72 }, illustration: "/rooms/trip-parliament-v11.webp", symbol: "★", cast: ["Felice", "Elena", "Luca", "Jason"],
     hint: "Heute geht es nach Straßburg zum Europäischen Parlament. Der Weg startet an der Hoteltür.",
     description: "Am Dienstag besucht die Klasse das Europäische Parlament in Straßburg. Felice ist mit Elena, Luca und Jason unterwegs. Was drinnen passiert ist, erzählt die Szene nicht; sie zeigt den Platz davor. Dialoge sind rekonstruiert.", steps: [
     beat("teacher", "Herrn Kluger zuhören", "So, das ist das Europäische Parlament. Bleibt bitte in euren Gruppen zusammen.", { x: .42, y: .56 }, { speaker: "Herr Kluger", art: "kluger", emotion: "neutral", cast: ["Herr Kluger", "Elena", "Luca", "Jason"] }),
@@ -297,7 +297,7 @@ const datedEvents: StoryEvent[] = [
     beat("look", "Das Parlament ansehen", "Hier wird also über Europa entschieden. Irgendwie beeindruckend, das mal in echt zu sehen.", { x: .66, y: .58 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
     beat("back", "Zurück zum Bus", "Am Nachmittag geht es zurück nach Kehl ins Hotel.", { x: .50, y: .78 }, { speaker: "Erzählung", emotion: "neutral" }),
   ] }),
-  sequence({ id: "klassenfahrt-pokalabend", title: "Klassenfahrt: Pizza und Pokalabend", date: "2026-04-22", chapterNumber: 6, place: "hotelboys", start: 1200, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotelboys-v095.svg", symbol: "⚽", cast: ["Felice", "Elias", "Paul", "Justin"],
+  sequence({ id: "klassenfahrt-pokalabend", title: "Klassenfahrt: Pizza und Pokalabend", date: "2026-04-22", chapterNumber: 6, place: "hotelboys", start: 1200, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotelboys-v11.webp", symbol: "⚽", cast: ["Felice", "Elias", "Paul", "Justin"],
     hint: "Heute Abend läuft das Pokalspiel. Die Jungs schauen es in ihrem Zimmer nebenan.",
     description: "Am Mittwochabend bestellen Felice, Elias, Paul und Justin Pizza und schauen im Hotelzimmer das DFB-Pokal-Halbfinale Leverkusen gegen Bayern. Dialoge sind rekonstruiert.", steps: [
     beat("pizza", "Pizza bestellen", "Wir bestellen Pizza. Wer will was?", { x: .60, y: .68 }, { speaker: "Justin", art: "justin", emotion: "happy", choices: ["Margherita", "Salami"] }),
@@ -305,7 +305,7 @@ const datedEvents: StoryEvent[] = [
     beat("sit", "Sich zu Elias setzen", "Komm, setz dich zu mir. Von hier sieht man am besten.", { x: .54, y: .46 }, { emotion: "love", animation: "sit" }),
     beat("evening", "Den Abend genießen", "Pizza, Fußball und ihr drei. So ein Abend bleibt hängen.", { x: .46, y: .62 }, { speaker: "Felice", art: "felice", emotion: "happy", animation: "heart" }),
   ] }),
-  sequence({ id: "klassenfahrt-europapark", title: "Klassenfahrt: Europa-Park", date: "2026-04-23", chapterNumber: 6, place: "europapark", start: 570, end: 1080, spawn: { x: .40, y: .80 }, illustration: "/rooms/trip-europapark-v095.svg", symbol: "🎢", cast: ["Felice", "Elena", "Luca", "Jason"],
+  sequence({ id: "klassenfahrt-europapark", title: "Klassenfahrt: Europa-Park", date: "2026-04-23", chapterNumber: 6, place: "europapark", start: 570, end: 1080, spawn: { x: .40, y: .80 }, illustration: "/rooms/trip-europapark-v11.webp", symbol: "🎢", cast: ["Felice", "Elena", "Luca", "Jason"],
     hint: "Heute ist Europa-Park! Der Weg startet an der Hoteltür.",
     description: "Am Donnerstag ist die Klasse im Europa-Park. Felice läuft mit Elena, Luca und Jason herum, und sie fahren Achterbahn. Welche Bahn es war, nennt das Spiel nicht. Dialoge sind rekonstruiert.", steps: [
     beat("start", "Mit Luca den Tag planen", "Erst mal rumlaufen und gucken, oder direkt zur Achterbahn?", { x: .40, y: .66 }, { speaker: "Luca", art: "luca", emotion: "happy", choices: ["Erst rumlaufen", "Direkt Achterbahn"] }),
@@ -314,7 +314,7 @@ const datedEvents: StoryEvent[] = [
     beat("ride", "Achterbahn fahren", "Hoch, runter, Kurve. Schreien und Lachen gleichzeitig. Danach zittern die Knie ein bisschen.", { x: .60, y: .50 }, { speaker: "Erzählung", emotion: "laughing", animation: "fireworks" }),
     beat("again", "Mit Elena lachen", "Nochmal?", { x: .50, y: .70 }, { speaker: "Elena", art: "elena", emotion: "laughing", choices: ["Auf jeden Fall", "Erst mal was trinken"] }),
   ] }),
-  sequence({ id: "klassenfahrt-hotelabend", title: "Klassenfahrt: Der letzte Abend", date: "2026-04-23", order: 1, chapterNumber: 6, place: "hotelboys", start: 1230, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotel-v095.svg", symbol: "☾", cast: ["Felice", "Elias", "Paul", "Justin"],
+  sequence({ id: "klassenfahrt-hotelabend", title: "Klassenfahrt: Der letzte Abend", date: "2026-04-23", order: 1, chapterNumber: 6, place: "hotelboys", start: 1230, end: 1380, spawn: { x: .34, y: .74 }, illustration: "/rooms/trip-hotel-v11.webp", symbol: "☾", cast: ["Felice", "Elias", "Paul", "Justin"],
     hint: "Der letzte Abend der Klassenfahrt. Ich schaue nochmal bei Elias vorbei.",
     description: "Am Donnerstagabend klopfen Elias, Paul und Justin als Streich an fremde Türen. Danach wird es ruhig: ein Moment nur für Felice und Elias, der persönlich bleibt. Dialoge sind rekonstruiert.", steps: [
     beat("knock", "Klopf, klopf", "Elias, Paul und Justin klopfen an fremde Türen und sind weg, bevor jemand aufmacht. Ein bisschen Chaos gehört dazu.", { x: .30, y: .74 }, { speaker: "Erzählung", emotion: "laughing" }),
@@ -322,7 +322,7 @@ const datedEvents: StoryEvent[] = [
     beat("private", "Ein Moment nur für euch", "Ein ruhiger Moment nur für euch zwei.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "love", animation: "fade", cast: ["Elias"] }),
     beat("later", "Später", "Später. Draußen ist es still, und morgen geht es nach Hause.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "neutral", cast: [] }),
   ] }),
-  sequence({ id: "klassenfahrt-heimreise", title: "Unsere Klassenfahrt", date: "2026-04-24", chapterNumber: 6, place: "hotel", start: 480, end: 900, spawn: { x: .50, y: .62 }, illustration: "/rooms/trip-europapark-v095.svg", symbol: "🧳", cast: ["Felice", "Elias", "Frau Kaiser", "Herr Kluger"], leaveAt: { place: "school", point: { x: .52, y: .90 } },
+  sequence({ id: "klassenfahrt-heimreise", title: "Unsere Klassenfahrt", date: "2026-04-24", chapterNumber: 6, place: "hotel", start: 480, end: 900, spawn: { x: .50, y: .62 }, illustration: "/rooms/trip-europapark-v11.webp", symbol: "🧳", cast: ["Felice", "Elias", "Frau Kaiser", "Herr Kluger"], leaveAt: { place: "school", point: { x: .52, y: .90 } },
     hint: "Heute geht es nach Hause. Erst mal den Koffer packen.",
     description: "Am Freitag fährt die Klasse mit dem Bus zurück. Fünf Tage Kehl, Straßburg und Europa-Park sind im Album bewahrt. Dialoge sind rekonstruiert.",
     artifacts: [{ id: "klassenfahrt-2026", title: "Unsere Klassenfahrt: Straßburg, Kehl & Europa-Park", symbol: "🧳", description: "20. bis 24. April 2026. Bus, B&B Hotel in Kehl, Europäisches Parlament, Pizza und Pokalabend, Achterbahn im Europa-Park und ein Klopfstreich." }], steps: [
@@ -346,7 +346,7 @@ const datedEvents: StoryEvent[] = [
     beat("bench", "Zusammen auf der Gartenbank sitzen", "Ich mag solche kleinen Pausen mit dir.", { x: .25, y: .65 }, { speaker: "Felice", art: "felice", emotion: "love", animation: "sit" }),
     beat("laugh", "Einen leichten Moment teilen", "Nicht jeder schöne Augenblick braucht eine große Geschichte. Manchmal reicht, zusammen zu lachen.", { x: .5, y: .65 }, { emotion: "laughing", animation: "heart" }),
   ] }),
-  sequence({ id: "autumn-everyday", title: "Zusammen durch den Herbst", date: "2026-09-01", until: "2026-10-07", period: "September & Anfang Oktober 2026 · Spielbare Alltagsszene", source: "staged", chapterNumber: 8, place: "school", start: 780, end: 900, spawn: { x: .52, y: .92 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "🍂", description: "Schule, Training, Alltag, Zukunft und Zusammenhalt begleiten den Herbst. Die kleine Szene verbindet diese Themen, ohne ein zusätzliches datiertes Treffen zu erfinden.", steps: [
+  sequence({ id: "autumn-everyday", title: "Zusammen durch den Herbst", date: "2026-09-01", until: "2026-10-07", period: "September & Anfang Oktober 2026 · Spielbare Alltagsszene", source: "staged", chapterNumber: 8, place: "school", start: 780, end: 900, spawn: { x: .60, y: .88 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "🍂", description: "Schule, Training, Alltag, Zukunft und Zusammenhalt begleiten den Herbst. Die kleine Szene verbindet diese Themen, ohne ein zusätzliches datiertes Treffen zu erfinden.", steps: [
     beat("school", "Elias im Schulalltag treffen", "Zwischen Schule und Alltag finden wir immer wieder Gedanken, die wir teilen können.", { x: .52, y: .90 }, { emotion: "thoughtful", choices: ["Über Schule sprechen", "Über Training und Hobbys sprechen"] }),
     beat("future", "Über unsere gemeinsame Zukunft sprechen", "Ich möchte, dass wir weiter miteinander reden. Auch wenn der Alltag manchmal viel ist.", { x: .60, y: .76 }, { speaker: "Felice", art: "felice", emotion: "love" }),
     beat("remember", "Auf schöne Momente zurückblicken", "Dann erinnern wir uns an das, was uns schon verbindet.", { x: .55, y: .82 }, { emotion: "happy", animation: "reflection" }),

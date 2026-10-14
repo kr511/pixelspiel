@@ -123,13 +123,18 @@ test("Klassenfahrt: Figuren haben Grafiken, der private Moment bleibt eine Ausbl
   assert.doesNotMatch(card.description + evening.description, /intim|Nacht|Bett/i);
 });
 
-test("Klassenfahrt: Szenenbilder existieren und sind gültiges SVG ohne unmaskierte Sonderzeichen", async () => {
+test("Klassenfahrt: Szenenbilder existieren als quadratische WebP-Pixelgemälde", async () => {
   const { readFileSync } = await import("node:fs");
   const { SCENE_GRAPHICS } = await import("../game/graphics.ts");
   for (const place of TRIP.places) {
-    const svg = readFileSync(new URL(`../public${SCENE_GRAPHICS[place].background}`, import.meta.url), "utf8");
-    assert.match(svg, /^<svg [^>]*viewBox="0 0 320 320"/, place);
-    assert.doesNotMatch(svg, /&(?!amp;|lt;|gt;|quot;|apos;|#)/, `${place}: unmaskiertes &`);
+    const data = readFileSync(new URL(`../public${SCENE_GRAPHICS[place].background}`, import.meta.url));
+    assert.equal(data.toString("ascii", 0, 4), "RIFF", place);
+    assert.equal(data.toString("ascii", 8, 12), "WEBP", place);
+    // VP8L (verlustfrei): Breite und Höhe stehen als 14-Bit-Werte ab Byte 21.
+    assert.equal(data.toString("ascii", 12, 16), "VP8L", `${place}: verlustfrei für scharfe Pixel`);
+    const bits = data.readUInt32LE(21);
+    assert.equal((bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1, `${place}: quadratisch`);
+    assert.ok(data.length < 200_000, `${place}: klein genug`);
   }
 });
 

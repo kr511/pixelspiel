@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GameUI } from "./GameUI";
 import { usePreload } from "./preload";
@@ -128,8 +128,8 @@ export function Game() {
   const [followingElias, setFollowingElias] = useState(false);
   const [storyToast, setStoryToast] = useState<StoryEvent | null>(null);
   const sessionRef = useRef(session);
-  sessionRef.current = session;
-  replayRef.current = replay;
+  // Keep the refs current for callbacks that run outside React (animation frames, timers).
+  useLayoutEffect(() => { sessionRef.current = session; replayRef.current = replay; });
   const arrival = useRef(0);
   const [arrivalTime, setArrivalTime] = useState(0);
   const [namesInitial] = useState(() => {
@@ -896,7 +896,7 @@ export function Game() {
       if (memoryError) useMemories.getState().retrySave();
       if (saveError) { try { parseStory(window.localStorage.getItem(STORY_KEY)); if (!readable.current) { setSaveError("Bitte lade die Seite neu, um den wieder lesbaren Spielstand sicher fortzusetzen."); return; } window.localStorage.setItem(STORY_KEY,JSON.stringify(save)); setSaveError(null); } catch { setSaveError("Speichern bleibt nicht möglich. Bitte erlaube lokale Browserdaten für das Spiel."); } }
     }}>Erneut speichern</button></div>}
-    {dayError && started && <div className="day-save-warning" role="status">{dayError}{timelineReadable.current && <button onClick={() => persistTimeline(timelineRef.current)}>Erneut speichern</button>}</div>}
+    {dayError && started && <div className="day-save-warning" role="status">{dayError}{!timelineInitial.error && <button onClick={() => persistTimeline(timelineRef.current)}>Erneut speichern</button>}</div>}
     {cutscene && started && inWorld && <div className="cutscene-bars" aria-hidden="true"/>}
     {intro && started && <IntroCinematic paused={paused || needsLandscape} onDone={finishIntro}/>}
     {busRide && started && <BusRide paused={paused || needsLandscape} onDone={finishBusRide}/>}
