@@ -328,3 +328,18 @@ test("Nächster Schritt: eine Quelle für Welt, Handy, Album und Karte", async (
   const done = { ...save, progress: Object.fromEntries((await import("../game/timeline.ts")).STORY_EVENTS.map(e => [e.id, { cursor: 0, line: 0, visits: 1, topics: [], topic: null, completedAt: "legacy" }])) };
   assert.equal(nextStepInfo(done).status, "complete");
 });
+
+test("Alltagsgedanke passt zu Uhrzeit und erledigten Aufgaben; Tageszahl folgt dem Datum", async () => {
+  const { storyDayNumber } = await import("../game/timeline.ts");
+  const done = finish(reach("beginning-2025-11-01"));
+  const at = (minute, flags = []) => storyHint({ ...done, flags: [...done.flags, ...flags], clock: { ...done.clock, date: "2025-11-11", minute } }).text;
+  assert.match(at(360), /frischmachen/);
+  assert.match(at(360, ["routine-2025-11-11-wash"]), /los zur Schule/);
+  assert.match(at(600), /Unterricht hat schon angefangen/);
+  assert.doesNotMatch(at(900), /Schule!|frischmachen/, "Nachmittags schickt der Gedanke nicht mehr zur Schule");
+  assert.match(at(900, ["routine-2025-11-11-school"]), /Hausaufgaben/);
+  assert.match(at(1200, ["routine-2025-11-11-school", "routine-2025-11-11-homework"]), /ins Bett/);
+  assert.equal(storyDayNumber("2025-11-10"), 1);
+  assert.equal(storyDayNumber("2025-11-13"), 4);
+  assert.equal(storyDayNumber("2026-11-02"), 358);
+});
