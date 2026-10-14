@@ -1,4 +1,4 @@
-import { advanceClock, initialDay, parseDay, sleepUntilMorning, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
+import { advanceClock, initialDay, parseDay, sleepUntilMorning, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
 import { CHAPTERS, PLACES, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
@@ -156,7 +156,7 @@ const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
 const datedEvents: StoryEvent[] = [
   // Beat IDs and count stay stable so saved checkpoints keep their meaning.
   // The intro cinematic wakes Felice beside her bed and opens the first beat.
-  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: WAKE_MINUTE, end: WAKE_MINUTE + 30, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Ein neuer Morgen. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
+  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: WAKE_MINUTE, end: WAKE_MINUTE + 30, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Hier fängt alles an. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt. Das Aufwachen und die Einführung sind Inszenierung.", steps: [
     beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .42, y: .52 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
     beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
     beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .70, y: .66 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
@@ -462,6 +462,8 @@ export function calendarPages(from: string, to: string): (string | null)[] {
   return [at(0), at(1), null, at(total - 1), at(total)];
 }
 export function daysBetween(from: string, to: string) { return Math.round((Date.parse(`${to}T12:00Z`) - Date.parse(`${from}T12:00Z`)) / 86400000); }
+/** The day of the story shown to the player, always derived from the date so old or migrated counters cannot disagree with it. */
+export function storyDayNumber(date: string) { return Math.max(1, daysBetween(STORY_START, date) + 1); }
 export function eventStatus(save: TimelineSave, event: StoryEvent): "gesperrt" | "verfügbar" | "abgeschlossen" {
   if (save.progress[event.id]?.completedAt) return "abgeschlossen";
   if (!event.confirmed || !event.date || event.date < STORY_START || event.date > STORY_END) return "gesperrt";
@@ -502,13 +504,22 @@ export function storyTrigger(event: StoryEvent): StoryTrigger {
   const place = first?.place ?? event.place;
   return { place, point: first?.target ?? event.staging.spawn, radius: .13, mode: "interact", label: first?.label ?? event.title, hint: event.hint ?? `Vielleicht sollte ich ${PLACE_HINTS[place] ?? "mich ein bisschen umsehen"}.` };
 }
+/** On ordinary school days the thought follows the clock and what is already ticked off, so it never suggests school at night. */
+function routineThought(save: TimelineSave) {
+  const { date, minute } = save.clock;
+  const done = (task: string) => save.flags.includes(`routine-${date}-${task}`);
+  if (!done("school") && minute < SCHOOL_START) return done("wash") ? "Fertig gemacht. Jetzt los zur Schule, um 7:15 Uhr geht es los." : "Ein ganz normaler Schultag. Erst frischmachen, dann ab zur Schule.";
+  if (!done("school") && minute < SCHOOL_END) return "Der Unterricht hat schon angefangen. Schnell ins Schulgebäude!";
+  if (!done("homework")) return "Die Schule ist vorbei. Zu Hause noch Hausaufgaben machen, dann ins Bett.";
+  return "Alles erledigt für heute. Jetzt kann ich ins Bett.";
+}
 /** Felice's gentle thought about what could come next; the key changes only when the situation does. */
 export function storyHint(save: TimelineSave): { key: string; text: string } | null {
   if (save.active) return null;
   const next = nextEvent(save);
   if (!next?.date) return { key: "complete", text: "Unser Jahr ist im Album bewahrt. Ich kann mir jede Erinnerung noch einmal ansehen." };
   if (canTrigger(save, next)) return { key: `${next.id}:go`, text: storyTrigger(next).hint };
-  if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, text: "Ein ganz normaler Schultag. Frischmachen, Schule, Hausaufgaben – und danach ins Bett." };
+  if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, text: routineThought(save) };
   if (next.date === save.clock.date) return { key: `${next.id}:later`, text: "Heute passiert später noch etwas. Bis dahin kann ich mich umsehen – oder mich hinsetzen und ein bisschen warten." };
   return { key: `${next.id}:sleep`, text: "Heute ist ein ruhiger Tag. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag." };
 }

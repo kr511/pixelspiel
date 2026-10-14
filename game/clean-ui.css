@@ -60,3 +60,7 @@ main.pixel-game .start-card { max-height:calc(100dvh - 16px); overflow:auto; ove
 /* Während einer Erinnerung bleibt die aktuelle Aufgabe auch auf kleinen Bildschirmen sichtbar. */
 @media (max-height:520px), (max-width:760px) { main.pixel-game .hud-left .next-step.session-step { display:block; } }
 @media (max-height:520px), (max-width:760px) { main.pixel-game .story-session-bar { width:calc(100vw - 400px); min-width:250px; } }
+/* Steht Felice an etwas Benutzbarem, hat dessen Name Vorrang vor ihrem eigenen Namensschild. */
+main.pixel-game:has(.world-entity.nearby-entity) .room-player:not(.bench-companion) > .room-player-label { visibility:hidden; }
+/* Die Tagesliste bleibt auf kleinen Querformat-Handys neben dem Spielbild statt darüber. */
+@media (max-height:520px) { main.pixel-game .routine-list ul { max-width:min(190px,calc(50vw - 100dvh / 2 - 8px)); } }
