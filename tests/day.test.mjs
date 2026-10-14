@@ -100,3 +100,8 @@ test("Nachts ist es im Winter dunkler als im Sommer, tagsüber bleibt alles hell
   }
   assert.ok(nightShade("garden", "Winter", 0) > nightShade("bedroom", "Winter", 0));
 });
+
+test("Außenorte der Klassenfahrt werden nachts wie Stadtorte dunkel, nicht wie Innenräume", () => {
+  for (const place of ["parliament", "europapark"]) assert.equal(nightShade(place, "Frühling", 0), nightShade("zoerbig", "Frühling", 0), place);
+  assert.ok(nightShade("hotel", "Frühling", 0) < nightShade("europapark", "Frühling", 0));
+});

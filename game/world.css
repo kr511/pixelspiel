@@ -302,3 +302,5 @@
 .day-clock .next-step b { display:block; font:10px monospace; letter-spacing:.1em; text-transform:uppercase; color:#d9bd81; }
 @media (max-height:500px), (max-width:760px) { .day-clock .next-step { font-size:10px; margin-top:4px; padding-top:4px; } .day-clock .next-step span { display:none; } }
 @media (max-height:500px), (max-width:760px) { .day-clock:has(.next-step) .calendar-season { display:none; } }
+.world-night-lights .night-sparkle { animation:christmas-glow 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion:reduce) { .world-night-lights .night-sparkle { animation:none; } }

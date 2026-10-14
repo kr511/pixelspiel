@@ -34,14 +34,14 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { x: .38, y: .21, to: "home", label: "In Felices Wohnung", spawn: { x: .17, y: .52 } },
     { x: .46, y: .42, to: "garden", label: "In den Garten", spawn: { x: .82, y: .69 } },
     { x: .71, y: .89, to: "bus", label: "Zur Bushaltestelle", spawn: { x: .20, y: .68 } },
-    { x: .61, y: .70, to: "playground", label: "Zum Spielplatz · verkürzter Spielweg", spawn: { x: .50, y: .86 } },
+    { x: .61, y: .70, to: "playground", label: "Zum Spielplatz", spawn: { x: .50, y: .86 } },
   ], obstacles: [] },
   zoerbig: { name: "Zörbig · Markt", subtitle: "Löwen-Apotheke, Rathaus und Brunnen", exits: [
     { x: .397, y: .255, to: "bus", label: "Bus zurück nach Radegast", spawn: { x: .74, y: .47 } },
-    { x: .70, y: .65, to: "school", label: "Zur Schule", spawn: { x: .52, y: .92 } },
+    { x: .70, y: .65, to: "school", label: "Zur Schule", spawn: { x: .60, y: .88 } },
     { x: .67, y: .47, to: "christmasmarket", label: "Zum Weihnachtsmarkt · Spielweg", spawn: { x: .50, y: .87 } },
-    { x: .70, y: .29, to: "eliasroom", label: "Zu Elias · verkürzter Spielweg", spawn: { x: .50, y: .85 } },
-    { x: .26, y: .68, to: "hotel", label: "Klassenfahrt · Reisebus nach Kehl (verkürzter Spielweg)", spawn: { x: .50, y: .62 } },
+    { x: .70, y: .29, to: "eliasroom", label: "Zu Elias", spawn: { x: .50, y: .85 } },
+    { x: .26, y: .68, to: "hotel", label: "Klassenfahrt · Reisebus nach Kehl", spawn: { x: .50, y: .62 } },
   ], obstacles: [
     { left: .463, right: .535, top: .34, bottom: .385 },
     { left: .408, right: .592, top: .592, bottom: .677 },
@@ -52,7 +52,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
   ] },
   schoolway: { name: "Zörbig · Schulweg", subtitle: "An St. Mauritius vorbei zur Grünstraße", exits: [
     { ...schoolWayPoint(.34,.43), to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } },
-    { ...schoolWayPoint(.17,.76), to: "school", label: "Zum Pausenhof", spawn: { x: .52, y: .92 } },
+    { ...schoolWayPoint(.17,.76), to: "school", label: "Zum Pausenhof", spawn: { x: .60, y: .88 } },
   ], obstacles: [] },
   school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Pausenhof zwischen Schulgebäude und Sitzmauern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 }, markerHidden: true }, { x: .515, y: .95, to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } }], obstacles: [] },
   gym: { name: "Zörbig · Kleine Turnhalle", subtitle: "Abschlusszeugnisse · Sommer 2026", exits: [{ x: .5, y: .90, to: "school", label: "Zurück auf den Schulhof", spawn: { x: .84, y: .73 } }], obstacles: [
@@ -76,7 +76,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { left: .10, right: .29, top: .56, bottom: .695 }, { left: .755, right: .865, top: .69, bottom: .72 },
     { left: .455, right: .55, top: .30, bottom: .37 },
   ] },
-  eliasroom: { name: "Elias’ Zimmer", subtitle: "Ein wiederkehrender Ort · Einrichtung als Spielinterpretation", exits: [{ x: .50, y: .90, to: "zoerbig", label: "Nach draußen · verkürzter Spielweg", spawn: { x: .69, y: .29 } }], obstacles: [
+  eliasroom: { name: "Elias’ Zimmer", subtitle: "Ein wiederkehrender Ort · Einrichtung als Spielinterpretation", exits: [{ x: .50, y: .90, to: "zoerbig", label: "Nach draußen", spawn: { x: .69, y: .29 } }], obstacles: [
     { left: .15, right: .40, top: .19, bottom: .335 }, { left: .60, right: .86, top: .16, bottom: .465 },
     { left: .075, right: .16, top: .49, bottom: .65 }, { left: .74, right: .90, top: .73, bottom: .82 },
     { left: .44, right: .565, top: .12, bottom: .265 },
@@ -84,9 +84,9 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
   // Klassenfahrt 20.–24.04.2026. Layouts sind Spielinterpretationen; die Bilder sind vorläufige Pixelentwürfe.
   hotel: { name: "B&B Hotel Kehl · Zimmer", subtitle: "Klassenfahrt · 20. bis 24. April 2026", exits: [
     { x: .16, y: .86, to: "hotelboys", label: "Zum Zimmer von Elias, Paul und Justin", spawn: { x: .34, y: .74 } },
-    { x: .42, y: .88, to: "parliament", label: "Nach Straßburg · verkürzter Spielweg", spawn: { x: .50, y: .72 } },
-    { x: .66, y: .88, to: "europapark", label: "Zum Europa-Park · verkürzter Spielweg", spawn: { x: .40, y: .80 } },
-    { x: .90, y: .70, to: "zoerbig", label: "Mit dem Reisebus nach Hause · verkürzter Spielweg", spawn: { x: .34, y: .60 } },
+    { x: .42, y: .88, to: "parliament", label: "Nach Straßburg", spawn: { x: .50, y: .72 } },
+    { x: .66, y: .88, to: "europapark", label: "Zum Europa-Park", spawn: { x: .40, y: .80 } },
+    { x: .90, y: .70, to: "zoerbig", label: "Mit dem Reisebus nach Hause", spawn: { x: .34, y: .60 } },
   ], obstacles: [
     { left: .12, right: .30, top: .16, bottom: .44 }, { left: .32, right: .50, top: .16, bottom: .44 },
     { left: .62, right: .88, top: .16, bottom: .30 }, { left: .70, right: .80, top: .55, bottom: .62 },
@@ -339,7 +339,7 @@ function insideArea(x: number, y: number, points: Point[]) {
 export function canWalk(place: Place, x: number, y: number) {
   return (!SOLID_AREAS[place] || !SOLID_AREAS[place]!.some(points => insideArea(x,y,points))) && (!WALK_AREAS[place] || WALK_AREAS[place]!.some(points => insideArea(x,y,points))) && x >= .075 && x <= .94 && y >= .16 && y <= (place === "school" ? .96 : .92) && !PLACES[place].obstacles.some(o => x > o.left - .02 && x < o.right + .02 && y > o.top - .015 && y < o.bottom + .015);
 }
-export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 }, hotel: { x: .50, y: .62 }, hotelboys: { x: .34, y: .74 }, parliament: { x: .50, y: .72 }, europapark: { x: .40, y: .80 } };
+export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .60, y: .88 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 }, hotel: { x: .50, y: .62 }, hotelboys: { x: .34, y: .74 }, parliament: { x: .50, y: .72 }, europapark: { x: .40, y: .80 } };
 
 /** Treffpunkt collisions (cropped v11 painting): big trees, the pavilion, the bushes and the houses beyond the road. */
 export function storyCanWalk(place: Place, x: number, y: number, options: { pasture?: boolean } = {}) {

@@ -21,3 +21,42 @@ main.pixel-game :is(.room-player.pose-standing,.world-entity.entity-person.pose-
 main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art { transition:transform .07s linear; }
 main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art[data-frame="0"] { transform:translateY(-1.6%); }
 @media (prefers-reduced-motion:reduce) { main.pixel-game :is(.room-player.walking,.world-entity.actor-walking) .character-art[data-frame="0"] { transform:none; } }
+/* Linke Spalte: Uhr und Felices Gedanke stapeln sich, statt sich zu überlappen. */
+main.pixel-game .hud-left { position:absolute; z-index:5; left:20px; top:100px; width:205px; display:flex; flex-direction:column; align-items:flex-start; gap:12px; max-height:calc(100dvh - 120px); pointer-events:none; }
+main.pixel-game .hud-left > :is(.day-clock,.felice-thought) { position:relative; inset:auto; transform:none; margin:0; width:190px; min-width:0; flex:0 0 auto; }
+main.pixel-game .hud-left > .felice-thought { width:205px; flex:0 1 auto; min-height:0; overflow:auto; }
+@media (max-height:520px), (max-width:760px) {
+  main.pixel-game .hud-left { left:12px; top:74px; width:145px; gap:8px; max-height:calc(100dvh - 74px - 98px); }
+  main.pixel-game .hud-left > :is(.day-clock,.felice-thought) { width:145px; }
+  main.pixel-game .hud-left > .felice-thought { max-height:none; }
+  main.pixel-game .hud-left > .felice-thought p { font-size:11px; line-height:1.4; }
+  /* Gedanke und "Als Nächstes" sagen meist dasselbe; auf kleinen Bildschirmen reicht der Gedanke. */
+  main.pixel-game .hud-left:has(.felice-thought) .next-step { display:none; }
+  /* Handy und Tasche in die Knopfreihe oben rechts statt über das Spielbild. */
+  main.pixel-game :is(.world-phone-button,.inventory-button) { top:64px; width:44px; min-height:44px; padding:0; justify-content:center; }
+  main.pixel-game .world-phone-button { right:max(64px,calc(env(safe-area-inset-right) + 52px)); }
+  main.pixel-game .inventory-button { right:max(12px,env(safe-area-inset-right)); }
+  main.pixel-game .inventory-button b { position:absolute; top:-4px; right:-4px; }
+  /* Die Tagesliste weicht, sobald unten rechts eine Aktion angeboten wird. */
+  main.pixel-game:has(.memory-interaction) .routine-list { display:none; }
+}
+/* Pausenmenü passt auch auf kleine Querformat-Handys. */
+main.pixel-game .start-card { max-height:calc(100dvh - 16px); overflow:auto; overscroll-behavior:contain; }
+@media (max-height:520px) {
+  main.pixel-game .start-screen { padding:8px; }
+  main.pixel-game .start-card:has(.pause-menu) { padding:14px 20px 16px; }
+  main.pixel-game .start-card:has(.pause-menu) h1 { font-size:1.9rem; }
+  main.pixel-game .start-card:has(.pause-menu) span { margin:6px auto 10px; font-size:.85rem; }
+  main.pixel-game .start-card:has(.pause-menu) > button { min-height:40px; }
+  main.pixel-game .start-card .pause-menu { gap:6px; margin-top:10px; }
+  main.pixel-game .start-card .pause-menu button { min-height:36px; padding:0 11px; font-size:12px; }
+  /* Während eines Gesprächs tritt die linke Spalte zurück, damit das Porträt frei steht. */
+  main.pixel-game:has(.fx-dialogue[open]) :is(.hud-left,.routine-list) { visibility:hidden; }
+}
+/* Eigener Knopf statt des englischen Browser-Dateifelds. */
+.save-file-pick { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 16px; border:1px solid #9a7b4c; color:#5a4430; cursor:pointer; font-size:14px; }
+.save-file-pick:focus-within { outline:2px solid #d9bd81; outline-offset:2px; }
+.save-file-pick input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+/* Während einer Erinnerung bleibt die aktuelle Aufgabe auch auf kleinen Bildschirmen sichtbar. */
+@media (max-height:520px), (max-width:760px) { main.pixel-game .hud-left .next-step.session-step { display:block; } }
+@media (max-height:520px), (max-width:760px) { main.pixel-game .story-session-bar { width:calc(100vw - 400px); min-width:250px; } }

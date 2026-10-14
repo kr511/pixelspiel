@@ -44,8 +44,8 @@ export function SavePanel({ onClose }: { onClose: () => void }) {
       <article className="inventory-detail">
         <h2>Laden</h2>
         <p>Ersetzt den Fortschritt auf diesem Gerät durch den Inhalt der Datei. Ungültige Dateien werden abgelehnt, bevor etwas verändert wird.</p>
-        <input type="file" accept="application/json,.json" aria-label="Spielstand-Datei auswählen" onChange={event => { void choose(event.target.files?.[0]); event.target.value = ""; }}/>
-        {pending && summary && <div role="alert"><p>{summary.gameDate ? `Spielzeit ${historicalDate(summary.gameDate)}` : "Ohne Kalenderstand"} · {summary.memories} Erinnerungen · {summary.names} eigene Namen</p><p>Dein aktueller Fortschritt auf diesem Gerät wird ersetzt.</p><button className="memory-primary" onClick={apply}>Ja, ersetzen</button> <button className="memory-secondary" onClick={() => setPending(null)}>Abbrechen</button></div>}
+        <label className="save-file-pick">Datei auswählen …<input type="file" accept="application/json,.json" onChange={event => { void choose(event.target.files?.[0]); event.target.value = ""; }}/></label>
+        {pending && summary && <div role="alert"><p>{summary.gameDate ? `Spielzeit ${historicalDate(summary.gameDate)}` : "Ohne Kalenderstand"} · {summary.memories} {summary.memories === 1 ? "Erinnerung" : "Erinnerungen"} · {summary.names} {summary.names === 1 ? "eigener Name" : "eigene Namen"}</p><p>Dein aktueller Fortschritt auf diesem Gerät wird ersetzt.</p><button className="memory-primary" onClick={apply}>Ja, ersetzen</button> <button className="memory-secondary" onClick={() => setPending(null)}>Abbrechen</button></div>}
       </article>
     </div>
     <div className="journal-bottom"><small role="status">{message ?? "Die Datei enthält nur Spielfortschritt, keine persönlichen Daten außer deinen eigenen Namen für Figuren."}</small><button className="memory-primary" onClick={onClose}>Zurück ins Spiel</button></div>

@@ -108,6 +108,10 @@ export const WorldNightLights = memo(function WorldNightLights({ place, daylight
       <ellipse cx={lamp.x * 100} cy={lamp.y * 100 + 1.5} rx="6" ry="7.5" fill={`url(#${glow})`}/>
       <circle cx={lamp.x * 100} cy={lamp.y * 100} r=".25" fill="#fff1be"/>
     </g>)}
+    {lights.sparkles?.map((spark, index) => <g key={`spark-${index}`} className="night-sparkle" style={{ animationDelay: `${(index * .41) % 2.6}s` }}>
+      <circle cx={spark.x * 100} cy={spark.y * 100} r="1.4" fill={`url(#${glow})`}/>
+      <circle cx={spark.x * 100} cy={spark.y * 100} r=".32" fill="#fff4c8"/>
+    </g>)}
   </svg>;
 });
 

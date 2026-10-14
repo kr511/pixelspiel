@@ -5,7 +5,7 @@ import { TREE_SILHOUETTES, WINTER_TREE_SILHOUETTES } from "./foreground.ts";
 
 type LitWindow = { x: number; y: number; width: number; height: number };
 export type ForegroundLayer = { depth: number } & ({ clip: string; path?: never; winterPath?: never } | { path: string; winterPath?: string; clip?: never });
-export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; seasons?: Record<Season, string>; nightLights?: { lamps: Point[]; windows: LitWindow[] }; outdoors: boolean; light: string; foreground: ForegroundLayer[] };
+export type SceneGraphic = { background: string; fallback?: string; crop?: { x: number; y: number; width: number; height: number }; winter?: string; winterFallback?: string; seasons?: Record<Season, string>; nightLights?: { lamps: Point[]; windows: LitWindow[]; sparkles?: Point[] }; outdoors: boolean; light: string; foreground: ForegroundLayer[] };
 // Each foreground copies only the specified furniture/tree silhouette from the same scene.
 const rect = (left: number, top: number, right: number, bottom: number, depth = bottom) => ({ clip: `polygon(${left}% ${top}%,${right}% ${top}%,${right}% ${bottom}%,${left}% ${bottom}%)`, depth });
 export function foregroundPath(layer: ForegroundLayer, source: string, winterSource?: string) {
@@ -15,12 +15,16 @@ export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
   playground: { background: "/rooms/story-playground-pixel-v10.webp", fallback: "/rooms/story-playground-v09.svg", winter: "/rooms/story-playground-winter-v09.svg", outdoors: true, light: "#e4e8ca", foreground: [] },
   // The winter playground and market pixel paintings are not delivered yet; the
   // SVG scenes the game already fell back to are referenced directly.
-  christmasmarket: { background: "/rooms/story-christmasmarket-v09.svg", outdoors: true, light: "#ffe1a6", foreground: [] },
-  // Klassenfahrt: vorläufige Pixelentwürfe aus scripts/trip-scenes.py, bis finale Bilder geliefert sind.
-  hotel: { background: "/rooms/trip-hotel-v095.svg", outdoors: false, light: "#f4d9a8", foreground: [] },
-  hotelboys: { background: "/rooms/trip-hotelboys-v095.svg", outdoors: false, light: "#f4d9a8", foreground: [] },
-  parliament: { background: "/rooms/trip-parliament-v095.svg", outdoors: true, light: "#e3ecf0", foreground: [] },
-  europapark: { background: "/rooms/trip-europapark-v095.svg", outdoors: true, light: "#f1ead0", foreground: [] },
+  christmasmarket: { background: "/rooms/story-christmasmarket-v09.svg", nightLights: {
+    lamps: [{ x: .289, y: .398 }, { x: .711, y: .398 }, { x: .708, y: .664 }, { x: .298, y: .664 }],
+    windows: [{ x: 4.06, y: 5.94, width: 4.06, height: 5 }, { x: 12.81, y: 5.94, width: 4.06, height: 5 }, { x: 21.56, y: 5.94, width: 4.06, height: 5 }, { x: 30.31, y: 5.94, width: 4.06, height: 5 }, { x: 39.06, y: 5.94, width: 4.06, height: 5 }, { x: 47.81, y: 5.94, width: 4.06, height: 5 }, { x: 56.56, y: 5.94, width: 4.06, height: 5 }, { x: 65.31, y: 5.94, width: 4.06, height: 5 }, { x: 74.06, y: 5.94, width: 4.06, height: 5 }, { x: 82.81, y: 5.94, width: 4.06, height: 5 }, { x: 91.56, y: 5.94, width: 4.06, height: 5 }],
+    sparkles: [{ x: 0.111, y: 0.206 }, { x: 0.164, y: 0.209 }, { x: 0.27, y: 0.219 }, { x: 0.323, y: 0.225 }, { x: 0.43, y: 0.234 }, { x: 0.483, y: 0.237 }, { x: 0.589, y: 0.234 }, { x: 0.642, y: 0.228 }, { x: 0.748, y: 0.219 }, { x: 0.802, y: 0.216 }, { x: 0.908, y: 0.206 }, { x: 0.961, y: 0.2 }, { x: 0.495, y: 0.156 }, { x: 0.555, y: 0.188 }, { x: 0.467, y: 0.222 }, { x: 0.527, y: 0.241 }, { x: 0.586, y: 0.278 }, { x: 0.455, y: 0.284 }, { x: 0.52, y: 0.306 }],
+  }, outdoors: true, light: "#ffe1a6", foreground: [] },
+  // Klassenfahrt: Pixelgemälde aus scripts/pixel-rooms.py.
+  hotel: { background: "/rooms/trip-hotel-v11.webp", outdoors: false, light: "#f4d9a8", foreground: [] },
+  hotelboys: { background: "/rooms/trip-hotelboys-v11.webp", outdoors: false, light: "#f4d9a8", foreground: [] },
+  parliament: { background: "/rooms/trip-parliament-v11.webp", nightLights: { lamps: [{ x: .3, y: .55 }, { x: .95, y: .29 }], windows: [] }, outdoors: true, light: "#e3ecf0", foreground: [] },
+  europapark: { background: "/rooms/trip-europapark-v11.webp", nightLights: { lamps: [{ x: .4, y: .51 }, { x: .72, y: .51 }], windows: [] }, outdoors: true, light: "#f1ead0", foreground: [] },
   eliasroom: { background: "/rooms/story-eliasroom-pixel-v10.webp", fallback: "/rooms/story-eliasroom-v09.svg", outdoors: false, light: "#f4c989", foreground: [] },
   bedroom: { background: "/rooms/felice-bedroom-v10.webp", outdoors: false, light: "#ffbd65", foreground: [rect(24.5,10,52.5,42),rect(52.5,10,74.5,30),rect(24.5,43,35.5,57),rect(69,31,79,57),rect(45.5,79,78,91,91)] },
   home: { background: "/rooms/home-v06.webp", winter: "/rooms/home-winter-v06.webp", outdoors: false, light: "#ffd49a", foreground: [rect(46,23.5,73,48),{ clip: "polygon(12% 17%,40% 17%,40% 30%,24.7% 30%,24.7% 43%,12% 43%)", depth:43 },rect(84,12,96,46)] },

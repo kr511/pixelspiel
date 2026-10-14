@@ -32,7 +32,7 @@ export function GameUI({ started, loading = null, onStart, roomActive = true, tr
 
   return (
     <div className="game-ui">
-      <div className="world-title"><span>F × E</span><div><strong>Felice × Elias</strong><small>{place}{completed > 0 && ` · ${completed} Erinnerung bewahrt`}</small></div></div>
+      <div className="world-title"><span>F × E</span><div><strong>Felice × Elias</strong><small>{place}{completed > 0 && ` · ${completed} ${completed === 1 ? "Erinnerung" : "Erinnerungen"} bewahrt`}</small></div></div>
       {started && !transitioning && <button data-game-control className="pause-button" onClick={() => { if (paused) void worldAudio.unlock(); setPaused(!paused); }} aria-label={paused ? "Weiterspielen" : "Pause"}>{paused ? <Play size={18} /> : <Pause size={18} />}</button>}
       {started && <button data-game-control className="audio-button" onClick={() => worldAudio.toggleMuted()} aria-label={muted ? "Ton einschalten" : "Ton ausschalten"} aria-pressed={muted}>{muted ? <VolumeX size={18}/> : <Volume2 size={18}/>}</button>}
       {started && !paused && roomActive && !transitioning && <div className="controls-hint"><span className="desktop-hint">WASD / Pfeile · Laufen &nbsp; E · Interagieren &nbsp; J · Album &nbsp; I · Tasche &nbsp; Esc · Menü</span><span className="mobile-hint">Joystick · Laufen &nbsp; Aktionsknopf · Sprechen & Benutzen</span></div>}
