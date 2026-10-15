@@ -11,6 +11,7 @@ import { NamesPanel } from "./NamesPanel";
 import { WorldMap } from "./WorldMap";
 import { StoryPhone } from "./StoryPhone";
 import { PhoneHub, eventDateText } from "./PhoneHub";
+import { LiveChatToast } from "./ChatHistory";
 import { DialogueBox } from "./DialogueBox";
 import { dialogueEmotion, type Emotion } from "./dialogue";
 import { SequenceCast, StoryEffects, castPoint, directionBetween, type StoryEffect } from "./StorySequence";
@@ -104,6 +105,8 @@ export function Game() {
   const sequenceBeat = event?.steps?.[eventState?.cursor ?? 0];
   const save: StorySave = event ? { ...worldSave, place: sequenceBeat?.place ?? event.place, chapter: null, bag: event.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 ? ["Schokolade"] : [] } : worldSave;
   const [phone, setPhone] = useState(false);
+  // Set when the phone opens from a live message: the WhatsApp tab shows that day.
+  const [phoneChatDate, setPhoneChatDate] = useState<string | null>(null);
   const [intro, setIntro] = useState(false);
   // First school morning (10.11.): the bus ride to Zörbig plays once, seen from inside.
   const [busRide, setBusRide] = useState<Exit | null>(null);
@@ -882,7 +885,8 @@ export function Game() {
     </>}
     {photoMoment && <GraduationPhotos blocked={paused || needsLandscape} onComplete={completePhotos}/> }
     {phone && event && eventState && ["chat","love","confession","message"].includes(event.scene) && <StoryPhone event={event} state={eventState} replay={Boolean(replay)} paused={paused} onPause={() => { if (paused) void worldAudio.unlock(); useInput.getState().setPaused(!paused); clearMovement(); }} blocked={paused || needsLandscape} onChange={changeEventState} onClose={() => { setPhone(false); clearMovement(); }} onComplete={finishCurrentEvent} timeline={timeline} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}} onJump={()=>{setPhone(false);jumpStory();}}/>}
-    {phone && (!event || !["chat","love","confession","message"].includes(event.scene)) && <PhoneHub timeline={timeline} activeId={session?.id} paused={paused} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} blocked={paused || needsLandscape} onClose={()=>setPhone(false)} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onJump={()=>{setPhone(false);jumpStory();}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}}/>}
+    <LiveChatToast date={day.date} minute={day.minute} hidden={!inWorld || phone || Boolean(dialogue) || journal || Boolean(event) || Boolean(cinema) || paused} onOpen={()=>{clearMovement();setPhoneChatDate(day.date);setPhone(true);}}/>
+    {phone && (!event || !["chat","love","confession","message"].includes(event.scene)) && <PhoneHub key={phoneChatDate ?? "hub"} chatDate={phoneChatDate} timeline={timeline} activeId={session?.id} paused={paused} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} blocked={paused || needsLandscape} onClose={()=>{setPhone(false);setPhoneChatDate(null);}} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onJump={()=>{setPhone(false);jumpStory();}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}}/>}
     {storyToast && started && <aside className={`story-unlocked${storyToast.special ? " special-memory" : ""}`} role="status"><span aria-hidden="true">{storyToast.special ? "♥" : "✦"}</span><div><small>ERINNERUNG BEWAHRT</small><strong>{historicalDate(storyToast.date)} · {storyToast.title}</strong></div><button onClick={() => { setStoryToast(null); clearMovement(); setJournal(true); }}>Im Buch ansehen</button><button aria-label="Erinnerungshinweis schließen" onClick={() => setStoryToast(null)}>×</button></aside>}
     {journal && <dialog ref={journalRef} className="story-modal journal-modal" onCancel={() => { setJournal(false); clearMovement(); }}>
       <div className="journal-heading"><div><small>FELICE × ELIAS · VERSION {GAME_VERSION}</small><h1>Unsere Geschichte</h1><p>{datedCompleted} {datedCompleted === 1 ? "datierte Erinnerung" : "datierte Erinnerungen"} bewahrt · Historische Daten bleiben beim Wiederholen erhalten.</p></div><div className="journal-duo" aria-label="Felice und Elias"><CharacterArt id="felice"/><CharacterArt id="elias"/></div><button className="modal-close" aria-label="Erinnerungsbuch schließen" onClick={() => setJournal(false)}>×</button></div>

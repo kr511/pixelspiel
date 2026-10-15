@@ -34,8 +34,8 @@ export function PhoneTabs({ tab, onChange }: { tab: PhoneTab; onChange: (tab: Ph
     onChange(TABS[target]); (e.currentTarget.parentElement?.children[target] as HTMLElement)?.focus();
   }}>{["✉", "💬", "☷", "▦", "♡"][index]} <span>{name}</span></button>)}</nav>;
 }
-export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onOpenAlbum, onJump, activeId }: {
-  tab: PhoneTab; timeline: TimelineSave; blocked?: boolean; onSelectMemory?: (id: string) => void; onOpenAlbum?: () => void; onJump?: () => void; activeId?: string;
+export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onOpenAlbum, onJump, activeId, chatDate = null }: {
+  tab: PhoneTab; timeline: TimelineSave; blocked?: boolean; onSelectMemory?: (id: string) => void; onOpenAlbum?: () => void; onJump?: () => void; activeId?: string; chatDate?: string | null;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const next = nextEvent(timeline);
@@ -57,7 +57,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
       {notifications.length > 0 ? notifications.map(event => <button className="phone-event-row incoming-notification" key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span aria-hidden="true">{event.symbol ?? "✉"}</span><div><small>{eventDateText(event)}</small><strong>{event.title}</strong><p>{event.id === activeId ? "Geöffnete Szene fortsetzen" : "Zum gemeinsamen Moment"}</p></div><b aria-hidden="true">→</b></button>) : <div className="phone-empty"><span aria-hidden="true">☾</span><p>{next ? "Für heute sind keine neuen Nachrichten offen. Im Kalender kannst du zum nächsten wichtigen Tag weiterblättern." : "Alle vorgesehenen Momente sind bewahrt. Dein Chatverlauf und das Album bleiben hier."}</p>{next && onJump && <button disabled={blocked || Boolean(activeId)} onClick={onJump}>Zum nächsten Storytag →</button>}</div>}
       {activeId && <p className="phone-small-note">Die laufende Szene bleibt erhalten. Weitere Ereignisse kannst du nach ihrem Abschluss öffnen.</p>}
     </>}
-    {tab === "WhatsApp" && <ChatHistory currentDate={timeline.clock.date}/>}
+    {tab === "WhatsApp" && <ChatHistory currentDate={timeline.clock.date} currentMinute={timeline.clock.minute} initialDate={chatDate}/>}
     {tab === "Verlauf" && <>
       <div className="phone-page-heading"><small>GESPEICHERTE NACHRICHTEN</small><h3>Unsere Abende</h3><p>Die Abende zeigen echte Nachrichten aus eurem Chat, wortgetreu und mit Uhrzeit. Nur ältere Spielstände enthalten noch rekonstruierte Zeilen.</p></div>
       {selected && <div className="phone-history-detail"><button className="phone-back" onClick={() => setSelectedId(null)}>← Alle Gespräche</button><h4>{selected.title}</h4><time>{eventDateText(selected)}</time>{messages.length ? messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}`} key={`${selected.id}-${index}`}><small>{line.speaker}{line.original ? ` · ORIGINAL${line.time ? ` · ${line.time}` : ""}` : line.speaker === "Erzählung" ? "" : " · REKONSTRUKTION"}</small><p>{line.text}</p>{selected.scene !== "chat" && progress?.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {progress.answers[String(index)]}</small>}</div>) : <p>Dieses Gespräch wurde geöffnet. Die erste Nachricht ist noch unterwegs.</p>}<button className="memory-primary" disabled={!canSelect(selected)} onClick={() => select(selected)}>{timeline.progress[selected.id]?.completedAt ? "Diesen Abend erneut erleben" : "Gespräch fortsetzen"} →</button></div>}
@@ -81,14 +81,16 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
   </section>;
 }
 
-export function PhoneHub({ timeline, onClose, onSelectMemory, onJump, onOpenAlbum, blocked = false, activeId, paused, onPause }: {
+export function PhoneHub({ timeline, onClose, onSelectMemory, onJump, onOpenAlbum, blocked = false, activeId, paused, onPause, chatDate = null }: {
   timeline: TimelineSave; onClose: () => void; onSelectMemory: (id: string) => void; onJump: () => void; onOpenAlbum?: () => void; blocked?: boolean; activeId?: string; paused?: boolean; onPause?: () => void;
+  /** Opens straight on this day of the WhatsApp tab (from a live message). */
+  chatDate?: string | null;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const [tab, setTab] = useState<PhoneTab>("Nachrichten");
+  const [tab, setTab] = useState<PhoneTab>(chatDate ? "WhatsApp" : "Nachrichten");
   useEffect(() => { const node = ref.current; if (node && !node.open) node.showModal(); return () => node?.close(); }, []);
   return <dialog ref={ref} className="story-modal story-phone phone-v09 phone-hub" aria-label="Felices Handy" onCancel={e => { e.preventDefault(); onClose(); }} onKeyDown={e => { if (e.key === "Escape") e.stopPropagation(); }}>
     <header className="phone-header"><span className="phone-portrait active-speaker-portrait"><PixelPortrait id="felice" emotion="happy"/></span><div><small>FELICE × ELIAS</small><h2>Mein Handy</h2><time>{historicalDate(timeline.clock.date)}</time></div>{onPause && <button className="phone-pause" aria-label={paused ? "Handy fortsetzen" : "Handy pausieren"} onClick={onPause}>{paused ? "▶" : "Ⅱ"}</button>}<button className="modal-close" aria-label="Handy schließen" onClick={onClose}>×</button></header>
-    <PhoneTabs tab={tab} onChange={setTab}/><PhonePages tab={tab} timeline={timeline} blocked={blocked} onSelectMemory={onSelectMemory} onJump={onJump} onOpenAlbum={onOpenAlbum} activeId={activeId}/>
+    <PhoneTabs tab={tab} onChange={setTab}/><PhonePages tab={tab} timeline={timeline} blocked={blocked} onSelectMemory={onSelectMemory} onJump={onJump} onOpenAlbum={onOpenAlbum} activeId={activeId} chatDate={chatDate}/>
   </dialog>;
 }
