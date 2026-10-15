@@ -10,7 +10,7 @@ const TRIP_IDS = ["klassenfahrt-anreise", "klassenfahrt-parlament", "klassenfahr
 const player = { x: .5, y: .7 };
 const finish = save => {
   const event = eventById(save.active.id);
-  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" ? 2 : event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" || event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
   const state = { ...save.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
   return completeEvent({ ...save, progress: { ...save.progress, [event.id]: state } }, event.id, false, "2026-10-08T12:00:00Z");
 };

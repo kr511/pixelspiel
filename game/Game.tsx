@@ -26,7 +26,8 @@ import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
 import { SavePanel } from "./SavePanel";
-import { Credits } from "./Credits";
+// Explicit extension: on case-insensitive file systems "./Credits" would also match credits.ts.
+import { Credits } from "./Credits.tsx";
 import { UI_KEY, DEFAULT_UI, parseUi, type UiPrefs } from "./ui-prefs";
 import "./chapter1.css";
 import "./clean-ui.css";
@@ -202,7 +203,7 @@ export function Game() {
   const nextStep = nextStepInfo(timeline);
   // During a memory the line says what to do right now, in the words the old quest tracker used.
   const sessionStep = !event ? null : event.scene === "sequence" ? sequenceBeat?.label ?? null : event.scene === "encounter" ? [
-    "Elias kommt mit dem Fahrrad. Warte am Treffpunkt.", "Geh zu Elias auf den Weg am Treffpunkt.", "Elias hat Schokolade mitgebracht. Sprich mit ihm.", "Du behältst die Schokolade bei dir.", "Lasst dem Moment etwas Zeit.",
+    "Elias kommt mit dem Fahrrad. Warte am Treffpunkt.", "Geh zu Elias an die Bank bei der Hütte.", "Elias hat Schokolade mitgebracht. Sprich mit ihm.", "Du behältst die Schokolade bei dir.", "Lasst dem Moment etwas Zeit.",
   ][eventState?.cursor ?? 0] ?? null : "Setz dich aufs Bett oder an den Schreibtisch und öffne dein Handy.";
   // Memories start from the world: a place, an object or Elias, never a menu button.
   const pendingTrigger = !session && !legacyView && !worldSave.chapter && upcoming && canTrigger(timeline, upcoming) ? storyTrigger(upcoming) : null;
@@ -215,8 +216,8 @@ export function Game() {
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
   const arrived = eventState && eventState.cursor > 0 ? 1 : Math.min(1, arrivalTime / 3);
   // Treffpunkt: Elias rides up the cobbled road, then turns onto the meadow beside the pavilion.
-  const eliasPoint = arrived < .6 ? { x: .64 - .02 * (arrived / .6), y: .95 - .23 * (arrived / .6) } : { x: .62 - .28 * ((arrived - .6) / .4), y: .72 };
-  const encounterNearby = event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 1 && Math.hypot(player.x - .42, player.y - .72) < .13;
+  const eliasPoint = arrived < .6 ? { x: .64 - .02 * (arrived / .6), y: .95 - .23 * (arrived / .6) } : { x: .62 - .44 * ((arrived - .6) / .4), y: .72 };
+  const encounterNearby = event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 1 && Math.hypot(player.x - .28, player.y - .72) < .13; // at the bench by the pavilion
   const restPose: Pose = cinema && ["sit","kiss"].includes(cinema.kind) ? "sitting" : rest?.motion.actor.pose ?? "standing";
   const bedOccupied = rest?.spot.kind === "bed" && rest.motion.phase === "resting";
   const settled = rest?.motion.phase === "resting";
@@ -694,7 +695,7 @@ export function Game() {
     const replaying = Boolean(replayRef.current);
     const state = replayRef.current?.state ?? current.progress[finished.id] ?? emptyEvent();
     if (finished.scene === "chat" && (state.topics.length < 2 || state.topic)) return;
-    if (finished.scene === "love" && state.cursor < 2 || finished.scene === "encounter" && state.cursor < 4 || finished.scene === "sequence" && state.cursor < (finished.steps?.length ?? 1) || ["message","confession"].includes(finished.scene) && state.cursor < finished.dialogue.length) return;
+    if (finished.scene === "encounter" && state.cursor < 4 || finished.scene === "sequence" && state.cursor < (finished.steps?.length ?? 1) || ["message","confession","love"].includes(finished.scene) && state.cursor < finished.dialogue.length) return;
     if (!replaying && current.active?.id !== finished.id) return;
     persistTimeline(completeEvent(current, finished.id, replaying));
     replayRef.current = null; setReplay(null); setPhone(false); setDialogue(null); setJournal(false); changeRest(null); setCinema(null);
@@ -860,7 +861,7 @@ export function Game() {
         <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(day.minute)}</strong><small>{session ? "Aktuelle Spielzeit · während der Szene pausiert" : `Tag ${storyDayNumber(day.date)} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span>{ui.nextStep && !legacyView && !worldSave.chapter && (session ? sessionStep && <span className="next-step session-step" data-testid="next-step" data-status="active"><b>Jetzt</b>{sessionStep}</span> : <span className="next-step" data-testid="next-step" data-status={nextStep.status}><b>Als Nächstes</b>{nextStep.title}<span> · {nextStep.detail}</span></span>)}</div>
         {active && thought && <aside className="felice-thought" role="status" data-testid="felice-thought" key={thought.key}><span className="thought-dots" aria-hidden="true"><i/><i/><i/></span><p><small>Felice denkt</small>{thought.text}</p></aside>}
       </div>
-      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `Rekonstruierte Dialoge · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
+      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `${["chat","love","confession","message"].includes(event.scene) ? "Originalnachrichten aus eurem Chat" : "Rekonstruierte Dialoge"} · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}>▣ <span>Handy</span></button>

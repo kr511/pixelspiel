@@ -5,7 +5,7 @@ import { EMOTIONS, dialogueEmotion, portraitIdForSpeaker, type Emotion } from ".
 import { PixelPortrait } from "./PixelPortrait";
 import { worldAudio } from "./audio";
 import { PhonePages, PhoneTabs, type PhoneTab } from "./PhoneHub";
-import { CHAT_TOPICS, chatTopicForEvent, historicalDate, type EventProgress, type StoryEvent, type TimelineSave } from "./timeline";
+import { chatTopicForEvent, chatTopicsForEvent, historicalDate, type EventProgress, type StoryEvent, type TimelineSave } from "./timeline";
 import "./phone-album.css";
 
 export function StoryPhone({ event, state, replay, blocked, paused, onPause, onChange, onClose, onComplete, timeline, onSelectMemory, onOpenAlbum, onJump }: {
@@ -24,7 +24,11 @@ export function StoryPhone({ event, state, replay, blocked, paused, onPause, onC
   const [reduceMotion, setReduceMotion] = useState(false);
   const love = event.scene === "love";
   const scripted = love || event.scene === "confession" || event.scene === "message";
+  const topics = useMemo(() => chatTopicsForEvent(event), [event]);
   const topic = useMemo(() => state.topic ? chatTopicForEvent(state.topic, event) : undefined, [state.topic, event]);
+  // Within a topic, Elias' messages arrive by themselves; Felice's lines wait for "Senden".
+  const topicNext = topic && state.line < topic.lines.length ? topic.lines[state.line] : undefined;
+  const real = scripted ? event.dialogue.some(line => line.original) : topics.some(item => item.lines.some(line => line.original));
   const messages = useMemo(() => scripted ? event.dialogue.slice(0, state.cursor) : [
     ...state.topics.flatMap(id => chatTopicForEvent(id, event)?.lines ?? []),
     ...(topic?.lines.slice(0, state.line) ?? []),
@@ -64,25 +68,27 @@ export function StoryPhone({ event, state, replay, blocked, paused, onPause, onC
   useEffect(() => {
     if (interrupted || !fullyTyped) return;
     const incoming = scripted && nextLine && nextLine.speaker !== "Felice";
-    const waitingLove = love && state.cursor === 1 && state.line === 0;
-    const next = incoming ? { ...state, cursor: state.cursor + 1, typed: 0 } : waitingLove ? { ...state, line: 1 } : !scripted && state.topic && state.line === 1 ? { ...state, line: 2, typed: 0 } : null;
+    const topicIncoming = !scripted && topic && topicNext && topicNext.speaker !== "Felice";
+    const topicDone = !scripted && topic && !topicNext;
+    const next = incoming ? { ...state, cursor: state.cursor + 1, typed: 0 } : topicIncoming ? { ...state, line: state.line + 1, typed: 0 } : topicDone ? { ...state, topics: [...new Set([...state.topics, topic.id])], topic: null, line: 0 } : null;
     if (!next) return;
-    const timer = window.setTimeout(() => { if (!interruptedRef.current && stateRef.current === state) { update(next); worldAudio.play("interact"); } }, waitingLove ? 1600 : 1100);
+    const timer = window.setTimeout(() => { if (!interruptedRef.current && stateRef.current === state) { update(next); worldAudio.play("interact"); } }, topicDone ? 900 : 1100);
     return () => window.clearTimeout(timer);
-  }, [state, scripted, nextLine, love, fullyTyped, interrupted, update]);
+  }, [state, scripted, nextLine, topic, topicNext, fullyTyped, interrupted, update]);
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "auto" }); }, [messages.length, state.typed]);
 
   const sendScript = (choice?: string) => {
-    if (interrupted || !fullyTyped || nextLine?.speaker !== "Felice" || love && state.line === 0 || changedRef.current === checkpoint) return;
+    if (interrupted || !fullyTyped || nextLine?.speaker !== "Felice" || changedRef.current === checkpoint) return;
     if (nextLine.choices?.length && (!choice || !nextLine.choices.includes(choice))) { firstReplyRef.current?.focus(); return; }
     changedRef.current = checkpoint;
     worldAudio.play(love ? "complete" : "interact");
     update({ ...state, cursor: state.cursor + 1, typed: 0, ...(choice ? { answers: { ...state.answers, [String(state.cursor)]: choice } } : {}) });
   };
-  const sendTopic = () => {
-    if (!topic || state.line < 2 || !fullyTyped || interrupted || changedRef.current === checkpoint) return;
+  const sendTopicLine = () => {
+    if (topicNext?.speaker !== "Felice" || !fullyTyped || interrupted || changedRef.current === checkpoint) return;
     changedRef.current = checkpoint;
-    update({ ...state, topics: [...new Set([...state.topics, topic.id])], topic: null, line: 0, typed: 0 });
+    worldAudio.play("interact");
+    update({ ...state, line: state.line + 1, typed: 0 });
   };
   const complete = () => {
     if (interrupted || !fullyTyped || changedRef.current === checkpoint || scripted && nextLine || !scripted && (state.topic !== null || state.topics.length < 2)) return;
@@ -94,9 +100,10 @@ export function StoryPhone({ event, state, replay, blocked, paused, onPause, onC
     if (!fullyTyped) { reveal(); return; }
     if (scripted && nextLine?.speaker === "Felice") sendScript();
     else if (scripted && !nextLine) complete();
-    else if (topic) sendTopic();
+    else if (topic) sendTopicLine();
   };
-  const time = event.staging.timeConfirmed ? `${String(Math.floor(event.staging.start / 60)).padStart(2,"0")}:${String(event.staging.start % 60).padStart(2,"0")}` : scripted ? event.scene === "message" ? "Am Morgen · szenisch ergänzt" : "Ruhiger Abend · szenisch ergänzt" : state.topics.length === 0 ? `ca. ${String(Math.floor(event.staging.start/60)).padStart(2,"0")}:${String(event.staging.start%60).padStart(2,"0")}` : state.topics.length === 1 ? "Im Laufe des Abends" : "Bis ungefähr 23:00";
+  const sentLabel = (line: { original?: boolean; time?: string }) => line.original ? `ORIGINAL${line.time ? ` · ${line.time}` : ""}` : "REKONSTRUKTION";
+  const time = latest?.time ? `${latest.time} Uhr` : event.staging.timeConfirmed ? `${String(Math.floor(event.staging.start / 60)).padStart(2,"0")}:${String(event.staging.start % 60).padStart(2,"0")}` : scripted ? event.scene === "message" ? "Am Morgen · szenisch ergänzt" : "Ruhiger Abend · szenisch ergänzt" : state.topics.length === 0 ? `ca. ${String(Math.floor(event.staging.start/60)).padStart(2,"0")}:${String(event.staging.start%60).padStart(2,"0")}` : state.topics.length === 1 ? "Im Laufe des Abends" : "Bis ungefähr 23:00";
   return <dialog ref={ref} className={`story-modal story-phone phone-v09${love || event.scene === "confession" ? " love-phone" : ""}`} aria-label={`Handy · ${event.title}`} onCancel={e => { e.preventDefault(); onClose(); }} onKeyDown={e => {
     if (e.key === "Escape") { e.stopPropagation(); return; }
     if ((e.key === "Enter" || e.key === " ") && !(e.target instanceof Element && e.target.closest(".phone-tabs,.phone-header, .phone-page"))) {
@@ -109,19 +116,19 @@ export function StoryPhone({ event, state, replay, blocked, paused, onPause, onC
     <header className="phone-header"><span className="phone-portrait active-speaker-portrait" data-speaking-character={speaker.toLowerCase()} data-emotion={portraitEmotion}><PixelPortrait id={portraitIdForSpeaker(speaker)} emotion={portraitEmotion}/></span><div><small>{replay ? "ERINNERUNG ERNEUT ERLEBEN" : "CHAT MIT ELIAS"}</small><h2>{speaker} <span className="online-dot" aria-hidden="true"/></h2><time dateTime={event.date ?? undefined}>{historicalDate(event.date)} · {time}</time></div><button className="phone-pause" aria-label={paused ? "Chat fortsetzen" : "Chat pausieren"} onClick={onPause}>{paused ? "▶" : "Ⅱ"}</button><button className="modal-close" aria-label="Handy schließen" onClick={onClose}>×</button></header>
     {timeline && <PhoneTabs tab={tab} onChange={setTab}/>}
     {tab !== "Nachrichten" && timeline ? <PhonePages tab={tab} timeline={timeline} blocked={blocked} onSelectMemory={onSelectMemory} onOpenAlbum={onOpenAlbum} onJump={onJump} activeId={event.id}/> : <>
-      <p className="reconstruction-note">{love ? "Die beiden Liebesnachrichten sind bestätigt. Uhrzeit, Pausen und Inszenierung sind spielerisch ergänzt." : scripted ? "Die Kernaussagen beruhen auf euren Angaben. Ohne Originalnachrichten ist der Wortlaut eine sinngemäße Rekonstruktion." : "Fiktionalisierte Rekonstruktion · Keine Originalnachrichten. Episodeneinteilung, Themenzuordnung und szenische Uhrzeiten sind ergänzt."}</p>
+      <p className="reconstruction-note">{real ? `Originalnachrichten vom ${historicalDate(event.date)}, wortgetreu und mit echter Uhrzeit. Ausgewählt sind einzelne Stellen des Tages.` : scripted ? "Die Kernaussagen beruhen auf euren Angaben. Ohne Originalnachrichten ist der Wortlaut eine sinngemäße Rekonstruktion." : "Fiktionalisierte Rekonstruktion · Keine Originalnachrichten. Episodeneinteilung, Themenzuordnung und szenische Uhrzeiten sind ergänzt."}</p>
       <div className="phone-chat" ref={logRef} role="log" aria-live={fullyTyped ? "polite" : "off"} aria-busy={!fullyTyped} aria-label="Chat mit Elias" onClick={reveal}>
         {!scripted && <p className="chat-narration">{event.dialogue[0]?.text}</p>}
-        {messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}${index === messages.length - 1 ? " latest-message" : ""}`} key={`${index}-${line.text}`}><small>{line.speaker === "Erzählung" ? "ERZÄHLUNG" : line.speaker}{line.original ? " · BESTÄTIGTE NACHRICHT" : ""}</small><p>{index === messages.length - 1 ? line.text.slice(0, typed) : line.text}{index === messages.length - 1 && !fullyTyped && <span className="typing-caret" aria-hidden="true">▎</span>}</p>{scripted && state.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {state.answers[String(index)]}</small>}{line.speaker === "Felice" && <span className="chat-delivered" aria-label="Gesendet">✓</span>}</div>)}
-        {fullyTyped && (scripted && nextLine?.speaker !== "Felice" && nextLine || topic && state.line === 1) && <span className="chat-typing" role="status">{nextLine?.speaker === "Erzählung" ? "Ein Moment bleibt" : "Elias schreibt"}<span>· · ·</span></span>}
-        {scripted && !nextLine && fullyTyped && <div className="love-moment" role="status"><span aria-hidden="true">{love || event.scene === "confession" ? "♥" : "☀"}</span><p>{love ? "Zwei Nachrichten. Ein gemeinsamer Anfang." : event.scene === "confession" ? "Ein Gefühl bekommt Worte." : "Ein kleiner Moment für eure Geschichte."}</p>{(love || event.scene === "confession") && <div className="heart-particles" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}</div>}
+        {messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}${index === messages.length - 1 ? " latest-message" : ""}`} key={`${index}-${line.text}`}><small>{line.speaker === "Erzählung" ? "ERZÄHLUNG" : line.speaker}{line.time ? ` · ${line.time}` : ""}</small><p>{index === messages.length - 1 ? line.text.slice(0, typed) : line.text}{index === messages.length - 1 && !fullyTyped && <span className="typing-caret" aria-hidden="true">▎</span>}</p>{scripted && state.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {state.answers[String(index)]}</small>}{line.speaker === "Felice" && <span className="chat-delivered" aria-label="Gesendet">✓</span>}</div>)}
+        {fullyTyped && (scripted && nextLine?.speaker !== "Felice" && nextLine || !scripted && topicNext && topicNext.speaker !== "Felice") && <span className="chat-typing" role="status">{nextLine?.speaker === "Erzählung" ? "Ein Moment bleibt" : "Elias schreibt"}<span>· · ·</span></span>}
+        {scripted && !nextLine && fullyTyped && <div className="love-moment" role="status"><span aria-hidden="true">{love || event.scene === "confession" ? "♥" : "☀"}</span><p>{love ? "Drei Reihen Punkte. Ein gemeinsamer Anfang." : event.scene === "confession" ? "Ein Gefühl bekommt Worte." : "Ein kleiner Moment für eure Geschichte."}</p>{(love || event.scene === "confession") && <div className="heart-particles" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}</div>}
       </div>
       <footer className="phone-composer">
         {!fullyTyped && <button className="phone-reveal" disabled={messageBlocked} onClick={reveal}>Nachricht vollständig lesen <span>↵</span></button>}
-        {scripted ? <>{nextLine?.speaker === "Felice" && <><p className="message-preview"><small>DEINE ANTWORT · {nextLine.original ? "BESTÄTIGTE NACHRICHT" : "REKONSTRUKTION"}</small>{nextLine.text}</p>{nextLine.choices?.length ? <div className="phone-reply-choices" role="group" aria-label="Wie möchtest du antworten?">{nextLine.choices.map((choice, index) => <button key={choice} ref={index === 0 ? firstReplyRef : undefined} className="memory-primary script-send script-choice" data-testid="phone-reply-choice" data-choice={choice} disabled={!fullyTyped || messageBlocked} onClick={() => sendScript(choice)}>{choice}<span aria-hidden="true"> ↗</span></button>)}</div> : <button ref={firstReplyRef} className={`memory-primary script-send${love ? " love-send" : ""}`} disabled={!fullyTyped || love && state.line === 0 || messageBlocked} onClick={() => sendScript()}>{love ? "„Ich liebe dich.“ senden" : state.cursor === 0 && event.scene === "confession" ? "Gefühle anvertrauen · Nachricht senden" : "Nachricht senden"} <span aria-hidden="true">↗</span></button>}</>}{!nextLine && <button className="memory-primary" disabled={!fullyTyped || messageBlocked} onClick={complete}>Diesen Moment bewahren ♥</button>}{nextLine?.speaker !== "Felice" && nextLine && <p>Dein Handy leuchtet auf …</p>}</> : <>
-          {topic ? <button className="memory-primary" disabled={state.line < 2 || !fullyTyped || messageBlocked} onClick={sendTopic}>{state.line < 2 ? "Eine Nachricht kommt …" : topic.lines[2].speaker === "Erzählung" ? "Gedanken stehen lassen" : "Antwort senden"}</button> : <>
-            <p>Worüber möchtest du schreiben? <span>{state.topics.length}/2 Themen für diesen Abend</span></p>
-            <div className="chat-topics">{CHAT_TOPICS.map(topic => <button key={topic.id} disabled={state.topics.includes(topic.id) || !fullyTyped || messageBlocked} aria-pressed={state.topics.includes(topic.id)} onClick={() => { if (!interrupted) update({ ...state, topic: topic.id, line: 1, typed: 0 }); }}><span>{topic.icon}</span>{topic.title}{state.topics.includes(topic.id) && <small>✓</small>}</button>)}</div>
+        {scripted ? <>{nextLine?.speaker === "Felice" && <><p className="message-preview"><small>DEINE ANTWORT · {sentLabel(nextLine)}</small>{nextLine.text}</p>{nextLine.choices?.length ? <div className="phone-reply-choices" role="group" aria-label="Wie möchtest du antworten?">{nextLine.choices.map((choice, index) => <button key={choice} ref={index === 0 ? firstReplyRef : undefined} className="memory-primary script-send script-choice" data-testid="phone-reply-choice" data-choice={choice} disabled={!fullyTyped || messageBlocked} onClick={() => sendScript(choice)}>{choice}<span aria-hidden="true"> ↗</span></button>)}</div> : <button ref={firstReplyRef} className={`memory-primary script-send${love ? " love-send" : ""}`} disabled={!fullyTyped || messageBlocked} onClick={() => sendScript()}>{love ? `„${nextLine.text}“ senden` : state.cursor === 0 && event.scene === "confession" ? "Gefühle anvertrauen · Nachricht senden" : "Nachricht senden"} <span aria-hidden="true">↗</span></button>}</>}{!nextLine && <button className="memory-primary" disabled={!fullyTyped || messageBlocked} onClick={complete}>Diesen Moment bewahren ♥</button>}{nextLine?.speaker !== "Felice" && nextLine && <p>Dein Handy leuchtet auf …</p>}</> : <>
+          {topic ? topicNext?.speaker === "Felice" ? <><p className="message-preview"><small>DEINE ANTWORT · {sentLabel(topicNext)}</small>{topicNext.text}</p><button className="memory-primary script-send" disabled={!fullyTyped || messageBlocked} onClick={sendTopicLine}>Nachricht senden <span aria-hidden="true">↗</span></button></> : topicNext?.speaker === "Erzählung" ? <button className="memory-primary" disabled>Gedanken stehen lassen …</button> : <button className="memory-primary" disabled>{topicNext ? "Eine Nachricht kommt …" : "Gespräch wird bewahrt …"}</button> : <>
+            <p>Worüber möchtest du schreiben? <span>{state.topics.length}/2 Gespräche für diesen Abend</span></p>
+            <div className="chat-topics">{topics.map(topic => <button key={topic.id} disabled={state.topics.includes(topic.id) || !fullyTyped || messageBlocked} aria-pressed={state.topics.includes(topic.id)} onClick={() => { if (!interrupted) update({ ...state, topic: topic.id, line: 1, typed: 0 }); }}><span>{topic.icon}</span>{topic.title}{state.topics.includes(topic.id) && <small>✓</small>}</button>)}</div>
             {state.topics.length >= 2 && <button className="memory-primary" disabled={!fullyTyped || messageBlocked} onClick={complete}>Den Abend bewahren <span>→</span></button>}
           </>}
         </>}

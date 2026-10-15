@@ -22,7 +22,7 @@ export function Credits({ save, onClose, onOpenAlbum }: { save: TimelineSave; on
       {data.chapters.map(chapter => <section key={chapter.number}><h2><small>Kapitel {chapter.number} · {chapter.period}</small>{chapter.title}</h2><ul>{chapter.memories.map(event => <li key={event.id}><span aria-hidden="true">{event.symbol ?? "♡"}</span>{event.title}<small>{eventDateText(event)}</small></li>)}</ul></section>)}
       <section><h2><small>Mit dabei</small>Felice und Elias</h2>{data.people.length > 0 && <p>{data.people.join(" · ")}</p>}<p>und alle, die dieses Jahr mit uns geteilt haben.</p></section>
       <p className="credits-note">Wo Originalnachrichten fehlen, sind Dialoge rekonstruiert. Inszenierte Szenen sind im Album gekennzeichnet.</p>
-      <p className="credits-end">Unsere Geschichte ist noch lange nicht zu Ende. ❤️</p>
+      <p className="credits-end">„Also für immer?“ – „Genau so.“ ❤️</p>
     </div>
     <div className="journal-bottom"><button className="memory-secondary" onClick={onOpenAlbum}>Album öffnen</button><button className="memory-primary" onClick={onClose}>Weiterspielen</button></div>
   </dialog>;

@@ -39,7 +39,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
   zoerbig: { name: "Zörbig · Markt", subtitle: "Löwen-Apotheke, Rathaus und Brunnen", exits: [
     { x: .397, y: .255, to: "bus", label: "Bus zurück nach Radegast", spawn: { x: .74, y: .47 } },
     { x: .70, y: .65, to: "school", label: "Zur Schule", spawn: { x: .60, y: .88 } },
-    { x: .67, y: .47, to: "christmasmarket", label: "Zum Weihnachtsmarkt · Spielweg", spawn: { x: .50, y: .87 } },
+    { x: .67, y: .47, to: "christmasmarket", label: "Zum Weihnachtsmarkt", spawn: { x: .50, y: .87 } },
     { x: .70, y: .29, to: "eliasroom", label: "Zu Elias", spawn: { x: .50, y: .85 } },
     { x: .26, y: .68, to: "hotel", label: "Klassenfahrt · Reisebus nach Kehl", spawn: { x: .50, y: .62 } },
   ], obstacles: [
@@ -66,12 +66,12 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { x: .265, y: .285, to: "range", label: "Ins Schützenhaus", spawn: { x: .5, y: .82 } },
   ], obstacles: [{ left: .05, right: .63, top: 0, bottom: .245 }, { left: .71, right: 1, top: 0, bottom: .43 }, { left: .505, right: .635, top: .26, bottom: .305 }] },
   range: { name: "Schießstand · Gölzau", subtitle: "Einmal tief durchatmen", exits: [{ x: .5, y: .9, to: "goelzau", label: "Vor das Schützenhaus", spawn: { x: .275, y: .32 } }], obstacles: [{ left: .1, right: .9, top: .04, bottom: .34 }, { left: .66, right: .86, top: .76, bottom: .835 }] },
-  playground: { name: "Spielplatz · Ein Platz für uns", subtitle: "Parkbank, leise Gespräche und Zeit draußen", exits: [{ x: .50, y: .90, to: "radegast", label: "Zurück nach Radegast", spawn: { x: .61, y: .70 } }], obstacles: [
+  playground: { name: "Radegast · Spielplatz", subtitle: "Parkbank, Sonnenuntergang und unsere erste Umarmung", exits: [{ x: .50, y: .90, to: "radegast", label: "Zurück nach Radegast", spawn: { x: .61, y: .70 } }], obstacles: [
     { left: .25, right: .32, top: .15, bottom: .36 }, { left: .16, right: .25, top: .31, bottom: .39 },
     { left: .68, right: .85, top: .34, bottom: .46 }, { left: .35, right: .52, top: .47, bottom: .52 },
     { left: .80, right: .85, top: .62, bottom: .68 }, { left: .105, right: .18, top: .59, bottom: .63 },
   ] },
-  christmasmarket: { name: "Unser Weihnachtsmarkt", subtitle: "Lichter, Winterluft und ein gemeinsamer Spaziergang", exits: [{ x: .50, y: .91, to: "zoerbig", label: "Zurück zum Zörbiger Markt", spawn: { x: .66, y: .47 } }], obstacles: [
+  christmasmarket: { name: "Zörbig · Weihnachtsmarkt", subtitle: "Lichter, Winterluft und kleine Küsse auf die Wange", exits: [{ x: .50, y: .91, to: "zoerbig", label: "Zurück zum Zörbiger Markt", spawn: { x: .66, y: .47 } }], obstacles: [
     { left: .11, right: .31, top: .23, bottom: .365 }, { left: .67, right: .88, top: .23, bottom: .365 },
     { left: .10, right: .29, top: .56, bottom: .695 }, { left: .755, right: .865, top: .69, bottom: .72 },
     { left: .455, right: .55, top: .30, bottom: .37 },

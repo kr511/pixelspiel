@@ -1,6 +1,6 @@
 import { memo, useId, useState, type CSSProperties } from "react";
 import { SceneArt, PersonArt, DogArt } from "./SceneArt";
-import { CHARACTER_GRAPHICS, REST_GRAPHICS, POSE_ATLASES, SPRITE_FRAMES, SCENE_GRAPHICS, characterGraphic, sceneBackground, foregroundPath, type SpriteRect } from "./graphics";
+import { CHARACTER_GRAPHICS, REST_GRAPHICS, POSE_ATLASES, SPRITE_FRAMES, SCENE_GRAPHICS, bodyScale, characterGraphic, sceneBackground, foregroundPath, type SpriteRect } from "./graphics";
 import { neighborFrame } from "./graphics07";
 import type { Place } from "./story";
 import type { Season } from "./day";
@@ -56,9 +56,10 @@ export function CharacterArt({ id, portrait = false, direction = "front", walkin
       rect = (atlas.frames[frameIndex] ?? atlas.frames[0])[column];
     }
     const size = resting ? [1254,1254] : neighbor?.size ?? atlas.size;
-    const height = pose === "sitting" ? 108 : pose === "lying" ? 125 : 132;
+    // Body height scales around the feet; taller figures may reach above the box.
+    const height = (pose === "sitting" ? 108 : pose === "lying" ? 125 : 132) * (pose === "lying" ? 1 : bodyScale(id));
     const width = rect[2] / rect[3] * height;
-    return <svg key={sheet} className={`character-art character-${pose}`} viewBox="0 0 100 140" data-frame={walking ? frame : 0} data-direction={direction} data-sheet={sheet} aria-hidden="true">
+    return <svg key={sheet} className={`character-art character-${pose}`} viewBox="0 0 100 140" style={{ overflow: "visible" }} data-frame={walking ? frame : 0} data-direction={direction} data-sheet={sheet} data-body-scale={bodyScale(id).toFixed(3)} aria-hidden="true">
       <g transform={neighbor?.mirror ? "translate(100 0) scale(-1 1)" : undefined}>
       <svg x={50-width/2} y={140-height} width={width} height={height} viewBox={rect.join(" ")} overflow="hidden">
         <image href={assetUrl(sheet)} width={size[0]} height={size[1]} onError={() => setFailedSource(sheet)}/>

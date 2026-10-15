@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["vite", "--config", "vite.pages.config.ts", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
       "port": 5174
+    },
+    {
+      "name": "spiel-lokal",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/serve-local.mjs"],
+      "port": 8765
     }
   ]
 }

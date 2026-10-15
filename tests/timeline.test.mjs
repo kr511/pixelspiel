@@ -10,7 +10,7 @@ const player = { x: .5, y: .7 };
 const dated = STORY_EVENTS.filter(event => event.date && event.scene !== "legacy");
 const finish = save => {
   const event = eventById(save.active.id);
-  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" ? 2 : event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" || event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
   const state = { ...save.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
   return completeEvent({ ...save, progress: { ...save.progress, [event.id]: state } }, event.id, false, "2026-10-08T12:00:00Z");
 };
@@ -89,18 +89,22 @@ test("Alle Storyziele sind ohne Durchlaufen von Möbeln und Mauern tatsächlich 
 
 test("Historische Kerntermine und verschränkte Novemberereignisse folgen den korrigierten Angaben", () => {
   const index = id => dated.findIndex(event => event.id === id);
-  // Bestätigt am 10.10.2026: das Treffen bei den Pferden war am 19.11.2025.
-  assert.equal(eventById("radegast-chocolate").date, "2025-11-19");
+  // Laut Chat war das Treffen bei den Pferden am Sonntag, 16.11.2025, gegen 10:45 Uhr.
+  assert.equal(eventById("radegast-chocolate").date, "2025-11-16");
+  assert.equal(eventById("radegast-chocolate").staging.start, 10 * 60 + 45);
+  assert.ok(index("chat-2025-11-15") < index("radegast-chocolate"));
+  assert.ok(index("radegast-chocolate") < index("chat-2025-11-16"));
   assert.ok(index("chat-2025-11-18") < index("school-first-feelings-19"));
-  assert.ok(index("school-first-feelings-19") < index("radegast-chocolate"));
-  assert.ok(index("radegast-chocolate") < index("chat-2025-11-19"));
   const confession = eventById("confession-2025-11-24");
   assert.equal(confession.date, "2025-11-24");
   assert.equal(confession.staging.start, 17 * 60 + 20);
   assert.ok(confession.staging.timeConfirmed);
   assert.ok(index(confession.id) < index("chat-2025-11-24"));
   assert.ok(index("handholding-2025-11-25") < index("first-i-love-you"));
-  assert.deepEqual(eventById("first-i-love-you").dialogue.map(line => [line.speaker, line.text, line.original]), [["Elias","Ich liebe dich.",true],["Felice","Ich liebe dich.",true]]);
+  const love = eventById("first-i-love-you").dialogue;
+  assert.ok(love.every(line => line.original && /^\d\d:\d\d$/.test(line.time)));
+  assert.deepEqual(love.slice(0, 4).map(line => [line.time, line.speaker, line.text]), [["17:10","Felice","… ….. …."],["17:10","Elias","Ich liebe dich auch"],["17:11","Elias","Schreib nicht in Punkten"],["17:11","Felice","Ich liebe dich"]]);
+  assert.equal(eventById("confession-2025-11-24").dialogue[0].text, "Ich hab mich wirklich in dich verliebt 🫣");
   assert.equal(eventById("first-kiss-christmas").date, "2025-12-25");
   assert.equal(eventById("first-kiss-christmas").steps.find(step => step.animation === "kiss").place, "bedroom");
 });
@@ -108,7 +112,7 @@ test("Historische Kerntermine und verschränkte Novemberereignisse folgen den ko
 test("Spielgestaltung und Zukunft werden nicht zu erfundenen historischen Meilensteinen", () => {
   for (const event of dated.filter(event => event.source === "staged")) assert.match(event.description, /inszenier|Spielgestalt|Spielwelt|Alltagsszen|rekonstru|spielerisch|erfind/i, event.id);
   assert.ok(dated.filter(event => event.date > "2026-10-08").every(event => event.source === "future"));
-  assert.equal(eventById("our-story-finale").steps.at(-1).text, "Unsere Geschichte ist noch lange nicht zu Ende. ❤️");
+  assert.deepEqual(eventById("our-story-finale").steps.slice(-2).map(step => [step.speaker, step.text]), [["Felice", "Also für immer?"], ["Elias", "Genau so. ❤️"]]);
   assert.deepEqual(eventById("morning-after-2025-12-26").artifacts.map(item => item.id), ["elias-letter","folded-cranes"]);
   assert.match(eventById("morning-after-2025-12-26").artifacts[0].description, /Originaltext.*nicht/);
   for (const event of STORY_EVENTS.filter(event => event.scene === "legacy")) {
@@ -320,7 +324,7 @@ test("Nächster Schritt: eine Quelle für Welt, Handy, Album und Karte", async (
     assert.equal(info.place, storyTrigger(event).place, "Kartenziel ist der Ort des Auslösers");
     const active = beginEvent(save, event.id, { x: .5, y: .5 }, "front");
     assert.equal(nextStepInfo(active).status, "active");
-    const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" ? 2 : event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+    const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" || event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
     const state = { ...active.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
     save = completeEvent({ ...active, progress: { ...active.progress, [event.id]: state } }, event.id, false, "2026-10-13T12:00:00Z");
     assert.ok(save.progress[event.id].completedAt, event.id);

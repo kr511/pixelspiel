@@ -92,8 +92,8 @@ export function sceneBackground(place: Place, season: Season) {
 export type CharacterGraphic = { sheet: string; columns: number; rows: number; column: number; row: number; width: number; anchor: Point; variant?: number; portrait: { sheet: string; columns: number; rows: number; column: number; row: number } };
 const npc = (column: number, row: number): CharacterGraphic => ({ sheet: "/characters/neighbors-v06.webp", columns: 4, rows: 2, column, row, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/portraits-v06.webp", columns: 4, rows: 2, column, row } });
 export const CHARACTER_GRAPHICS = {
-  felice: { sheet: "/characters/felice-walk-v1.webp", columns: 4, rows: 3, column: 0, row: 0, width: 7.6, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/felice-walk-v1.webp", columns: 4, rows: 3, column: 0, row: 0 } },
-  elias: { sheet: "/characters/elias-walk-v06-fixed.webp", columns: 4, rows: 3, column: 0, row: 0, width: 7.8, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/elias-portrait-v06.webp", columns: 1, rows: 1, column: 0, row: 0 } },
+  felice: { sheet: "/characters/felice-walk-v1.webp", columns: 4, rows: 3, column: 0, row: 0, width: 9.5, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/felice-walk-v1.webp", columns: 4, rows: 3, column: 0, row: 0 } },
+  elias: { sheet: "/characters/elias-walk-v06-fixed.webp", columns: 4, rows: 3, column: 0, row: 0, width: 9.5, anchor: { x: .5, y: 1 }, portrait: { sheet: "/characters/elias-portrait-v06.webp", columns: 1, rows: 1, column: 0, row: 0 } },
   mother: npc(0,0), stepfather: npc(1,0), halfsister: npc(2,0), "partner-one": npc(3,0), stepsister: npc(0,1), "partner-two": npc(1,1), friend: npc(2,1), host: npc(3,1),
   // Temporary existing atlas frames until personal appearances are supplied.
   elena: npc(2,1), jason: npc(3,0), luca: npc(1,1), wyatt: npc(3,1),
@@ -159,6 +159,10 @@ export const REST_GRAPHICS = {
   feliceLying: POSE_ATLASES["/characters/rest-poses-v065.webp"].frames[1][0],
   eliasLying: POSE_ATLASES["/characters/rest-poses-v065.webp"].frames[1][1],
 };
+/** Real body heights; everyone else is drawn at the 170 cm reference. Felice and Elias share
+ *  the player's 9.5 % box (see .room-player), so only this factor sets their difference. */
+export const BODY_HEIGHT_CM: Partial<Record<string, number>> = { felice: 155, elias: 185 };
+export const bodyScale = (id: string) => (BODY_HEIGHT_CM[id] ?? 170) / 170;
 export function characterGraphic(id: string): CharacterGraphic { return CHARACTER_GRAPHICS[id as CharacterId] ?? CHARACTER_GRAPHICS.friend; }
 export function speakerGraphic(speaker: string): CharacterId | null {
   const speakers: Record<string, CharacterId> = { Felice: "felice", Elias: "elias", Anuk: "dog", "Felices Mutter": "mother", "Felices Stiefvater": "stepfather", "Felices Halbschwester": "halfsister", "Freund der Halbschwester": "partner-one", "Tochter des Stiefvaters": "stepsister", "Ihr Freund": "partner-two", Freunde: "friend", "Am Schießstand": "host", "Trainer Hans": "hans", Hans: "hans", "Trainer Fritz": "fritz", Fritz: "fritz" };

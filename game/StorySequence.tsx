@@ -44,7 +44,7 @@ export function SequenceCast({event,beat,player,effect,place,conversing}: {event
   })}</>;
 }
 export function StoryEffects({effect,timeline,finale}: {effect:StoryEffect|null;timeline:TimelineSave;finale:boolean}) {
-  if(finale)return <div className="finale-curtain" role="status"><div className="finale-couple"><CharacterArt id="felice"/><CharacterArt id="elias"/></div><p>Unsere Geschichte ist noch lange nicht zu Ende. ❤️</p><span>Unsere Geschichte · Euer Album öffnet sich gleich</span></div>;
+  if(finale)return <div className="finale-curtain" role="status"><div className="finale-couple"><CharacterArt id="felice"/><CharacterArt id="elias"/></div><p>„Also für immer?“ – „Genau so.“ ❤️</p><span>Unsere Geschichte · Euer Album öffnet sich gleich</span></div>;
   if(!effect)return null;
   const groups: Record<string, string[]> = {
     beginning: ["chat-2025-11-13", "radegast-chocolate", "confession-2025-11-24", "first-i-love-you"],
