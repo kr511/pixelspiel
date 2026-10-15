@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChatHistory } from "./ChatHistory";
 import { PixelPortrait } from "./PixelPortrait";
 import { assetUrl } from "./assets";
 import { STORY_CHAPTERS, STORY_EVENTS, STORY_END, STORY_START, chatTopicForEvent, eventStatus, historicalDate, nextEvent, nextStepInfo, type StoryEvent, type TimelineSave } from "./timeline";
 import "./phone-album.css";
 
-export type PhoneTab = "Nachrichten" | "Verlauf" | "Kalender" | "Erinnerungen";
-const TABS: PhoneTab[] = ["Nachrichten", "Verlauf", "Kalender", "Erinnerungen"];
+export type PhoneTab = "Nachrichten" | "WhatsApp" | "Verlauf" | "Kalender" | "Erinnerungen";
+const TABS: PhoneTab[] = ["Nachrichten", "WhatsApp", "Verlauf", "Kalender", "Erinnerungen"];
 export function resolveStoryIllustration(illustration: string): string {
   const scenes: Record<string, string> = {
     // Only reference files that exist; the pixel variants for winter playground,
@@ -31,7 +32,7 @@ export function PhoneTabs({ tab, onChange }: { tab: PhoneTab; onChange: (tab: Ph
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
     e.preventDefault(); const target = e.key === "Home" ? 0 : e.key === "End" ? TABS.length - 1 : (index + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
     onChange(TABS[target]); (e.currentTarget.parentElement?.children[target] as HTMLElement)?.focus();
-  }}>{["✉", "☷", "▦", "♡"][index]} <span>{name}</span></button>)}</nav>;
+  }}>{["✉", "💬", "☷", "▦", "♡"][index]} <span>{name}</span></button>)}</nav>;
 }
 export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onOpenAlbum, onJump, activeId }: {
   tab: PhoneTab; timeline: TimelineSave; blocked?: boolean; onSelectMemory?: (id: string) => void; onOpenAlbum?: () => void; onJump?: () => void; activeId?: string;
@@ -56,6 +57,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
       {notifications.length > 0 ? notifications.map(event => <button className="phone-event-row incoming-notification" key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span aria-hidden="true">{event.symbol ?? "✉"}</span><div><small>{eventDateText(event)}</small><strong>{event.title}</strong><p>{event.id === activeId ? "Geöffnete Szene fortsetzen" : "Zum gemeinsamen Moment"}</p></div><b aria-hidden="true">→</b></button>) : <div className="phone-empty"><span aria-hidden="true">☾</span><p>{next ? "Für heute sind keine neuen Nachrichten offen. Im Kalender kannst du zum nächsten wichtigen Tag weiterblättern." : "Alle vorgesehenen Momente sind bewahrt. Dein Chatverlauf und das Album bleiben hier."}</p>{next && onJump && <button disabled={blocked || Boolean(activeId)} onClick={onJump}>Zum nächsten Storytag →</button>}</div>}
       {activeId && <p className="phone-small-note">Die laufende Szene bleibt erhalten. Weitere Ereignisse kannst du nach ihrem Abschluss öffnen.</p>}
     </>}
+    {tab === "WhatsApp" && <ChatHistory currentDate={timeline.clock.date}/>}
     {tab === "Verlauf" && <>
       <div className="phone-page-heading"><small>GESPEICHERTE NACHRICHTEN</small><h3>Unsere Abende</h3><p>Die Abende zeigen echte Nachrichten aus eurem Chat, wortgetreu und mit Uhrzeit. Nur ältere Spielstände enthalten noch rekonstruierte Zeilen.</p></div>
       {selected && <div className="phone-history-detail"><button className="phone-back" onClick={() => setSelectedId(null)}>← Alle Gespräche</button><h4>{selected.title}</h4><time>{eventDateText(selected)}</time>{messages.length ? messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}`} key={`${selected.id}-${index}`}><small>{line.speaker}{line.original ? ` · ORIGINAL${line.time ? ` · ${line.time}` : ""}` : line.speaker === "Erzählung" ? "" : " · REKONSTRUKTION"}</small><p>{line.text}</p>{selected.scene !== "chat" && progress?.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {progress.answers[String(index)]}</small>}</div>) : <p>Dieses Gespräch wurde geöffnet. Die erste Nachricht ist noch unterwegs.</p>}<button className="memory-primary" disabled={!canSelect(selected)} onClick={() => select(selected)}>{timeline.progress[selected.id]?.completedAt ? "Diesen Abend erneut erleben" : "Gespräch fortsetzen"} →</button></div>}

@@ -5,7 +5,7 @@
 .phone-v09 .phone-header h2 { overflow-wrap:anywhere; }
 .phone-v09 .active-speaker-portrait { display:block; width:64px; height:72px; border:2px solid #baa77b; background:#526850; }
 .phone-v09 .active-speaker-portrait .pixel-portrait { display:block; width:100%; height:100%; }
-.phone-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); flex-shrink:0; gap:0; border-bottom:1px solid #819271; background:#243c30; }
+.phone-tabs { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); flex-shrink:0; gap:0; border-bottom:1px solid #819271; background:#243c30; }
 .phone-tabs button { min-width:0; min-height:48px; border:0; border-right:1px solid #60765a; background:transparent; color:#c8ceb6; padding:8px 3px; font-size:15px; cursor:pointer; }
 .phone-tabs button:last-child { border-right:0; }
 .phone-tabs button span { display:block; margin-top:3px; font:10px/1.3 monospace; }
@@ -51,6 +51,12 @@
 .phone-history-detail .chat-message { margin-bottom:12px; max-width:92%; }
 /* Original messages keep their line breaks; long emoji runs and stretched words still wrap. */
 .chat-message p, .message-preview { white-space:pre-line; overflow-wrap:anywhere; }
+/* WhatsApp history */
+.chat-history-month h4 { font:10px/1.4 monospace; letter-spacing:.12em; text-transform:uppercase; color:#d5b985; margin:16px 0 8px; }
+.chat-history-day .chat-message.from-felice { margin-left:auto; }
+.chat-private { text-align:center; font:italic 12px/1.5 Georgia,serif; color:#b9c8ac; margin:10px 0; }
+.chat-day-nav { display:flex; justify-content:space-between; gap:8px; margin-top:16px; }
+.chat-day-nav button { min-height:44px; flex:1; }
 .phone-history-detail .chat-message.from-felice { margin-left:auto; }
 .phone-history-detail .memory-primary { min-height:44px; width:100%; margin-top:12px; }
 .phone-open-album { min-height:44px; width:100%; margin-bottom:20px; }
