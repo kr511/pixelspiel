@@ -32,6 +32,7 @@ import { Credits } from "./Credits.tsx";
 import { UI_KEY, DEFAULT_UI, parseUi, type UiPrefs } from "./ui-prefs";
 import "./chapter1.css";
 import "./clean-ui.css";
+import "./mobile.css";
 import { NAMES_KEY, displayName, initialNames, parseNames, renamePerson, type NameSave } from "./names";
 import { PUPIL_VARIANTS, variantSheet, WALK_ATLASES } from "./graphics07";
 import { pressedKeys, useInput } from "./input";
@@ -50,6 +51,7 @@ import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, activity
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
 import { GAME_VERSION } from "./version";
+import { Backpack, BookHeart, Smartphone } from "lucide-react";
 
 const BUS_RIDE_FLAG = "bus-ride-first-day";
 const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
@@ -62,6 +64,8 @@ function lyingInBed(bed = BED): Rest {
   return { spot: bed, elias: false, motion: { actor, phase: "resting", pose: "lying" } };
 }
 const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
+/** Small landscape phones; keep in sync with game/mobile.css. */
+const COMPACT_QUERY = "(max-height: 520px) and (orientation: landscape)", COMPACT_ZOOM = 1.4;
 
 type Direction = "front" | "left" | "back" | "right";
 type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence" | "routine"; response?: boolean; actorId?: string; kitchenId?: string; routineId?: string; morning?: boolean };
@@ -163,6 +167,7 @@ export function Game() {
   const [journal, setJournal] = useState(false);
   const [dialogue, setDialogue] = useState<Dialogue | null>(null);
   const [needsLandscape, setNeedsLandscape] = useState(false);
+  const [compact, setCompact] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(initial.error);
   const readable = useRef(!initial.error);
   const playerRef = useRef(player);
@@ -301,6 +306,14 @@ export function Game() {
   useEffect(() => {
     const query = window.matchMedia("(orientation: portrait) and (max-width: 760px)");
     const update = () => { setNeedsLandscape(query.matches); if (query.matches) clearMovement(); };
+    update(); query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  // Small landscape phones: the camera moves closer so people and labels stay readable.
+  useEffect(() => {
+    const query = window.matchMedia(COMPACT_QUERY);
+    const update = () => setCompact(query.matches);
     update(); query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
@@ -806,7 +819,7 @@ export function Game() {
   // Cutscene camera: while Elias rides in, push in on him and settle back to the full view.
   const arrivalShot = event?.scene === "encounter" && (eventState?.cursor ?? 0) === 0 ? Math.min(1, arrivalTime / 3) : null;
   const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
-  const camera = cameraFor(focus, arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1);
+  const camera = cameraFor(focus, (compact ? COMPACT_ZOOM : 1) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
   const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
   const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
@@ -829,7 +842,7 @@ export function Game() {
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
         {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
-        {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
+        {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""} ${nearbyExit?.to === exit.to ? "nearby-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
         <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+9}}>
@@ -867,9 +880,9 @@ export function Game() {
       {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `${["chat","love","confession","message"].includes(event.scene) ? "Originalnachrichten aus eurem Chat" : "Rekonstruierte Dialoge"} · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
-      <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}>▣ <span>Handy</span></button>
-      <button className="journal-button" aria-label="Erinnerungsbuch öffnen" onClick={() => { clearMovement(); setJournal(true); }}>▤ <span>Erinnerungsbuch</span> <kbd>J</kbd></button>
-      <button className="inventory-button" aria-label="Tasche öffnen" onClick={() => { clearMovement(); setInventoryOpen(true); }} disabled={!active}>◫ <span>Tasche</span> <kbd>I</kbd>{timeline.inventory.length > 0 && <b>{timeline.inventory.length}</b>}</button>
+      <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}><Smartphone size={18} aria-hidden="true"/> <span>Handy</span></button>
+      <button className="journal-button" aria-label="Erinnerungsbuch öffnen" onClick={() => { clearMovement(); setJournal(true); }}><BookHeart size={18} aria-hidden="true"/> <span>Erinnerungsbuch</span> <kbd>J</kbd></button>
+      <button className="inventory-button" aria-label="Tasche öffnen" onClick={() => { clearMovement(); setInventoryOpen(true); }} disabled={!active}><Backpack size={18} aria-hidden="true"/> <span>Tasche</span> <kbd>I</kbd>{timeline.inventory.length > 0 && <b>{timeline.inventory.length}</b>}</button>
       {/* No permanent quest tracker: only undated legacy drafts keep their step list. */}
       {chapter && <aside className="quest-tracker" aria-live="polite"><small>{event ? `KAPITEL ${event.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event.chapterNumber??1))?.title ?? "Der Anfang"}` : chapter ? `Undatierter Entwurf · ${Math.min(save.step+1,chapter.steps.length)}/${chapter.steps.length}` : `Version 0.9 · ${datedCompleted}/${STORY_EVENTS.filter(e=>e.confirmed).length} Erinnerungen`}</small><strong>{event?.title ?? chapter?.title ?? "Schritt für Schritt"}</strong><p>{event ? event.scene === "sequence" ? sequenceBeat?.label ?? "Dieser Moment ist bewahrt" : event.scene === "encounter" ? eventState?.cursor === 0 ? "Elias kommt auf seinem Fahrrad an. Du kannst schon zu ihm laufen." : eventState?.cursor === 1 ? "Geh zu Elias auf dem Weg am Treffpunkt." : eventState?.cursor === 2 ? "Elias hat Schokolade für dich mitgebracht." : eventState?.cursor === 3 ? "Du behältst die Schokolade bei dir und isst sie nicht." : "Elias ist ein bisschen verunsichert. Lasst dem Moment etwas Zeit." : "Nimm auf der Bettkante oder am Schreibtisch Platz und öffne dein Handy." : step?.label ?? (upcoming ? `${historicalDate(upcoming.date)} · ${upcoming.title}` : "Euer gemeinsames Jahr ist bewahrt. Entdecke die Welt und erlebe Erinnerungen erneut.")}</p>{!session && !legacyView && upcoming && <button className="story-next-button" onClick={eventStatus(timeline, upcoming) === "verfügbar" ? () => selectTimelineEvent(upcoming.id) : jumpStory}>{eventStatus(timeline,upcoming) === "verfügbar" ? "Geschichte erleben →" : "Zeit weiterblättern →"}</button>}{step && <span>{step.place === save.place ? "✦ Folge der goldenen Markierung" : `↗ ${guide?.label ?? PLACES[step.place].name}`}</span>}{save.bag.length > 0 && <div className="inventory">Tasche · {save.bag.join(" · ")}</div>}</aside>}
       {active && rest && <div className="memory-interaction rest-actions"><span>{!settled ? rest.motion.phase === "leaving" ? "Du stehst auf" : "Du gehst zum Ruheplatz" : rest.spot.kind === "bed" ? "Du liegst wach im Bett" : rest.elias ? "Ein Moment mit Elias" : rest.spot.kind === "chair" ? "Du sitzt gemütlich" : "Du sitzt auf der Bank"}</span><button data-testid="world-interact" disabled={rest.motion.phase === "leaving"} onClick={interact}><kbd>E</kbd>Aufstehen · 10 Min.</button>{settled && (rest.spot.kind === "bed" && !event ? <button data-testid="sleep" disabled={Boolean(legacyView) || day.date === STORY_END && day.minute >= 300} onClick={goToSleep}>Schlafen gehen</button> : <><button onClick={() => spendTime(ACTION_MINUTES)}>Ausruhen · 10 Min.</button>{waitMinutes !== null && !event && <button data-testid="wait" onClick={() => spendTime(waitMinutes)}>Warten bis {clockText(day.minute + waitMinutes)} Uhr</button>}{!event && !rest.elias && eliasHere && <button onClick={() => { const native = sourceEntities.find(entity => entity.art === "elias");
