@@ -1,6 +1,6 @@
 # Plan Version 1.2: alle Bugs aus dem Testbericht
 
-Stand: 18.10.2026, Basis `main` nach PR 27. Grundlage ist `game/TEST-V12.md`. Das ist ein Entwurf zum Abstimmen, nichts davon ist umgesetzt. Punkte, die eine Entscheidung von dir brauchen, sind mit **[Frage]** markiert und stehen gesammelt in Abschnitt 10.
+Stand: 18.10.2026, Basis `main` nach PR 27. Grundlage ist `game/TEST-V12.md`. Das ist ein Entwurf zum Abstimmen, nichts davon ist umgesetzt. Die Entscheidungen zu den offenen Fragen stehen in Abschnitt 10.
 
 Jeder Punkt hat eine Nummer (B-01 …), damit Commits und Rückfragen darauf zeigen können. Aufwand: **S** = unter einer Stunde, **M** = halber Tag, **L** = mehr, oder es braucht neue Bilder.
 
@@ -229,12 +229,12 @@ Reine Textänderungen in `game/timeline.ts`, `game/story.ts` und `game/conversat
 
 Wenn die Zeit knapp wird, in dieser Reihenfolge streichen: B-33 Abspann-Ausbau, B-34, B-25 Wegweiser, B-26. Nicht streichen: Phase 1, B-12, B-13, B-21, B-22, B-23.
 
-## 10. Offene Fragen
+## 10. Entscheidungen (18.10.2026)
 
-1. **Herbst 2026:** Seid ihr nach dem Abschluss noch an der Sekundarschule? Sonst bekommt die Herbstszene einen anderen Ort.
-2. **Schule nach dem 12.11.:** Variante A (nur nach Schulhof-Szenen in den Unterricht) oder B (jeder Werktag ist Schultag)? Und reicht ein Alltagstag am Anfang statt drei?
-3. **Kennzeichnung:** Ein Symbol pro Szene im Album, okay?
-4. **Zeugnisübergabe:** An welchem Tag war sie?
-5. **Chat-Themen:** Feste Reihenfolge nach Uhrzeit oder freie Wahl ohne Uhrzeit im Kopf?
-6. **Name:** Überall „Erinnerungen“?
-7. **Erinnerungsstücke:** Gibt es echte Dinge, die ins Spiel sollen (Fotos, Bändchen, Karten)?
+1. **Herbst 2026:** Ihr seid in Halle, nicht mehr an der Sekundarschule. Die Herbstszene (01.09.2026) bekommt einen neuen Ort. Bis ein Halle-Bild da ist, spielt sie an einem neutralen vorhandenen Ort (z. B. Zörbig Markt, auf dem Heimweg) und die Texte nennen Halle. **Offen:** Was macht ihr in Halle (Schule, Ausbildung)? Ein Ort dort für ein Bild?
+2. **Schule:** Variante B. Jeder Werktag bis zum 26.06.2026 ist Schultag mit Unterricht 7:15–13:00, Story-Szenen gehen vor. Die drei Alltagstage am Anfang bleiben.
+3. **Kennzeichnung:** Ein Symbol pro Szene im Album, alle anderen Hinweise raus.
+4. **Zeugnisübergabe:** 26.06.2026. `GRADUATION_DAY = "2026-06-26"`. Danach ist die Sekundarschule vorbei (Turnhalle als Rückblick, Schultür „geschafft“).
+5. **Chat-Themen:** Feste Reihenfolge nach Uhrzeit.
+6. **Name:** Überall „Erinnerungen“.
+7. **Erinnerungsstücke:** Es gibt echte. **Offen:** welche, mit Datum und kurzer Beschreibung.
