@@ -49,7 +49,9 @@ test("Klassenfahrt: Orte nur zwischen Abfahrt und Heimreise erreichbar, Felice w
     // Zwischen den Reiseorten bleibt der Rückweg zum Hotel immer offen.
     assert.equal(exitOpen("hotel", "2026-04-26", place, after), true, place);
   }
-  assert.equal(exitOpen("zoerbig", "2026-04-22", "hotel", during), true);
+  // Nach Hause geht es nur mit der Heimreise-Szene, nicht vorher mit dem Bus.
+  assert.equal(exitOpen("zoerbig", "2026-04-22", "hotel", during), false);
+  assert.equal(exitOpen("zoerbig", "2026-04-26", "hotel", after), true);
   assert.deepEqual([before, during, after].map(wakePlace), ["bedroom", "hotel", "bedroom"]);
   assert.ok(onTrip(during) && !onTrip(before) && !onTrip(after));
   const bed = REST_SPOTS.find(spot => spot.id === "hotel-bed");

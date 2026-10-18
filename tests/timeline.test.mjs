@@ -305,9 +305,11 @@ test("Gedanken-Hinweise ändern sich nur mit der Situation und bieten Warten am 
   assert.equal(storyHint(beginEvent(save, "beginning-2025-11-01", player, "front")), null, "Keine Hinweise während einer Szene");
   const done = finish(reach("beginning-2025-11-01"));
   assert.equal(storyHint(done).key, "routine:2025-11-10", "Alltagstage haben einen eigenen Hinweis");
-  const sameDay = { ...done, clock: { ...done.clock, date: "2025-11-13", minute: 600 } };
+  // Vormittags ist am 13.11. Schule; nach dem Unterricht wartet Felice auf den Chat am Abend.
+  assert.equal(storyHint({ ...done, clock: { ...done.clock, date: "2025-11-13", minute: 600 } }).key.startsWith("school:"), true);
+  const sameDay = { ...done, clock: { ...done.clock, date: "2025-11-13", minute: 800 } };
   assert.match(storyHint(sameDay).key, /:later$/);
-  assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 600);
+  assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 800);
   assert.equal(waitingMinutes(done), null);
 });
 

@@ -81,7 +81,7 @@ export function activityAt(place: Place, minute: number) {
   if (place === "radegast") return "Radegast · Auf dem Weg zur Haltestelle";
   if (place === "schoolway") return "Zörbig · Schulweg";
   if (place === "zoerbig") return "Zörbig · Markt";
-  if (place === "gym") return "Abschlusszeugnisse · Sommer 2026";
+  if (place === "gym") return "Kleine Turnhalle";
   if (place === "playground") return "Spielplatz · Zeit draußen";
   if (place === "christmasmarket") return "Weihnachtsmarkt · Lichter und Winterluft";
   if (place === "eliasroom") return "Bei Elias zu Hause";
