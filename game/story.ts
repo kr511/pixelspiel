@@ -55,7 +55,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { ...schoolWayPoint(.17,.76), to: "school", label: "Zum Pausenhof", spawn: { x: .60, y: .88 } },
   ], obstacles: [] },
   school: { name: "Sekundarschule Zörbig · Pausenhof", subtitle: "Pausenhof zwischen Schulgebäude und Sitzmauern", exits: [{ x: .88, y: .72, to: "gym", label: "In die kleine Turnhalle", spawn: { x: .5, y: .85 }, markerHidden: true }, { x: .515, y: .95, to: "zoerbig", label: "Zurück zum Markt", spawn: { x: .65, y: .65 } }], obstacles: [] },
-  gym: { name: "Zörbig · Kleine Turnhalle", subtitle: "Abschlusszeugnisse · Sommer 2026", exits: [{ x: .5, y: .90, to: "school", label: "Zurück auf den Schulhof", spawn: { x: .84, y: .73 } }], obstacles: [
+  gym: { name: "Zörbig · Kleine Turnhalle", subtitle: "Die kleine Turnhalle der Sekundarschule", exits: [{ x: .5, y: .90, to: "school", label: "Zurück auf den Schulhof", spawn: { x: .84, y: .73 } }], obstacles: [
     { left: .36, right: .65, top: .18, bottom: .25 },
     { left: .687, right: .74, top: .17, bottom: .25 },
     { left: .11, right: .32, top: .373, bottom: .557 },
@@ -168,7 +168,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "graduation-mayor", name: "Bürgermeister", x: .60, y: .31, kind: "person", art: "stepfather", text: "Alles Gute für euren nächsten Schritt. Schön, heute mit euch zu feiern." },
     { id: "graduation-guest-one", name: "Ehrengast", x: .29, y: .33, kind: "person", art: "mother", text: "Herzlichen Glückwunsch euch beiden." },
     { id: "graduation-guest-two", name: "Ehrengast", x: .80, y: .33, kind: "person", art: "partner-two", text: "Genießt euren gemeinsamen Abschlussmoment." },
-    { id: "graduation-certificates", name: "Eure Abschlusszeugnisse", x: .52, y: .32, display: { x: .52, y: .23 }, kind: "item", art: "certificate", text: "Elias und Felice haben beide ihr Abschlusszeugnis bekommen. Sommer 2026 – dieser Tag bleibt." },
+    { id: "graduation-certificates", name: "Eure Abschlusszeugnisse", x: .52, y: .32, display: { x: .52, y: .23 }, kind: "item", art: "certificate", text: "Elias und Felice haben beide ihr Abschlusszeugnis bekommen. 26.06.2026. Dieser Tag bleibt." },
     { id: "graduation-photo", name: "Ein Foto von euch beiden", x: .55, y: .76, display: { x: .63, y: .79 }, kind: "item", art: "camera", text: "Kurz zusammenstellen. Ein heller Blitz, dann die Schnappschüsse von Elias und Felice." },
   ],
   goelzau: [{ id: "goelzau-sign", name: "Schützenhaus Gölzau", x: .43, y: .35, display: { x: .40, y: .24 }, kind: "item", art: "landmark", text: "Am Schützenhaus in Weißandt-Gölzau trefft ihr eure Schießfreunde. Durch den Eingang geht es zur Bahn." }],
@@ -182,7 +182,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
   home: [
     { id: "wash", name: "Bad", x: .30, y: .60, kind: "item", art: "action", text: "Das Bad. Kurz frischmachen, bevor der Tag richtig losgeht." },
     { id: "family", name: "Felices Mutter", x: .28, y: .5, kind: "person", art: "mother", text: "Schön, dass ihr da seid. Hier ist immer Platz für euch." },
-    { id: "stepfather", name: "Felices Stiefvater", x: .75, y: .47, kind: "person", art: "stepfather", text: "Kommt herein. Wir machen es uns heute alle zusammen gemütlich." },
+    { id: "stepfather", name: "Felices Stiefvater", x: .75, y: .47, kind: "person", art: "stepfather", text: "Na, wie war dein Tag? Im Kühlschrank ist noch was zu essen, falls du Hunger hast." },
     { id: "halfsister", name: "Felices Halbschwester", x: .32, y: .7, kind: "person", art: "halfsister", text: "Schön, heute Zeit miteinander zu verbringen." },
     { id: "halfsister-partner", name: "Freund der Halbschwester", x: .18, y: .62, kind: "person", art: "partner-one", text: "Hallo ihr beiden! Macht es euch gemütlich." },
     { id: "stepsister", name: "Tochter des Stiefvaters", x: .76, y: .8, kind: "person", art: "stepsister", text: "Heute sind wir zu acht. Das wird ein schöner gemeinsamer Abend." },
@@ -206,7 +206,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
   school: [
     ...SCHOOL_MORNING_ENTITIES,
     { id: "friends", name: "Elena", ...FRIENDS_RING[0], kind: "person", art: "elena", text: "Hey Felice! Wir stehen hier immer beim Schulgebäude. Bleibst du noch ein bisschen bei mir?" },
-    { id: "jason", name: "Jason", ...FRIENDS_RING[1], kind: "person", art: "jason", text: "Ich mache Fachabi. Neuer Abschnitt, aber unsere Sprüche bleiben natürlich dieselben." },
+    { id: "jason", name: "Jason", ...FRIENDS_RING[1], kind: "person", art: "jason", text: "Nach dem Sommer mache ich Fachabi. Neuer Abschnitt, aber unsere Sprüche bleiben natürlich dieselben." },
     { id: "luca", name: "Luca", ...FRIENDS_RING[2], kind: "person", art: "luca", text: "Hallo Felice. Heute ist es hier ziemlich ruhig. Das mag ich." },
     { id: "wyatt", name: "Wyatt", ...FRIENDS_RING[3], kind: "person", art: "wyatt", text: "Hey Felice! Schön, dass du da bist." },
     { id: "notebook", name: "Vergessenes Heft", x: .60, y: .80, kind: "item", art: "book", text: "Jemand hat ein Heft liegen gelassen." },

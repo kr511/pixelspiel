@@ -1,9 +1,9 @@
 // Confirmed topics: Paul suggests döner for Elias, Paul, Justin and Felice;
-// Jason is doing his Fachabi. Wording and the other exchanges are game dialogue.
+// Jason does his Fachabi after the summer. Wording and the other exchanges are game dialogue.
 const CONVERSATIONS: Record<string, string> = {
   paul: "Ich sag’s ja nur: Wir vier könnten Döner essen gehen. Elias, Justin, Felice und ich. Man darf doch bei einer Zeugnisübergabe gute Ideen haben.\nFelice: Paul, du hast diese Idee diesen Sommer schon ein paar Mal gehabt.\nPaul: Eine gute Idee wird durchs Wiederholen nicht schlechter.",
   justin: "Paul hat schon wieder Döner vorgeschlagen. Irgendwann brauchen wir dafür einen eigenen Tagesordnungspunkt.\nFelice: Heute stehen erst mal Zeugnisse und Fotos auf dem Plan.\nJustin: Gut. Paul kann seine Idee so lange warmhalten.",
-  jason: "Ich mache Fachabi. Neuer Abschnitt – aber keine Sorge, meine Sprüche nehme ich mit.\nFelice: Also bleibt wenigstens eine Sache beim Alten.\nJason: Genau. Ein bisschen Verlässlichkeit muss sein.",
+  jason: "Nach dem Sommer mache ich Fachabi. Neuer Abschnitt, aber keine Sorge, meine Sprüche nehme ich mit.\nFelice: Also bleibt wenigstens eine Sache beim Alten.\nJason: Genau. Ein bisschen Verlässlichkeit muss sein.",
   friends: "Manchmal besteht ein guter Schultag einfach daraus, gemeinsam über irgendwas zu lachen.\nFelice: Und danach weiß keiner mehr, warum.\nElena: Hauptsache, alle waren dabei.",
   luca: "Nur eine kurze Pause, hab ich gesagt. Jetzt stehen wir hier und reden schon wieder.\nFelice: Das zählt doch als sehr gründliche Pause.\nLuca: Dann waren wir heute richtig fleißig.",
   wyatt: "Wir sollten uns unsere besten Sprüche aufschreiben.\nFelice: Sobald man sie erklärt, sind sie nicht mehr lustig.\nWyatt: Stimmt. Dann behalten wir sie lieber einfach für uns.",

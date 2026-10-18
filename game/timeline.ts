@@ -1,6 +1,7 @@
-import { advanceClock, initialDay, parseDay, sleepUntilMorning, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
+import { advanceClock, clockText, initialDay, parseDay, sleepUntilMorning, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
 import { CHAPTERS, PLACES, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 import { ORIGINAL_CHATS, type ChatLine } from "./texte/index.ts";
+import { isSchoolDay } from "./school-calendar.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
 export const STORY_START = "2025-11-10";
@@ -126,7 +127,10 @@ const narration = (text: string, emotion?: string): StoryLine => ({ speaker: "Er
 /** The real threads of a chat evening, or the older reconstructed topics where none exist. */
 export function chatTopicsForEvent(event: StoryEvent): ChatTopic[] {
   const threads = ORIGINAL_CHATS[event.id]?.threads;
-  return threads?.length ? threads.map(thread => ({ id: thread.id, title: thread.title, icon: thread.icon, lines: thread.lines.map(chatLine) })) : CHAT_TOPICS;
+  if (!threads?.length) return CHAT_TOPICS;
+  // Real threads come in the order they were written; times before 5 am belong to the night after the evening.
+  const startOf = (lines: ChatLine[]) => { const time = lines[0]?.[0] ?? ""; return time < "05:00" ? `~${time}` : time; };
+  return [...threads].sort((a, b) => startOf(a.lines) < startOf(b.lines) ? -1 : startOf(a.lines) > startOf(b.lines) ? 1 : 0).map(thread => ({ id: thread.id, title: thread.title, icon: thread.icon, lines: thread.lines.map(chatLine) }));
 }
 /** Every topic ID a save may contain: reconstructed topics and real threads. */
 export const KNOWN_TOPIC_IDS = new Set([...CHAT_TOPICS.map(topic => topic.id), ...Object.values(ORIGINAL_CHATS).flatMap(chat => chat.threads?.map(thread => thread.id) ?? [])]);
@@ -181,7 +185,7 @@ const SCHOOL_DESCRIPTIONS: Record<17 | 19 | 21, string> = {
 const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
   id: `school-first-feelings-${day}`, title: day === 17 ? "Fragen auf dem Schulhof" : day === 19 ? "Ein kleines Kompliment" : "Gedanken über Umarmungen",
   date: `2025-11-${day}`, period: "17.–21.11.2025 · Rekonstruierte Schul- und Alltagsszene", source: "staged", chapterNumber: 1,
-  place: "school", start: 400, end: 420, spawn: { x: .60, y: .88 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "✎", cast: ["Felice", "Elias", "Paul", "Justin"],
+  place: "school", start: 360, end: 430, spawn: { x: .60, y: .88 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "✎", cast: ["Felice", "Elias", "Paul", "Justin"],
   description: SCHOOL_DESCRIPTIONS[day], steps,
 });
 const datedEvents: StoryEvent[] = [
@@ -485,8 +489,29 @@ export function sleepToStoryDay(save: TimelineSave): DaySave {
   // Ordinary school days are lived one by one, never skipped.
   if (isRoutineDay(morning.date)) return morning;
   const next = nextEvent(save);
-  if (save.active || !next?.date || next.date <= morning.date) return morning;
+  if (save.active || !next?.date || next.date < morning.date) return morning;
+  // A memory before the usual wake-up time (New Year at midnight) wakes Felice right when it starts.
+  if (next.staging.start < WAKE_MINUTE) {
+    if (next.date === save.clock.date || next.date === morning.date && save.clock.date === morning.date) return morning;
+    return clockAtLeast(save.clock, next.date, next.staging.start);
+  }
+  if (next.date === morning.date) return morning;
   return clockAtLeast(morning, next.date, WAKE_MINUTE);
+}
+/** True while today's next memory is still ahead: Felice stays awake for it instead of sleeping past it. */
+export function memoryPendingToday(save: TimelineSave) {
+  const next = nextEvent(save);
+  return Boolean(!save.active && next?.date && next.date === save.clock.date);
+}
+/** Felice sleeps in the evening (from 20:00) or after midnight, never in the middle of the afternoon. */
+export const BEDTIME = 20 * 60;
+export function canSleep(save: TimelineSave) {
+  return !memoryPendingToday(save) && (save.clock.minute >= BEDTIME || save.clock.minute < WAKE_MINUTE);
+}
+/** On a school day the lesson is still ahead and was not attended yet. */
+export function schoolPending(save: TimelineSave) {
+  const { date, minute } = save.clock;
+  return isSchoolDay(date) && !isRoutineDay(date) && minute < SCHOOL_END && !save.flags.includes(`routine-${date}-school`);
 }
 const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 export function weekday(date: string) { return WEEKDAYS[new Date(`${date}T12:00:00Z`).getUTCDay()]; }
@@ -556,6 +581,7 @@ export function storyHint(save: TimelineSave): { key: string; text: string } | n
   if (!next?.date) return { key: "complete", text: "Unser Jahr ist im Album bewahrt. Ich kann mir jede Erinnerung noch einmal ansehen." };
   if (canTrigger(save, next)) return { key: `${next.id}:go`, text: storyTrigger(next).hint };
   if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, text: routineThought(save) };
+  if (schoolPending(save)) return { key: `school:${save.clock.date}:${save.clock.minute < SCHOOL_START}`, text: save.clock.minute < SCHOOL_START ? "Heute ist Schule. Um 7:15 Uhr geht es in Zörbig los." : "Der Unterricht läuft schon. Schnell nach Zörbig in die Schule!" };
   if (next.date === save.clock.date) return { key: `${next.id}:later`, text: "Heute passiert später noch etwas. Bis dahin kann ich mich umsehen – oder mich hinsetzen und ein bisschen warten." };
   return { key: `${next.id}:sleep`, text: "Heute ist ein ruhiger Tag. Wenn ich schlafen gehe, blättert der Kalender zum nächsten besonderen Tag." };
 }
@@ -574,6 +600,7 @@ export function nextStepInfo(save: TimelineSave): NextStep {
     return { key: `${next.id}:go`, status: "go", event: next, place: trigger.place, title: next.title, detail: trigger.mode === "phone" ? `Handy · ${PLACES[trigger.place].name}, am Bett oder Schreibtisch` : `Jetzt · ${PLACES[trigger.place].name}` };
   }
   if (isRoutineDay(save.clock.date)) return { key: `routine:${save.clock.date}`, status: "routine", event: next, place: null, title: "Ein normaler Schultag", detail: "Tagesablauf erledigen, danach ins Bett." };
+  if (schoolPending(save)) return { key: `school:${save.clock.date}`, status: "routine", event: next, place: "school", title: "Schultag", detail: `Unterricht ${clockText(SCHOOL_START)}–${clockText(SCHOOL_END)} Uhr in Zörbig${next.date === save.clock.date ? `, danach ${next.title}` : ""}.` };
   if (next.date === save.clock.date) return { key: `${next.id}:later`, status: "later", event: next, place: null, title: next.title, detail: `Heute ab ${minuteText(next.staging.start)} Uhr. Bis dahin umsehen oder warten.` };
   return { key: `${next.id}:sleep`, status: "sleep", event: next, place: null, title: next.title, detail: `Am ${historicalDate(next.date)}. Schlafen gehen blättert den Kalender weiter.` };
 }
