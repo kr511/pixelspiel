@@ -80,7 +80,7 @@ export function DialogueBox({ speaker, art, text, emotion, choices, blocked, onA
         {onPause && <button className="dialogue-pause" onClick={onPause} aria-label={paused ? "Gespräch fortsetzen" : "Gespräch pausieren"}>{paused ? "▶ Fortsetzen" : "Ⅱ Pause"}</button>}
         {choices?.length ? <div className="fx-dialogue-choices" aria-label="Deine Antwort">{choices.map((choice, index) => <button key={`${index}-${choice}`} ref={index === 0 ? firstChoiceRef : undefined} data-testid="dialogue-choice" data-choice={choice} disabled={blocked || !finished} onClick={() => act(choice)}>{choice}</button>)}</div> : <button className="fx-dialogue-next" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>{!finished ? "Text anzeigen" : ending ? "Das bleibt ♥" : "Weiter"}<span aria-hidden="true">▸</span></button>}
         {!!choices?.length && !finished && <button className="fx-dialogue-reveal" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>Text anzeigen <span aria-hidden="true">▸</span></button>}
-        <small className="fx-dialogue-hint">{choices && choices.length > 1 && finished ? "Wähle deine Antwort" : "Enter · Leertaste · Tippen"}</small>
+        <small className="fx-dialogue-hint">{choices && choices.length > 1 && finished ? "Wähle deine Antwort" : <><span className="desktop-hint">Enter · Leertaste · </span>Tippen</>}</small>
       </div>
     </div>
   </dialog>;

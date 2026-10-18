@@ -193,6 +193,8 @@ def main():
                 page.mouse.move(x + 34, y)
                 page.wait_for_timeout(310)
                 page.mouse.up()
+                # easeInput brakes softly for about 0.1 s; measure once she has stopped.
+                page.wait_for_timeout(150)
                 right = point(page)
                 assert right["x"] > before["x"] + .04
                 page.wait_for_timeout(200)

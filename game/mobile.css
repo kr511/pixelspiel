@@ -1,0 +1,91 @@
+/* Handy im Querformat. Eine Stelle für kleine Bildschirme statt weiterer Versionsschichten.
+   Die Abfrage entspricht COMPACT_QUERY in Game.tsx (dort zoomt die Kamera näher heran).
+   Aufbau: links Uhr, Gedanke und Joystick; Mitte das Spielbild in voller Höhe;
+   rechts oben die Knöpfe, rechts unten die Aktion für den Daumen. */
+@media (max-height:520px) and (orientation:landscape) {
+  /* Spielbild nutzt die ganze Höhe, die Seitenspalten bleiben mindestens 128px breit. */
+  main.pixel-game .world-viewport { width:min(100dvh,calc(100vw - 256px)); margin-left:0; border-radius:0; }
+
+  /* Der Titel „Felice × Elias“ kostet oben links Platz; Ort und Tag stehen schon in der Uhr. */
+  main.pixel-game .game-ui > .world-title { display:none; }
+  main.pixel-game .hud-left { top:max(10px,env(safe-area-inset-top)); left:max(10px,env(safe-area-inset-left)); width:calc(50vw - 50dvh - 20px); max-width:190px; min-width:118px; max-height:calc(100dvh - 120px); gap:6px; }
+  main.pixel-game .hud-left > :is(.day-clock,.felice-thought) { width:100%; }
+  main.pixel-game .hud-left .day-clock { padding:6px 9px; }
+  main.pixel-game .hud-left .day-clock time { font-size:10px; margin:0; }
+  main.pixel-game .hud-left .day-clock strong { font-size:15px; }
+  main.pixel-game .hud-left .day-clock small { font-size:10px; line-height:1.3; }
+  main.pixel-game .hud-left > .felice-thought { padding:7px 9px; gap:7px; }
+  main.pixel-game .hud-left > .felice-thought .thought-dots { display:none; }
+  main.pixel-game .hud-left > .felice-thought p { font-size:12px; line-height:1.38; }
+  main.pixel-game .hud-left > .felice-thought small { font-size:9px; margin-bottom:2px; }
+
+  /* Rechts oben: vier gleich große Knöpfe im 2×2-Raster. Den Ton gibt es im Pausenmenü. */
+  main.pixel-game .game-ui > .audio-button { display:none; }
+  main.pixel-game :is(.pause-button,.journal-button,.world-phone-button,.inventory-button) { width:46px; height:46px; min-height:46px; padding:0; display:grid; place-items:center; }
+  main.pixel-game :is(.journal-button,.world-phone-button,.inventory-button) :is(span,kbd) { display:none; }
+  main.pixel-game .pause-button { top:max(10px,env(safe-area-inset-top)); right:max(10px,env(safe-area-inset-right)); }
+  main.pixel-game .world-phone-button { top:max(10px,env(safe-area-inset-top)); right:calc(max(10px,env(safe-area-inset-right)) + 54px); }
+  main.pixel-game .journal-button { top:calc(max(10px,env(safe-area-inset-top)) + 54px); right:calc(max(10px,env(safe-area-inset-right)) + 54px); }
+  main.pixel-game .inventory-button { top:calc(max(10px,env(safe-area-inset-top)) + 54px); right:max(10px,env(safe-area-inset-right)); }
+
+  /* Joystick etwas größer und weg vom Bildschirmrand, damit der Daumen nicht abrutscht. */
+  main.pixel-game .joystick { left:max(18px,calc(env(safe-area-inset-left) + 8px)); bottom:max(14px,env(safe-area-inset-bottom)); width:96px; height:96px; }
+
+  /* Rechts unten: eine große Aktion statt eines umbrechenden Kästchens. */
+  main.pixel-game .memory-interaction { right:max(10px,env(safe-area-inset-right)); bottom:max(12px,env(safe-area-inset-bottom)); left:auto; width:calc(50vw - 50dvh - 20px); max-width:200px; min-width:118px; padding:6px; gap:6px; }
+  main.pixel-game .memory-interaction > span { font-size:10px; line-height:1.3; padding:2px 4px; }
+  main.pixel-game .memory-interaction button { min-height:48px; padding:8px; font-size:12px; line-height:1.25; }
+  main.pixel-game .routine-list { right:max(10px,env(safe-area-inset-right)); bottom:max(12px,env(safe-area-inset-bottom)); max-width:calc(50vw - 50dvh - 20px); }
+  main.pixel-game .day-notice { top:auto; bottom:calc(max(12px,env(safe-area-inset-bottom)) + 110px); right:max(10px,env(safe-area-inset-right)); left:auto; max-width:calc(50vw - 50dvh - 20px); }
+
+  /* Felice braucht kein Namensschild über sich: es verdeckt nur die Dinge, zu denen sie läuft. */
+  main.pixel-game .room-player:not(.bench-companion) > .room-player-label { display:none; }
+
+  /* Pausenmenü: Knöpfe groß genug zum Tippen. */
+  main.pixel-game .start-card .pause-menu button { min-height:44px; }
+
+  /* Handy: kompakter Kopf und Reiter, damit der Inhalt den meisten Platz bekommt. */
+  .version-09 .phone-v09[open] { width:min(820px,calc(100vw - 16px)); max-height:calc(100dvh - 12px); }
+  .phone-v09 .phone-header { padding:5px 10px; gap:9px; }
+  .phone-v09 .phone-header > div { display:flex; align-items:baseline; gap:10px; min-width:0; }
+  .phone-v09 .phone-header > div > small { display:none; }
+  .phone-v09 .phone-header h2 { font-size:18px; margin:0; white-space:nowrap; }
+  .phone-v09 .phone-header time { font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .phone-v09 .active-speaker-portrait { width:32px; height:36px; }
+  .phone-v09 .phone-header :is(.modal-close,.phone-pause) { width:44px; height:44px; min-height:44px; }
+  .phone-v09 .phone-tabs button { min-height:40px; font-size:11px; }
+  .phone-v09 .phone-page { max-height:calc(100dvh - 106px); padding:12px 14px; }
+  .phone-v09 .phone-chat { max-height:calc(100dvh - 126px); }
+  .phone-v09 .phone-composer { max-height:calc(100dvh - 126px); }
+  .phone-v09 .phone-page-heading :is(small,p) { display:none; }
+  .phone-v09 .phone-page-heading h3 { margin:0 0 8px; font-size:20px; }
+
+  /* Erinnerungsbuch: schmaler Kopf, damit Kalender und Kapitel sofort sichtbar sind. */
+  main.pixel-game .journal-modal { width:calc(100vw - 16px); max-height:calc(100dvh - 12px); }
+  main.pixel-game .journal-heading { padding:8px 14px; min-height:0; }
+  main.pixel-game .journal-heading :is(small,p),main.pixel-game .journal-heading .journal-duo { display:none; }
+  main.pixel-game .journal-heading h1 { margin:0; font-size:20px; }
+  main.pixel-game .journal-heading .modal-close { width:44px; height:44px; }
+
+  /* Chatabend wie ein echter Messenger: Nachrichten über die volle Breite, Antworten als Leiste unten. */
+  .version-09 .phone-v09.story-phone[open] { height:calc(100dvh - 12px); grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto minmax(0,1fr) auto; }
+  .phone-v09.story-phone .phone-header > div > small { display:block; order:-1; white-space:nowrap; }
+  .phone-v09.story-phone .reconstruction-note { padding:4px 12px; font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .phone-v09.story-phone .phone-chat { grid-column:1; grid-row:4; height:auto; max-height:none; min-height:0; padding:10px 12px; gap:7px; }
+  .phone-v09.story-phone .phone-composer { grid-column:1; grid-row:5; max-height:42dvh; overflow-y:auto; padding:8px 12px; border-left:0; border-top:1px solid #738265; }
+  .phone-v09.story-phone .phone-composer > p { margin:0 0 6px; font-size:11px; }
+  .phone-v09.story-phone .phone-composer .memory-primary { min-height:44px; width:100%; }
+  .phone-v09.story-phone .chat-topics { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .phone-v09.story-phone .chat-topics button { flex:1 1 150px; min-height:44px; }
+  .phone-v09 .chat-message { padding:6px 10px; max-width:78%; }
+  .phone-v09 .chat-message small { display:block; font-size:8px; line-height:1.3; }
+  .phone-v09 .chat-message.from-felice { padding-right:22px; }
+  .phone-v09 .chat-message .chat-delivered { position:absolute; right:7px; bottom:5px; margin:0; line-height:1; }
+  .phone-v09 .chat-message p { margin-top:2px; font-size:13px; line-height:1.42; }
+}
+/* Auf Touchgeräten gibt es keine Tastatur: Tastenhinweise ausblenden. */
+@media (pointer:coarse) {
+  main.pixel-game :is(.memory-interaction,.intro-skip,.pause-menu,.journal-button,.inventory-button) kbd { display:none; }
+}
+/* Steht Felice an einem Ausgang, tritt dessen Schild zurück: die Aktion unten rechts nennt das Ziel schon. */
+main.pixel-game .world-exit.nearby-exit { opacity:.3; transition:opacity .2s; }
