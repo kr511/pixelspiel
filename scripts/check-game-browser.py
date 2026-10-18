@@ -217,6 +217,34 @@ def main():
                 checked(f"Mobile {size[0]}x{size[1]} layout, joystick, pause, bag and rotation", layout)
                 context.close()
 
+            for size in ((1280, 800), (667, 375)):
+                # B-23: with a dialogue open, Felice stays above the dialogue's text panel.
+                # Something to talk to or use in the living room opens a dialogue.
+                context, page = open_scenario(fixture("home", minute=600), size=size)
+                for _ in range(80):
+                    here = point(page)
+                    dx, dy = .30 - here["x"], .58 - here["y"]
+                    if abs(dx) < .025 and abs(dy) < .025:
+                        break
+                    keys = ([("d" if dx > 0 else "a")] if abs(dx) >= .025 else []) + ([("s" if dy > 0 else "w")] if abs(dy) >= .025 else [])
+                    for key in keys:
+                        page.keyboard.down(key)
+                    page.wait_for_timeout(90)
+                    for key in keys:
+                        page.keyboard.up(key)
+                page.keyboard.press("e")
+                page.locator('[data-testid="dialogue-box"]').wait_for()
+                page.wait_for_timeout(900)
+                gap = page.evaluate("""() => {
+                  const felice = document.querySelector('[data-testid="felice-player"]').getBoundingClientRect();
+                  const body = document.querySelector('.fx-dialogue-body').getBoundingClientRect();
+                  return Math.round(body.top - felice.bottom);
+                }""")
+                page.screenshot(path=str(args.output / f"dialogue-{size[0]}x{size[1]}.png"))
+                assert gap >= 0, f"Felice hidden behind the dialogue at {size}: {gap}px"
+                checked(f"Felice above the dialogue at {size[0]}x{size[1]}", {"gapPx": gap})
+                context.close()
+
             if args.fixture_url:
                 for id, name in (("friends", "Elena"), ("jason", "Jason"), ("luca", "Luca"), ("wyatt", "Wyatt")):
                     x, y = friend_points[id]["x"], friend_points[id]["y"]

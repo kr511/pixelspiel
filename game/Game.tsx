@@ -23,7 +23,7 @@ import { TimelineJournal } from "./TimelineJournal";
 import { EncounterElias, RadegastPasture } from "./StoryWorldArt";
 import { readProgress } from "./memories/progress";
 import { isSchoolDay, schoolOver, GRADUATION_DAY } from "./school-calendar";
-import { BEDTIME, canSleep, memoryPendingToday, TIMELINE_KEY, STORY_END, STORY_START, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, storyDayNumber, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, nextStepInfo, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
+import { BEDTIME, canSleep, memoryPendingToday, routinePlace, TIMELINE_KEY, STORY_END, STORY_START, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, storyDayNumber, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, nextStepInfo, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
 import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
 import { InventoryPanel } from "./InventoryPanel";
@@ -131,6 +131,7 @@ export function Game() {
   const cinemaRef = useRef<StoryEffect | null>(null);
   function setCinema(value:StoryEffect | null) { cinemaRef.current=value;setCinemaState(value); }
   const cinemaOrigin = useRef<Point | null>(null);
+  const pendingAnswer = useRef<string | null>(null);
   const [finale, setFinale] = useState(false);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const finaleElapsed = useRef(0);
@@ -167,6 +168,25 @@ export function Game() {
   const dogRef = useRef(dog);
   const [journal, setJournal] = useState(false);
   const [dialogue, setDialogue] = useState<Dialogue | null>(null);
+  // While a dialogue is open the world slides up just enough that Felice stays visible above the dialogue box.
+  const [lift, setLift] = useState(0);
+  const dialogueKey = dialogue ? `${dialogue.speaker}:${dialogue.text}` : "";
+  const dialogueLift = dialogueKey ? lift : 0;
+  useLayoutEffect(() => {
+    if (!dialogueKey) return;
+    const frame = requestAnimationFrame(() => {
+      const felice = document.querySelector('[data-testid="felice-player"]')?.getBoundingClientRect();
+      const scene = document.querySelector<HTMLElement>(".world-camera");
+      if (!felice || !scene?.offsetHeight || felice.height === 0) return;
+      // The text panel spans the width; portrait and nameplate only count where Felice stands above them.
+      const parts = [".fx-dialogue-body", ".fx-dialogue-speaker-portrait", ".fx-dialogue-nameplate"].map(selector => document.querySelector(selector)?.getBoundingClientRect()).filter((rect): rect is DOMRect => Boolean(rect));
+      const blocking = parts.filter(rect => rect.right > felice.left && rect.left < felice.right).map(rect => rect.top);
+      if (!blocking.length) return;
+      const overlap = felice.bottom + 24 - Math.min(...blocking);
+      setLift(current => Math.max(0, Math.min(.5, current + overlap / scene.offsetHeight)));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [dialogueKey]);
   const [needsLandscape, setNeedsLandscape] = useState(false);
   const [compact, setCompact] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(initial.error);
@@ -220,6 +240,8 @@ export function Game() {
   const triggerDistance = triggerHere ? Math.hypot(player.x-triggerHere.point.x, player.y-triggerHere.point.y) : Infinity;
   const triggerNear = Boolean(triggerHere && triggerDistance < triggerHere.radius);
   const storyGuide = !guide && pendingTrigger && pendingTrigger.place !== save.place ? routeTo(save.place, pendingTrigger.place) : undefined;
+  const routineTarget = !guide && !storyGuide && !pendingTrigger && !session ? routinePlace(timeline) : null;
+  const routineGuide = routineTarget && routineTarget !== save.place ? routeTo(save.place, routineTarget) : undefined;
   const hint = !started || session || legacyView ? null : worldSave.chapter && step ? { key: `draft:${worldSave.chapter}:${worldSave.step}`, text: step.label } : storyHint(timeline);
   const waitMinutes = !session && !legacyView ? waitingMinutes(timeline) : null;
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
@@ -468,7 +490,7 @@ export function Game() {
         setDirection(directionBetween(playerRef.current,nearbyEntity));
         if(actor) updateActors({...actorsRef.current,[nearbyEntity.id]:{...actor,direction:directionBetween(actor.position,playerRef.current),moving:false}});
         const choices = [...(nearbyEntity.art === "elias" ? ["Umarmen", "Hand geben", followingElias ? "Spaziergang beenden" : "Gemeinsam spazieren"] : []), ...(personalConversation(nearbyEntity.id) ? ["Persönlich reden"] : []), ...(spots.some(spot => spot.kind !== "bed") ? ["Hinsetzen"] : []), ...(actor?.pose !== "standing" ? ["Aufstehen"] : []), "Weiterreden"];
-        setDialogue({ speaker: nearbyEntity.name, art: nearbyEntity.art, text: `${nearbyEntity.text}\n${actor?.pose === "sitting" ? "Du kannst mich gern wieder zum Aufstehen einladen." : "Ein bisschen Zeit für eine Pause?"}`, actorId: nearbyEntity.id, action: "pose", choices }); return;
+        setDialogue({ speaker: nearbyEntity.name, art: nearbyEntity.art, text: actor?.pose === "sitting" ? `${nearbyEntity.text}\nDu kannst mich gern wieder zum Aufstehen einladen.` : nearbyEntity.art === "elias" || /\?\s*$/.test(nearbyEntity.text) ? nearbyEntity.text : `${nearbyEntity.text}\nEin bisschen Zeit für eine Pause?`, actorId: nearbyEntity.id, action: "pose", choices }); return;
       }
       const original = ENTITIES[save.place].find(entity => entity.id === nearbyEntity.id);
       const entitySpeaks = !matches || step.speaker === original?.name;
@@ -492,7 +514,10 @@ export function Game() {
     if (dialogue.action === "calendar") { setDialogue(null); return; }
     if (dialogue.action === "sequence" && sequenceBeat) {
       if (dialogue.choices?.length && choice && !dialogue.response) {
-        setDialogue({ speaker: "Felice", art: "felice", text: choice+".", emotion: "happy", action: "sequence", response: true }); return;
+        // The pick is kept for the history; the others react to it instead of Felice repeating it.
+        pendingAnswer.current = choice;
+        const reaction = sequenceBeat.reactions?.[choice];
+        if (reaction) { setDialogue({ speaker: reaction.speaker, text: reaction.text, emotion: dialogueEmotion(reaction.text, "happy"), action: "sequence", response: true }); return; }
       }
       setDialogue(null); clearMovement();
       if(sequenceBeat.animation) {
@@ -704,7 +729,8 @@ export function Game() {
     const currentEvent=eventById(currentSession.id);
     if(!currentEvent) return;
     const state = replayRef.current?.state ?? timelineRef.current.progress[currentEvent.id] ?? emptyEvent();
-    const next = { ...state, cursor:state.cursor+1 };
+    const answer = pendingAnswer.current; pendingAnswer.current = null;
+    const next = { ...state, cursor:state.cursor+1, ...(answer ? { answers: { ...state.answers, [String(state.cursor)]: answer } } : {}) };
     if(cinemaOrigin.current) { position(cinemaOrigin.current); cinemaOrigin.current=null; }
     changeEventState(next); setCinema(null);
     if(next.cursor >= (currentEvent.steps?.length ?? 1)) { finishCurrentEvent(); return; }
@@ -830,9 +856,13 @@ export function Game() {
   // Cutscene camera: while Elias rides in, push in on him and settle back to the full view.
   const arrivalShot = event?.scene === "encounter" && (eventState?.cursor ?? 0) === 0 ? Math.min(1, arrivalTime / 3) : null;
   const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
-  const camera = cameraFor(focus, (compact ? COMPACT_ZOOM : 1) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
+  const baseCamera = cameraFor(focus, (compact ? COMPACT_ZOOM : 1) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
+  const camera = dialogueLift ? { ...baseCamera, y: baseCamera.y - dialogueLift } : baseCamera;
   const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
-  const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
+  // In the routine, the arrow points at what is still open in this room: the bathroom, the homework or the school door.
+  const routineItem = routineTarget === save.place ? ({ home: "wash", bedroom: "homework", school: "school-door" } as Partial<Record<Place, string>>)[save.place] : undefined;
+  const routineSpot = routineItem && !(routineItem !== "school-door" && routineDone(timeline.flags, day.date, routineItem as RoutineTask)) ? sceneEntities.find(e => e.id === routineItem) : undefined;
+  const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide ?? routineGuide ?? routineSpot);
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
 
   return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09 version-095" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={storyDayNumber(day.date)} data-season={sceneSeason}>
@@ -853,11 +883,11 @@ export function Game() {
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
         {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
-        {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""} ${nearbyExit?.to === exit.to ? "nearby-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
-        {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
+        {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide ?? routineGuide)?.to === exit.to ? "quest-exit" : ""} ${nearbyExit?.to === exit.to ? "nearby-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
+        {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id || routineSpot?.id === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
         <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+9}}>
-          {<CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}<span className="room-player-label">Felice</span>
+          {<CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}{!event && <span className="room-player-label">Felice</span>}
           {event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 && <span className="pixel-chocolate felice-chocolate" aria-label="Felice behält die Schokolade"/>}
         </div>
         {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
@@ -888,7 +918,7 @@ export function Game() {
         <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(session ? sceneMinute : day.minute)}</strong><small>{session ? "Szenenzeit" : `Tag ${storyDayNumber(day.date)} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span>{ui.nextStep && !legacyView && !worldSave.chapter && (session ? sessionStep && <span className="next-step session-step" data-testid="next-step" data-status="active"><b>Jetzt</b>{sessionStep}</span> : <span className="next-step" data-testid="next-step" data-status={nextStep.status}><b>Als Nächstes</b>{nextStep.title}<span> · {nextStep.detail}</span></span>)}</div>
         {active && thought && <aside className="felice-thought" role="status" data-testid="felice-thought" key={thought.key}><span className="thought-dots" aria-hidden="true"><i/><i/><i/></span><p><small>Felice denkt</small>{thought.text}</p></aside>}
       </div>
-      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `${["chat","love","confession","message"].includes(event.scene) ? "Originalnachrichten aus eurem Chat" : "Rekonstruierte Dialoge"} · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
+      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${event.date ? historicalDate(event.date) : eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `${["chat","love","confession","message"].includes(event.scene) ? "Originalnachrichten aus eurem Chat" : "Rekonstruierte Dialoge"} · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <button className="world-phone-button" aria-label="Handy öffnen" onClick={()=>{clearMovement();setPhone(true);}}><Smartphone size={18} aria-hidden="true"/> <span>Handy</span></button>

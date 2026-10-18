@@ -15,7 +15,7 @@ const SPEAKERS: Record<string, string> = {
   paul: "paul", justin: "justin", schulleiter: "host", bürgermeister: "stepfather",
   elena: "elena", jason: "jason", luca: "luca", wyatt: "wyatt", ida: "ida", helena: "helena",
   linda: "linda", lina: "lina", alexandra: "alexandra", alexander: "alexander", magdalena: "magdalena",
-  erzählung: "narrator", "unsere geschichte": "narrator",
+  erzählung: "narrator", "unsere geschichte": "narrator", schule: "school-bell",
 };
 
 /** An explicit existing asset ID takes precedence; unknown NPC names stay distinct. */

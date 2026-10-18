@@ -118,7 +118,7 @@ export const REST_SPOTS: RestSpot[] = [
   { id: "elias-bed-edge", place: "eliasroom", name: "Elias’ Bettkante", kind: "chair", approach: { x: .735, y: .545 }, position: { x: .70, y: .48 }, companion: { x: .78, y: .48 } },
   { id: "elias-bed", place: "eliasroom", name: "Elias’ Bett", kind: "bed", approach: { x: .62, y: .58 }, position: { x: .755, y: .335 }, companion: { x: .70, y: .335 } },
   { id: "felice-desk", place: "bedroom", name: "Stuhl am Schreibtisch", kind: "chair", approach: { x: .60, y: .395 }, position: { x: .625, y: .315 }, companion: { x: .705, y: .325 } },
-  { id: "felice-bed-edge", place: "bedroom", name: "Bettkante", kind: "chair", approach: { x: .38, y: .475 }, position: { x: .38, y: .40 }, companion: { x: .46, y: .40 } },
+  { id: "felice-bed-edge", place: "bedroom", name: "Bettkante", kind: "chair", approach: { x: .48, y: .475 }, position: { x: .45, y: .40 }, companion: { x: .51, y: .40 } },
   { id: "home-sofa", place: "home", name: "Sofa im Wohnzimmer", kind: "chair", approach: { x: .36, y: .48 }, position: { x: .275, y: .412 }, companion: { x: .345, y: .412 } },
   { id: "kitchen-chairs", place: "kitchen", name: "Stuhl am Küchentisch", kind: "chair", approach: { x: .7, y: .64 }, position: { x: .654, y: .582 }, companion: { x: .783, y: .582 } },
   { id: "hotel-bed", place: "hotel", name: "Bett im Hotel", kind: "bed", approach: { x: .21, y: .50 }, position: { x: .21, y: .30 } },
