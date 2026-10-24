@@ -1,16 +1,15 @@
 "use client";
 
-import { type PointerEvent, useRef, useSyncExternalStore } from "react";
-import { Play, Volume2, VolumeX } from "lucide-react";
+import { type PointerEvent, useRef } from "react";
+import { Play } from "lucide-react";
 import { useInput } from "./input";
 import { worldAudio } from "./audio";
 import { StartBackdrop } from "./StartBackdrop";
 import { GAME_VERSION } from "./version";
 
-export type MenuEntry = { label: string; shortcut?: string; onSelect: () => void };
-export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [] }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[] }) {
+export type StartProgress = { chapter: number; chapterTitle: string; completed: number; resume: string | null; done?: boolean };
+export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, progress }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; progress?: StartProgress }) {
   const paused = useInput((state) => state.paused);
-  const muted = useSyncExternalStore(worldAudio.subscribe, worldAudio.getMuted, worldAudio.getMuted);
   const setPaused = useInput((state) => state.setPaused);
   const setMove = useInput((state) => state.setMove);
   const stickOrigin = useRef({ x: 0, y: 0 });
@@ -37,16 +36,17 @@ export function GameUI({ started, loading = null, onStart, roomActive = true, tr
           <div className="joystick-knob" style={{ transform: `translate(${stick.x}px, ${stick.y}px)` }} />
         </div>
       )}
-      {(!started || paused) && (
-        <div className={`start-screen${started ? "" : " with-backdrop"}`} data-game-control>
-          {!started && <StartBackdrop/>}
+      {!started && (
+        <div className="start-screen with-backdrop" data-game-control>
+          <StartBackdrop/>
           <div className="start-card">
-            <p>{started ? `${place}${completed > 0 ? ` · ${completed} ${completed === 1 ? "Erinnerung" : "Erinnerungen"} bewahrt` : ""}` : `Eure kleine Welt · Version ${GAME_VERSION}`}</p>
-            <h1>{started && paused ? "Kurze Pause?" : "Felice × Elias"}</h1>
-            <span>{started && paused ? "Dein Moment wartet auf dich." : "Lange Abende am Handy. Ein Fahrrad, ein Stück Schokolade. Zwei Nachrichten, die bleiben. Erlebe euer gemeinsames Jahr in acht Kapiteln – vom ersten Schreiben bis zu den Erinnerungen, die bleiben."}</span>
-            <button disabled={!started && loading !== null} onClick={() => { void worldAudio.unlock(); setPaused(false); if (!started) onStart(); }}><Play size={17} fill="currentColor" />{started && paused ? "Zurück zum Spiel" : loading !== null ? `Welt lädt … ${Math.round(loading * 100)} %` : "Welt betreten"}</button>
-            {started && paused && menu.length > 0 && <nav className="pause-menu" aria-label="Spielmenü">{menu.map(entry => <button key={entry.label} onClick={() => { void worldAudio.unlock(); setPaused(false); entry.onSelect(); }}>{entry.label}{entry.shortcut && <kbd>{entry.shortcut}</kbd>}</button>)}<button className="pause-sound" aria-pressed={muted} onClick={() => worldAudio.toggleMuted()}>{muted ? <VolumeX size={16} aria-hidden="true"/> : <Volume2 size={16} aria-hidden="true"/>}{muted ? "Ton an" : "Ton aus"}</button></nav>}
-            {started && paused && <small className="pause-autosave">Dein Fortschritt wird automatisch gespeichert.</small>}
+            <p className="start-kicker">Ein Jahr · acht Kapitel · Version {GAME_VERSION}</p>
+            <h1>Felice <span>×</span> Elias</h1>
+            <p className="start-subtitle">Unser erstes gemeinsames Jahr</p>
+            {progress && progress.completed > 0 && <div className="start-progress"><div><span>Kapitel {progress.chapter} von 8 · {progress.chapterTitle}</span><span>{progress.completed} {progress.completed === 1 ? "Erinnerung" : "Erinnerungen"} bewahrt</span></div><ol aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <li key={index} className={progress.done || index + 1 < progress.chapter ? "is-done" : index + 1 === progress.chapter ? "is-current" : undefined}/>)}</ol></div>}
+            {!progress?.completed && <span className="start-teaser">Lange Abende am Handy. Ein Fahrrad, ein Stück Schokolade. Zwei Nachrichten, die bleiben.</span>}
+            <button className="start-enter" aria-label={loading !== null ? undefined : "Welt betreten"} aria-describedby={progress?.resume ? "start-resume" : undefined} disabled={loading !== null} onClick={() => { void worldAudio.unlock(); setPaused(false); onStart(); }}><span><b>{loading !== null ? `Welt lädt … ${Math.round(loading * 100)} %` : "Welt betreten"}</b>{loading === null && progress?.resume && <small id="start-resume">Weiter am {progress.resume}</small>}</span><Play size={18} fill="currentColor" aria-hidden="true"/></button>
+            <small className="start-place">Zörbig · Radegast · Herbst 2025 bis Herbst 2026</small>
           </div>
         </div>
       )}

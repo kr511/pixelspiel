@@ -7,9 +7,18 @@ import { historicalDate } from "./timeline";
 /** Save file export and import. Importing replaces local progress, so it is only applied after a visible confirmation. */
 export function SavePanel({ onClose }: { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { const node = dialog.current; if (node && !node.open) node.showModal(); return () => { if (node?.open) node.close(); }; }, []);
+  return <dialog ref={dialog} className="story-modal inventory-modal" data-testid="save-panel" onCancel={event => { event.preventDefault(); onClose(); }}>
+    <div className="inventory-heading"><div><small>SPIELSTAND</small><h1>Sichern und laden</h1></div><button className="modal-close" aria-label="Schließen" onClick={onClose}>×</button></div>
+    <SaveContent/>
+    <div className="journal-bottom"><button className="memory-primary" onClick={onClose}>Zurück ins Spiel</button></div>
+  </dialog>;
+}
+
+/** Download and import of the save file; shared by the save window and the pause menu. */
+export function SaveContent() {
   const [pending, setPending] = useState<SaveFile | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  useEffect(() => { const node = dialog.current; if (node && !node.open) node.showModal(); return () => { if (node?.open) node.close(); }; }, []);
   const download = () => {
     try {
       const file = exportSave(window.localStorage);
@@ -33,8 +42,7 @@ export function SavePanel({ onClose }: { onClose: () => void }) {
     catch { setMessage("Der Spielstand konnte nicht übernommen werden. Dein bisheriger Stand ist unverändert."); setPending(null); }
   };
   const summary = pending ? summarize(pending) : null;
-  return <dialog ref={dialog} className="story-modal inventory-modal" data-testid="save-panel" onCancel={event => { event.preventDefault(); onClose(); }}>
-    <div className="inventory-heading"><div><small>SPIELSTAND</small><h1>Sichern und laden</h1></div><button className="modal-close" aria-label="Schließen" onClick={onClose}>×</button></div>
+  return <div className="save-content">
     <div className="inventory-body">
       <article className="inventory-detail">
         <h2>Speichern</h2>
@@ -48,6 +56,6 @@ export function SavePanel({ onClose }: { onClose: () => void }) {
         {pending && summary && <div role="alert"><p>{summary.gameDate ? `Spielzeit ${historicalDate(summary.gameDate)}` : "Ohne Kalenderstand"} · {summary.memories} {summary.memories === 1 ? "Erinnerung" : "Erinnerungen"} · {summary.names} {summary.names === 1 ? "eigener Name" : "eigene Namen"}</p><p>Dein aktueller Fortschritt auf diesem Gerät wird ersetzt.</p><button className="memory-primary" onClick={apply}>Ja, ersetzen</button> <button className="memory-secondary" onClick={() => setPending(null)}>Abbrechen</button></div>}
       </article>
     </div>
-    <div className="journal-bottom"><small role="status">{message ?? "Die Datei enthält nur Spielfortschritt, keine persönlichen Daten außer deinen eigenen Namen für Figuren."}</small><button className="memory-primary" onClick={onClose}>Zurück ins Spiel</button></div>
-  </dialog>;
+    <small className="save-status" role="status">{message ?? "Die Datei enthält nur deinen Spielfortschritt und deine eigenen Namen für Figuren."}</small>
+  </div>;
 }

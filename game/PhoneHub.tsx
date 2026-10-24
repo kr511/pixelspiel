@@ -23,8 +23,7 @@ export function resolveStoryIllustration(illustration: string): string {
 
 export function eventDateText(event: StoryEvent) {
   if (!event.date) return event.period ? `${event.period} · Genaues Datum offen` : historicalDate(null);
-  if (event.source === "future") return `${historicalDate(event.date)} · Inszenierter Ausblick`;
-  if (event.source === "staged") return `${event.period ?? historicalDate(event.date)} · Inszenierung`;
+  if (event.source === "staged") return event.period ?? historicalDate(event.date);
   return `${historicalDate(event.date)}${event.until && event.until !== event.date ? ` – ${historicalDate(event.until)}` : ""}`;
 }
 export function PhoneTabs({ tab, onChange }: { tab: PhoneTab; onChange: (tab: PhoneTab) => void }) {
@@ -75,7 +74,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
       <div className="phone-memory-grid">{dated.map(event => {
         const status = eventStatus(timeline, event);
         const illustration = resolveStoryIllustration(event.illustration);
-        return <button className={`phone-memory-card${status === "gesperrt" ? " locked-silhouette" : ""}`} key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span className="phone-memory-image" style={status === "gesperrt" ? undefined : { backgroundImage: `url(${illustration})` }}><i aria-hidden="true">{status === "gesperrt" ? "◇" : event.symbol ?? "♡"}</i></span><small>{eventDateText(event)}</small><strong>{event.title}</strong><span>{status === "abgeschlossen" ? "✓ Erneut erleben" : status === "verfügbar" ? "Erleben →" : "Noch gesperrt"}</span></button>;
+        return <button className={`phone-memory-card${status === "gesperrt" ? " locked-silhouette" : ""}`} key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span className={`phone-memory-image${event.scene === "chat" ? " chat-night" : ""}`} style={status === "gesperrt" || event.scene === "chat" ? undefined : { backgroundImage: `url(${illustration})` }}><i aria-hidden="true">{status === "gesperrt" ? "◇" : event.symbol ?? "♡"}</i></span><small>{eventDateText(event)}</small><strong>{event.title}</strong><span>{status === "abgeschlossen" ? "✓ Erneut erleben" : status === "verfügbar" ? "Erleben →" : "Noch gesperrt"}</span></button>;
       })}</div>
     </>}
   </section>;
