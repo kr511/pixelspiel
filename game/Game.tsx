@@ -52,7 +52,6 @@ import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, activityAt, travelMinutes, clockText, longDate, parseDay, seasonalLight, nightShade, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
-import { GAME_VERSION } from "./version";
 import { PixelIcon } from "./PixelIcons";
 
 const BUS_RIDE_FLAG = "bus-ride-first-day";
@@ -948,7 +947,7 @@ export function Game() {
     {phone && (!event || !["chat","love","confession","message"].includes(event.scene)) && <PhoneHub key={phoneChatDate ?? "hub"} chatDate={phoneChatDate} timeline={timeline} activeId={session?.id} paused={paused} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} blocked={paused || needsLandscape} onClose={()=>{setPhone(false);setPhoneChatDate(null);}} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onJump={()=>{setPhone(false);jumpStory();}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}}/>}
     {storyToast && started && <aside className={`story-unlocked${storyToast.special ? " special-memory" : ""}`} role="status"><span aria-hidden="true">{storyToast.special ? "♥" : "✦"}</span><div><small>ERINNERUNG BEWAHRT</small><strong>{historicalDate(storyToast.date)} · {storyToast.title}</strong></div><button onClick={() => { setStoryToast(null); clearMovement(); setJournal(true); }}>Im Buch ansehen</button><button aria-label="Erinnerungshinweis schließen" onClick={() => setStoryToast(null)}>×</button></aside>}
     {journal && <dialog ref={journalRef} className="story-modal journal-modal" onCancel={() => { setJournal(false); clearMovement(); }}>
-      <div className="journal-heading"><div><small>FELICE × ELIAS · VERSION {GAME_VERSION}</small><h1>Unsere Geschichte</h1><p>{datedCompleted} {datedCompleted === 1 ? "datierte Erinnerung" : "datierte Erinnerungen"} bewahrt · Historische Daten bleiben beim Wiederholen erhalten.</p></div><div className="journal-duo" aria-label="Felice und Elias"><CharacterArt id="felice"/><CharacterArt id="elias"/></div><button className="modal-close" aria-label="Erinnerungsbuch schließen" onClick={() => setJournal(false)}>×</button></div>
+      <div className="journal-heading"><h1>Unser Erinnerungsbuch</h1><button className="modal-close book-close" aria-label="Erinnerungsbuch schließen" onClick={() => setJournal(false)}>Zurück ins Spiel <kbd>J</kbd></button></div>
       <TimelineJournal save={timeline} busyId={session?.id} draftActive={Boolean(legacyView)} onSelect={selectTimelineEvent} onJump={jumpStory} onDraft={e => { if(e.chapter) selectChapter(e.chapter); }} onCredits={() => { setJournal(false); setCreditsOpen(true); }}/>
       <WorldMap place={save.place} target={nextStep.place}/>
       <NamesPanel save={names} error={namesError} onRename={changeName} onVisibility={mode => persistNames({ ...namesRef.current, visibility: mode })}/>
