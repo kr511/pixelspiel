@@ -1,0 +1,159 @@
+/* V1.3 "Pixel-Tagebuch": the interface looks like the couple's memory book.
+   Paper, ink, rosé for the main action, forest green for goals and real chats, pixel corners.
+   Loaded last, so it overrides the older layers (story.css … clean-ui.css, mobile.css). */
+
+@font-face { font-family:"Pixelify Sans"; src:url("/fonts/pixelify-sans.woff2") format("woff2"); font-weight:400 700; font-display:swap; }
+@font-face { font-family:"Nunito"; src:url("/fonts/nunito.woff2") format("woff2"); font-weight:200 1000; font-display:swap; }
+@font-face { font-family:"Caveat"; src:url("/fonts/caveat.woff2") format("woff2"); font-weight:400 700; font-display:swap; }
+
+main.pixel-game.ui-tagebuch {
+  --px-paper:#F6EEDF; --px-paper-2:#EFE3CC; --px-cream:#FFFBF3; --px-line:#D6C3A0;
+  --px-ink:#2B2420; --px-ink-2:#5E5046; --px-rose:#A9435A; --px-rose-soft:#FBE7EB; --px-washi:#E9B9C2;
+  --px-forest:#2F5D50; --px-mint:#DCE8D2; --px-night:#1E2433;
+  --font-pixel:"Pixelify Sans",ui-monospace,monospace; --font-body:Nunito,system-ui,sans-serif; --font-hand:Caveat,"Segoe Print",cursive;
+  /* Stepped 3px corners. */
+  --px-cut:polygon(0 6px,3px 6px,3px 3px,6px 3px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px));
+  --px-drop:drop-shadow(0 4px 0 rgba(43,36,32,.38));
+  --hud-w:200px;
+  background:var(--px-night); font-family:var(--font-body);
+}
+main.pixel-game.version-095.ui-tagebuch .pixel-icon { flex:0 0 auto; image-rendering:pixelated; }
+
+/* ---------- Shared paper surface ---------- */
+main.pixel-game.version-095.ui-tagebuch :is(.day-clock,.next-step,.hud-doors>button,.memory-interaction,.routine-list,.day-notice,.story-unlocked,.story-session-bar,.quest-tracker) {
+  background:var(--px-paper); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut);
+  box-shadow:none; backdrop-filter:none; font-family:var(--font-body);
+}
+main.pixel-game.version-095.ui-tagebuch :is(.hud-left,.hud-doors,.memory-interaction,.routine-list,.day-notice,.story-unlocked,.story-session-bar) { filter:var(--px-drop); }
+main.pixel-game.version-095.ui-tagebuch kbd { font-family:var(--font-pixel); font-size:11px; line-height:1; padding:3px 5px; border:0; border-radius:0; background:var(--px-ink); color:var(--px-paper); box-shadow:none; }
+
+/* ---------- The world frame ---------- */
+main.pixel-game.version-095.ui-tagebuch .world-viewport { box-shadow:0 0 0 3px var(--px-ink),0 24px 60px rgba(0,0,0,.45); border-radius:0; }
+
+/* ---------- Left margin: day card and next goal ---------- */
+main.pixel-game.version-095.ui-tagebuch .hud-left { left:20px; top:20px; width:var(--hud-w); gap:14px; max-height:calc(100dvh - 40px); }
+main.pixel-game.version-095.ui-tagebuch .hud-left > :is(.day-clock,.next-step) { position:relative; inset:auto; transform:none; margin:0; width:100%; min-width:0; box-sizing:border-box; }
+main.pixel-game.version-095.ui-tagebuch .day-clock { display:flex; flex-direction:column; gap:2px; padding:11px 14px 12px; }
+main.pixel-game.version-095.ui-tagebuch .day-clock time { font-family:var(--font-pixel); font-size:11px; letter-spacing:.03em; white-space:nowrap; text-transform:uppercase; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .day-clock strong { font-family:var(--font-pixel); font-size:38px; font-weight:600; line-height:1.05; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .day-clock small { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .day-clock .calendar-season { position:static; font-size:12px; font-weight:800; padding:1px 7px; background:var(--px-mint); color:var(--px-forest); clip-path:var(--px-cut); white-space:nowrap; }
+main.pixel-game.version-095.ui-tagebuch .next-step { display:flex; flex-direction:column; padding:0 0 11px; overflow:hidden; }
+main.pixel-game.version-095.ui-tagebuch .next-step b { display:block; margin:0 0 8px; padding:6px 14px; background:var(--px-forest); color:var(--px-paper); font-family:var(--font-pixel); font-weight:500; font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+main.pixel-game.version-095.ui-tagebuch .next-step.session-step b { background:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .next-step strong { padding:0 14px; font-size:16px; font-weight:800; line-height:1.2; }
+main.pixel-game.version-095.ui-tagebuch .next-step span { padding:3px 14px 0; font-size:13px; font-weight:600; line-height:1.35; color:var(--px-ink-2); }
+
+/* ---------- Felice's thought: a handwritten bubble above her ---------- */
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought {
+  position:absolute; z-index:240; width:max-content; max-width:min(210px,34%); margin:0; padding:7px 12px 9px; transform:translate(-50%,-100%);
+  background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:none; box-shadow:4px 4px 0 rgba(43,36,32,.35);
+  font-family:var(--font-hand); font-size:22px; font-weight:600; line-height:1.05; pointer-events:none; animation:thought-in .32s steps(4,end) both;
+}
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought p { margin:0; font:inherit; }
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought small { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought::after { content:""; position:absolute; left:50%; bottom:-12px; width:9px; height:9px; margin-left:-4px; background:var(--px-ink); box-shadow:5px 6px 0 -1px var(--px-ink); }
+@keyframes thought-in { from { opacity:0; transform:translate(-50%,-88%); } to { opacity:1; transform:translate(-50%,-100%); } }
+
+/* ---------- Right margin: three doors ---------- */
+main.pixel-game.version-095.ui-tagebuch .hud-doors { position:absolute; z-index:6; right:20px; top:20px; width:var(--hud-w); display:flex; flex-direction:column; gap:10px; pointer-events:auto; }
+main.pixel-game.version-095.ui-tagebuch .hud-doors > button { position:relative; inset:auto; display:flex; align-items:center; gap:10px; width:100%; min-height:48px; margin:0; padding:9px 12px; cursor:pointer; text-align:left; transform:none; }
+main.pixel-game.version-095.ui-tagebuch .hud-doors > button span { flex:1; font-family:var(--font-pixel); font-size:16px; font-weight:500; }
+main.pixel-game.version-095.ui-tagebuch .hud-doors > button b { position:static; padding:1px 6px; background:var(--px-rose); color:#fff; font-size:12px; font-weight:800; clip-path:var(--px-cut); }
+main.pixel-game.version-095.ui-tagebuch .hud-doors > button:hover { background:var(--px-cream); }
+/* The book's shortcut is listed in the menu; here the counter needs the room. */
+main.pixel-game.version-095.ui-tagebuch .hud-doors > .journal-button kbd { display:none; }
+main.pixel-game.version-095.ui-tagebuch .hud-doors > button:focus-visible { outline:3px solid var(--px-rose); outline-offset:2px; }
+
+/* ---------- Bottom right: what can be done here ---------- */
+main.pixel-game.version-095.ui-tagebuch .memory-interaction { position:absolute; z-index:6; right:20px; bottom:20px; left:auto; top:auto; width:var(--hud-w); box-sizing:border-box; display:flex; flex-direction:column; align-items:stretch; gap:8px; padding:11px 12px 12px; transform:none; }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction > span { display:block; max-width:none; margin:0; padding:0; background:none; border:0; border-radius:0; box-shadow:none; font-family:var(--font-pixel); font-size:12px; letter-spacing:.06em; color:var(--px-ink-2); text-transform:uppercase; }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction button { outline:0; display:flex; align-items:center; gap:8px; width:100%; min-height:44px; margin:0; padding:8px 10px; border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); background:var(--px-cream); color:var(--px-ink); font-family:var(--font-body); font-size:14px; font-weight:800; text-align:left; cursor:pointer; box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction button:first-of-type { background:var(--px-rose); color:#fff; }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction button:first-of-type kbd { background:var(--px-paper); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction button:disabled { background:var(--px-line); color:var(--px-ink-2); cursor:default; }
+main.pixel-game.version-095.ui-tagebuch .memory-interaction button:hover:not(:disabled) { filter:brightness(1.06); }
+
+/* ---------- Routine list, notices, toast, scene ribbon ---------- */
+main.pixel-game.version-095.ui-tagebuch .routine-list { left:20px; bottom:20px; top:auto; right:auto; width:var(--hud-w); box-sizing:border-box; padding:11px 14px; }
+main.pixel-game.version-095.ui-tagebuch .routine-list small { font-family:var(--font-pixel); font-size:12px; letter-spacing:.06em; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .routine-list li { font-size:14px; font-weight:700; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .routine-list li.is-done { color:var(--px-ink-2); text-decoration:line-through; text-decoration-thickness:2px; }
+main.pixel-game.version-095.ui-tagebuch .day-notice { left:50%; top:16px; right:auto; bottom:auto; transform:translateX(-50%); padding:8px 14px; display:flex; gap:10px; align-items:baseline; }
+main.pixel-game.version-095.ui-tagebuch .day-notice strong { font-family:var(--font-pixel); font-size:16px; }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked { position:fixed; z-index:60; left:50%; top:16px; right:auto; bottom:auto; transform:translateX(-50%); width:min(440px,calc(100vw - 32px)); box-sizing:border-box; display:flex; align-items:center; gap:12px; padding:9px 10px 9px 12px; animation:none; }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked > span { width:34px; height:34px; display:grid; place-items:center; flex:0 0 auto; background:var(--px-rose); color:#fff; font-size:18px; }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked > div { flex:1; display:flex; flex-direction:column; min-width:0; }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked small { font-family:var(--font-pixel); font-size:11px; letter-spacing:.12em; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked strong { font-size:15px; font-weight:800; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked button { min-height:36px; padding:0 10px; border:0; border-radius:0; background:none; color:var(--px-rose); font-family:var(--font-body); font-size:13px; font-weight:800; cursor:pointer; box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .story-unlocked button:last-child { color:var(--px-ink-2); font-size:18px; }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar { top:16px; padding:8px 8px 8px 16px; display:flex; align-items:center; gap:12px; }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar small { font-family:var(--font-pixel); font-size:11px; letter-spacing:.1em; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar strong { font-size:15px; font-weight:800; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar span { font-size:12px; font-weight:600; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar button { flex:0 0 auto; min-height:38px; padding:0 12px; border:0; border-radius:0; clip-path:var(--px-cut); background:var(--px-ink); color:var(--px-paper); font-family:var(--font-pixel); font-size:14px; cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar button:hover { background:#43372f; }
+
+/* ---------- In the world: signposts, name tags, markers ---------- */
+main.pixel-game.version-095.ui-tagebuch .world-exit { display:flex; align-items:center; gap:5px; width:auto; height:auto; padding:3px 8px; transform:translate(-50%,-50%); background:rgba(246,238,223,.92); color:var(--px-ink); border:2px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .world-exit > span { display:contents; color:inherit; }
+main.pixel-game.version-095.ui-tagebuch .world-exit svg { width:12px; height:12px; }
+main.pixel-game.version-095.ui-tagebuch .world-exit small { position:static; transform:none; padding:0; background:none; border:0; font-family:var(--font-pixel); font-size:12px; white-space:nowrap; color:inherit; box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .world-exit small em { font-style:normal; font-family:var(--font-body); font-weight:800; font-size:11px; }
+main.pixel-game.version-095.ui-tagebuch .world-exit.quest-exit { z-index:200; background:var(--px-rose); color:#fff; border-width:3px; animation:sign-nudge 1.6s steps(2,end) infinite; }
+main.pixel-game.version-095.ui-tagebuch .world-exit.nearby-exit { background:var(--px-cream); outline:3px solid var(--px-rose); outline-offset:1px; }
+@keyframes sign-nudge { 50% { transform:translate(-50%,calc(-50% - 2px)); } }
+main.pixel-game.version-095.ui-tagebuch :is(.entity-name,.room-player-label,.bed-name-label,.town-place-label) { padding:2px 7px; background:rgba(246,238,223,.94); color:var(--px-ink); border:2px solid var(--px-ink); border-radius:0; box-shadow:none; font-family:var(--font-pixel); font-size:10px; line-height:1.15; font-weight:500; letter-spacing:0; text-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch :is(.entity-name,.room-player-label) { padding:1px 5px; width:max-content; max-width:none; white-space:nowrap; }
+main.pixel-game.version-095.ui-tagebuch .world-entity.entity-item:not(.nearby-entity):not(.quest-entity) .entity-name { display:none; }
+main.pixel-game.version-095.ui-tagebuch .world-entity.nearby-entity .entity-name { background:var(--px-cream); border-color:var(--px-rose); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .quest-marker { background:var(--px-rose); color:#fff; border:2px solid var(--px-ink); border-radius:0; font-family:var(--font-pixel); box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch :is(.story-trigger,.story-target) > span { color:var(--px-rose); text-shadow:0 2px 0 var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch :is(.story-trigger,.story-target) small { padding:3px 8px; background:var(--px-rose); color:#fff; border:2px solid var(--px-ink); border-radius:0; font-family:var(--font-pixel); font-size:12px; box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .offscreen-guide { color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .offscreen-guide small { padding:2px 7px; background:var(--px-rose); color:#fff; border:2px solid var(--px-ink); border-radius:0; font-family:var(--font-pixel); }
+
+/* ---------- Joystick ---------- */
+main.pixel-game.version-095.ui-tagebuch .joystick { background:rgba(246,238,223,.22); border:3px solid rgba(43,36,32,.6); }
+main.pixel-game.version-095.ui-tagebuch .joystick-knob { background:var(--px-paper); border:3px solid var(--px-ink); box-shadow:0 3px 0 rgba(43,36,32,.4); }
+
+/* ---------- Small landscape phones: the HUD lives in the margins beside the square world ---------- */
+@media (max-height:520px), (max-width:760px) {
+  main.pixel-game.version-095.ui-tagebuch { --hud-w:min(200px,calc((100vw - 100dvh) / 2 - 24px)); }
+  main.pixel-game.version-095.ui-tagebuch .hud-left { left:max(12px,env(safe-area-inset-left)); top:12px; gap:8px; max-height:calc(100dvh - 140px); }
+  main.pixel-game.version-095.ui-tagebuch .day-clock { flex-direction:row; flex-wrap:wrap; align-items:baseline; column-gap:8px; padding:6px 10px 7px; }
+  main.pixel-game.version-095.ui-tagebuch .day-clock time { order:2; font-size:11px; letter-spacing:.04em; }
+  main.pixel-game.version-095.ui-tagebuch .day-clock strong { order:1; font-size:22px; }
+  main.pixel-game.version-095.ui-tagebuch .day-clock small { order:3; width:100%; font-size:11px; }
+  main.pixel-game.version-095.ui-tagebuch .next-step { padding-bottom:7px; }
+  main.pixel-game.version-095.ui-tagebuch .next-step b { margin-bottom:5px; padding:4px 10px; font-size:10px; }
+  main.pixel-game.version-095.ui-tagebuch .next-step strong { padding:0 10px; font-size:13px; }
+  main.pixel-game.version-095.ui-tagebuch .next-step span { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .hud-doors { right:max(12px,env(safe-area-inset-right)); top:12px; width:auto; flex-direction:row; gap:8px; }
+  main.pixel-game.version-095.ui-tagebuch .hud-doors > button { width:44px; min-height:44px; height:44px; padding:0; justify-content:center; }
+  main.pixel-game.version-095.ui-tagebuch .hud-doors > button :is(span,kbd) { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .hud-doors > button b { position:absolute; top:-6px; right:-6px; font-size:10px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-interaction { right:max(12px,env(safe-area-inset-right)); bottom:12px; padding:8px 9px 9px; gap:6px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-interaction > span { font-size:10px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-interaction button { min-height:44px; font-size:13px; padding:6px 8px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-interaction button:first-of-type { min-height:52px; justify-content:center; font-size:14px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-interaction button kbd { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought { font-size:14px; max-width:min(120px,36%); padding:4px 7px 5px; border-width:2px; }
+  main.pixel-game.version-095.ui-tagebuch .story-unlocked { top:12px; width:min(360px,calc(100dvh - 24px)); }
+  main.pixel-game.version-095.ui-tagebuch .routine-list { left:max(12px,env(safe-area-inset-left)); bottom:124px; padding:7px 10px; }
+  main.pixel-game.version-095.ui-tagebuch .routine-list li { font-size:12px; }
+  /* The camera zooms the world by 1.4 on phones, so in-world labels stay small. */
+  main.pixel-game.version-095.ui-tagebuch :is(.entity-name,.room-player-label) { font-size:7px; padding:1px 3px; border-width:1px; }
+  main.pixel-game.version-095.ui-tagebuch .world-exit { padding:2px 5px; border-width:1px; }
+  main.pixel-game.version-095.ui-tagebuch .world-exit small { font-size:8px; }
+  main.pixel-game.version-095.ui-tagebuch .world-exit small em { font-size:7px; }
+  main.pixel-game.version-095.ui-tagebuch .world-exit svg { width:8px; height:8px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought, main.pixel-game.version-095.ui-tagebuch .world-exit.quest-exit { animation:none; }
+}
+/* Narrower phones (under 2:1) have less than 150px beside the world: stack the three doors. */
+@media (max-height:520px) and (max-aspect-ratio:2/1) {
+  main.pixel-game.version-095.ui-tagebuch .hud-doors { flex-direction:column; }
+}

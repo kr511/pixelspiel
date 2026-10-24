@@ -70,6 +70,13 @@ export function sleepUntilMorning(save: DaySave): DaySave {
   const days = save.minute < WAKE_MINUTE ? 0 : 1;
   return { ...save, date: nextDate(save.date, days), day: save.day + days, minute: WAKE_MINUTE };
 }
+const WEEKDAYS = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+/** "Samstag · 9. Mai 2026" for the day card. */
+export function longDate(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return `${WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]} · ${day}. ${MONTHS[month - 1]} ${year}`;
+}
 export function clockText(minute: number) {
   return `${Math.floor(minute / 60)}:${String(minute % 60).padStart(2, "0")}`;
 }

@@ -257,7 +257,8 @@ test("Belohnungen kommen nur beim ersten echten Abschluss; Wiederholungen änder
   const replayed = completeEvent({ ...save, inventory: [] }, "radegast-chocolate", true);
   assert.deepEqual(replayed.inventory, [], "Wiederholung vergibt nichts");
   assert.equal(completeEvent(save, "radegast-chocolate"), save, "Kein zweiter Abschluss");
-  assert.ok(!ITEMS.chocolate.description.includes("16."));
+  // The item names the same day as its memory (moved to 16.11.2025 with the real chat lines).
+  assert.ok(ITEMS.chocolate.description.includes(historicalDate(eventById("radegast-chocolate").date)));
 });
 
 test("Schlafen springt zum nächsten relevanten Storytag, nie rückwärts und nie über offene Ereignisse", () => {
