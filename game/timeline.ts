@@ -124,6 +124,17 @@ const LATER_CONVERSATIONS: Record<string, [StoryLine[], StoryLine[]]> = {
 /** A verbatim chat message as a story line. */
 export const chatLine = ([time, speaker, text]: ChatLine): StoryLine => ({ speaker, text, time, original: true });
 const originalLines = (id: string) => (ORIGINAL_CHATS[id]?.lines ?? []).map(chatLine);
+/** One mark per scene instead of explanations: ♥ real messages, ✎ written for the game, ☆ a look ahead. */
+export function sceneMark(event: StoryEvent): { symbol: "♥" | "✎" | "☆"; label: string } {
+  if (event.source === "future") return { symbol: "☆", label: "Ausblick" };
+  if (["chat", "love", "confession", "message"].includes(event.scene)) return { symbol: "♥", label: "Original" };
+  return { symbol: "✎", label: "nachgestellt" };
+}
+/** The real time of a line when a scene quotes its day's chat word for word; undefined for written scene lines. */
+export function originalTime(eventId: string, text: string): string | undefined {
+  const chat = ORIGINAL_CHATS[eventId];
+  return [...(chat?.lines ?? []), ...(chat?.threads ?? []).flatMap(thread => thread.lines)].find(([, , line]) => line === text)?.[0];
+}
 const narration = (text: string, emotion?: string): StoryLine => ({ speaker: "Erzählung", text, emotion });
 /** The real threads of a chat evening, or the older reconstructed topics where none exist. */
 export function chatTopicsForEvent(event: StoryEvent): ChatTopic[] {

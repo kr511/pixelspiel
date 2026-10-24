@@ -90,8 +90,10 @@ main.pixel-game.version-095.ui-tagebuch .story-unlocked button { min-height:36px
 main.pixel-game.version-095.ui-tagebuch .story-unlocked button:last-child { color:var(--px-ink-2); font-size:18px; }
 main.pixel-game.version-095.ui-tagebuch .story-session-bar { top:16px; padding:8px 8px 8px 16px; display:flex; align-items:center; gap:12px; }
 main.pixel-game.version-095.ui-tagebuch .story-session-bar small { font-family:var(--font-pixel); font-size:11px; letter-spacing:.1em; color:var(--px-ink-2); }
-main.pixel-game.version-095.ui-tagebuch .story-session-bar strong { font-size:15px; font-weight:800; color:var(--px-ink); }
-main.pixel-game.version-095.ui-tagebuch .story-session-bar span { font-size:12px; font-weight:600; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar strong { display:block; font:800 15px/1.25 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar .session-mark { display:inline-block; margin-top:3px; padding:1px 8px; background:var(--px-paper-2); border:2px solid var(--px-ink); clip-path:var(--px-cut); font:800 12px/1.3 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar .session-mark[data-mark="♥"] { background:var(--px-mint); border-color:var(--px-forest); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .story-session-bar .session-mark[data-mark="☆"] { background:var(--px-rose-soft); border-color:var(--px-rose); color:var(--px-rose); }
 main.pixel-game.version-095.ui-tagebuch .story-session-bar button { flex:0 0 auto; min-height:38px; padding:0 12px; border:0; border-radius:0; clip-path:var(--px-cut); background:var(--px-ink); color:var(--px-paper); font-family:var(--font-pixel); font-size:14px; cursor:pointer; }
 main.pixel-game.version-095.ui-tagebuch .story-session-bar button:hover { background:#43372f; }
 
@@ -157,3 +159,56 @@ main.pixel-game.version-095.ui-tagebuch .joystick-knob { background:var(--px-pap
 @media (max-height:520px) and (max-aspect-ratio:2/1) {
   main.pixel-game.version-095.ui-tagebuch .hud-doors { flex-direction:column; }
 }
+
+/* ---------- Dialogue: a diary card with a polaroid portrait ---------- */
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue { width:min(820px,calc(100vw - 40px)); bottom:max(16px,env(safe-area-inset-bottom)); color:var(--px-ink); font-family:var(--font-body); filter:var(--px-drop); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue::backdrop { background:rgba(30,36,51,.22); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-card { position:relative; display:flex; flex-direction:column; gap:10px; min-height:206px; box-sizing:border-box; padding:16px 20px 14px 196px; background:var(--px-paper); border:3px solid var(--px-ink); clip-path:none; overflow:visible; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-top { position:static; display:block; min-height:0; padding:0; pointer-events:auto; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-speaker-portrait { position:absolute; left:0; top:0; width:136px; height:152px; margin:0; padding:8px 8px 26px; box-sizing:content-box; background:#fff; border:3px solid var(--px-ink); outline:0; box-shadow:4px 4px 0 rgba(43,36,32,.35); transform:rotate(-3deg) translate(22px,-46px); transform-origin:0 0; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-speaker-portrait::after { content:""; position:absolute; left:50%; top:-12px; width:70px; height:22px; margin-left:-35px; background:var(--px-washi); opacity:.9; transform:rotate(4deg); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-nameplate { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 10px; max-width:none; padding:0 40px 0 0; background:none; border:0; box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-nameplate h2 { margin:0; font-family:var(--font-pixel); font-weight:600; font-size:24px; line-height:1.1; color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-mood { font-family:var(--font-hand); font-size:21px; font-weight:600; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-mark { display:inline-block; max-width:none; padding:2px 8px; background:var(--px-paper-2); border:2px solid var(--px-ink); clip-path:var(--px-cut); font:800 12px/1.3 var(--font-body); letter-spacing:0; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-close { position:absolute; right:10px; top:10px; bottom:auto; width:36px; min-width:36px; height:36px; padding:0; border:0; background:none; box-shadow:none; color:var(--px-ink-2); font:600 24px/1 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-close:hover:not(:disabled) { color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-body { display:flex; flex-direction:column; gap:10px; max-height:calc(100dvh - 90px); padding:0; background:none; border:0; outline:0; box-shadow:none; overflow-y:auto; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-text { min-height:2.9em; font:600 20px/1.45 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-text:focus-visible { outline:2px dashed var(--px-line); outline-offset:4px; }
+main.pixel-game.version-095.ui-tagebuch .fx-typewriter-cursor { color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices { display:flex; flex-direction:column; gap:8px; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button { display:flex; align-items:center; gap:12px; width:100%; min-height:46px; padding:8px 12px; background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); clip-path:var(--px-cut); box-shadow:none; font:800 17px/1.3 var(--font-body); text-align:left; cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button kbd { flex:0 0 auto; font-size:13px; padding:3px 7px; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button:is(:hover,:focus-visible):not(:disabled) { background:var(--px-rose-soft); border-color:var(--px-rose); outline:0; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button:is(:hover,:focus-visible):not(:disabled) kbd { background:var(--px-rose); color:#fff; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button:disabled { opacity:.55; cursor:default; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls button { min-height:40px; padding:6px 14px; border:3px solid var(--px-ink); clip-path:var(--px-cut); box-shadow:none; background:var(--px-cream); color:var(--px-ink); font:500 15px/1.2 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls .dialogue-pause { border:0; clip-path:none; background:none; padding:6px 4px; font:800 13px/1.2 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls :is(.fx-dialogue-next,.fx-dialogue-reveal) { margin-left:auto; display:flex; gap:10px; background:var(--px-rose); color:#fff; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls :is(.fx-dialogue-next,.fx-dialogue-reveal) span { color:#FBE7EB; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls button:hover:not(:disabled) { filter:brightness(1.06); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls button:focus-visible { outline:3px solid var(--px-rose); outline-offset:2px; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls > .fx-dialogue-hint { order:3; width:100%; margin:0; text-align:right; font:700 12px/1.3 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls:has(.fx-dialogue-next,.fx-dialogue-reveal) > .fx-dialogue-hint { width:auto; order:0; margin-left:4px; }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-pause { margin:0; font:700 13px var(--font-body); color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-ending .fx-dialogue-card { background:var(--px-cream); }
+@media (max-height:520px) {
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue { width:calc(100vw - 24px); bottom:max(8px,env(safe-area-inset-bottom)); }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-card { min-height:0; gap:6px; padding:10px 12px 9px 108px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-speaker-portrait { width:76px; height:85px; padding:4px 4px 12px; border-width:2px; transform:rotate(-3deg) translate(10px,4px); }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-speaker-portrait::after { width:40px; height:14px; margin-left:-20px; top:-8px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-nameplate h2 { font-size:18px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-mood { font-size:17px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-text { min-height:0; font-size:16px; line-height:1.35; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button { min-height:44px; padding:5px 9px; font-size:14px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-choices button kbd { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls button { min-height:40px; font-size:13px; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-controls > .fx-dialogue-hint { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .fx-dialogue-close { top:4px; right:4px; }
+}
+/* The trigger's name hangs below its sparkle, clear of Felice when she stands on it. */
+main.pixel-game.version-095.ui-tagebuch .story-trigger small { position:absolute; top:calc(100% + 16px); left:50%; transform:translateX(-50%); }
+main.pixel-game.version-095.ui-tagebuch .fx-dialogue-mark.is-original { background:var(--px-mint); border-color:var(--px-forest); color:var(--px-forest); }
