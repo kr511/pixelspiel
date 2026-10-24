@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties } from "react";
 import { GameUI } from "./GameUI";
 import { usePreload } from "./preload";
@@ -26,8 +26,9 @@ import { isSchoolDay, schoolOver, GRADUATION_DAY } from "./school-calendar";
 import { BEDTIME, canSleep, memoryPendingToday, originalTime, routinePlace, sceneMark, TIMELINE_KEY, STORY_END, STORY_START, STORY_EVENTS, STORY_CHAPTERS, INTRO_FLAG, storySeason, advanceTimelineClock, beginEvent, canTrigger, completeEvent, daysBetween, emptyEvent, storyDayNumber, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, nextStepInfo, parseTimeline, sleepToStoryDay, storyHint, storyTrigger, waitingMinutes, type EventProgress, type StoryEvent, type StorySession, type TimelineSave } from "./timeline";
 import { IntroCinematic } from "./IntroCinematic";
 import { CalendarFlip } from "./CalendarFlip";
-import { InventoryPanel } from "./InventoryPanel";
-import { SavePanel } from "./SavePanel";
+import { InventoryContent, InventoryPanel } from "./InventoryPanel";
+import { PauseMenu } from "./PauseMenu";
+import { SaveContent, SavePanel } from "./SavePanel";
 // Explicit extension: on case-insensitive file systems "./Credits" would also match credits.ts.
 import { Credits } from "./Credits.tsx";
 import { UI_KEY, DEFAULT_UI, parseUi, type UiPrefs } from "./ui-prefs";
@@ -47,12 +48,11 @@ import { advanceRest, beginRest, hasLeft, leaveRest, restPosition, type RestMoti
 import { easeInput, facing, movementStep, walkingFrame } from "./motion";
 import { advanceActor, availableSeat, canChangePose, initialActors, requestPose, standingActor, type Actor, type Actors, type Pose } from "./actors";
 import { sceneBackground, speakerGraphic } from "./graphics";
-import { cameraFor, offscreenGuide } from "./camera";
+import { cameraFor, offscreenGuide, projectPoint } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, activityAt, travelMinutes, clockText, longDate, parseDay, seasonalLight, nightShade, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
-import { GAME_VERSION } from "./version";
 import { PixelIcon } from "./PixelIcons";
 
 const BUS_RIDE_FLAG = "bus-ride-first-day";
@@ -68,6 +68,8 @@ function lyingInBed(bed = BED): Rest {
 const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
 /** Small landscape phones; keep in sync with game/mobile.css. */
 const COMPACT_QUERY = "(max-height: 520px) and (orientation: landscape)", COMPACT_ZOOM = 1.4;
+const AERIAL_PLACES: Place[] = ["radegast", "schoolway"];
+const SMALL_FIGURE_PLACES: Place[] = ["radegast", "zoerbig", "school", "schoolway"];
 
 type Direction = "front" | "left" | "back" | "right";
 type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence" | "routine"; response?: boolean; actorId?: string; kitchenId?: string; routineId?: string; morning?: boolean };
@@ -246,6 +248,10 @@ export function Game() {
   const hint = !started || session || legacyView ? null : worldSave.chapter && step ? { key: `draft:${worldSave.chapter}:${worldSave.step}`, text: step.label } : storyHint(timeline);
   const waitMinutes = !session && !legacyView ? waitingMinutes(timeline) : null;
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
+  const startChapter = STORY_CHAPTERS.find(chapter => chapter.number === (nextEvent(timeline)?.chapterNumber ?? 8)) ?? STORY_CHAPTERS[0];
+  const [pauseTab, setPauseTab] = useState("tasche");
+  const muted = useSyncExternalStore(worldAudio.subscribe, worldAudio.getMuted, worldAudio.getMuted);
+  const resumeGame = () => { void worldAudio.unlock(); useInput.getState().setPaused(false); clearMovement(); };
   const arrived = eventState && eventState.cursor > 0 ? 1 : Math.min(1, arrivalTime / 3);
   // Treffpunkt: Elias rides up the cobbled road, then turns onto the meadow beside the pavilion.
   const eliasPoint = arrived < .6 ? { x: .64 - .02 * (arrived / .6), y: .95 - .23 * (arrived / .6) } : { x: .62 - .44 * ((arrived - .6) / .4), y: .72 };
@@ -304,8 +310,9 @@ export function Game() {
   }, [persistDay, save.place, legacyView, worldSave]);
   useEffect(() => { if (started) persistTimeline(timelineRef.current); }, [started, persistTimeline]);
   useEffect(() => {
-    worldAudio.setMood(cinema?.kind === "kiss" || event?.scene === "confession" && (eventState?.cursor ?? 0) >= 1 || event?.scene === "love" && (eventState?.cursor ?? 0) >= 2 ? "love" : event && event.scene !== "encounter" ? "evening" : "world");
-  }, [event, eventState?.cursor, cinema?.kind]);
+    // The closing credits play the soft love theme.
+    worldAudio.setMood(creditsOpen || cinema?.kind === "kiss" || event?.scene === "confession" && (eventState?.cursor ?? 0) >= 1 || event?.scene === "love" && (eventState?.cursor ?? 0) >= 2 ? "love" : event && event.scene !== "encounter" ? "evening" : "world");
+  }, [event, eventState?.cursor, cinema?.kind, creditsOpen]);
   useEffect(() => {
     if (!notices.length || !active || document.hidden) return;
     const timer = window.setTimeout(() => setNotices(previous => previous.slice(1)), 4500);
@@ -628,7 +635,7 @@ export function Game() {
     const next = beginChapter(save,id);
     setSave(next); changeRest(null); setPhotoMoment(null); position(SPAWNS[next.place]); setJournal(false);
     const c = CHAPTERS.find(c => c.id === id)!;
-    setDialogue({ speaker: "Undatierter Szenenentwurf", text: `Fiktionalisierter vorhandener Ablauf. Historisches Datum und genaue Details werden noch ergänzt.\n\n${c.intro}`, action: "calendar" });
+    setDialogue({ speaker: "Undatierter Szenenentwurf", text: c.intro, action: "calendar" });
   }
 
   function restoreDraft() {
@@ -857,8 +864,16 @@ export function Game() {
   // Cutscene camera: while Elias rides in, push in on him and settle back to the full view.
   const arrivalShot = event?.scene === "encounter" && (eventState?.cursor ?? 0) === 0 ? Math.min(1, arrivalTime / 3) : null;
   const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
-  const baseCamera = cameraFor(focus, (compact ? COMPACT_ZOOM : 1) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
+  // The aerial views of Radegast and the school path are drawn at a smaller scale, so the camera moves closer there.
+  const aerialZoom = AERIAL_PLACES.includes(save.place) && event?.scene !== "encounter" ? 1.6 : 1;
+  const baseCamera = cameraFor(focus, Math.min(2.2, (compact ? COMPACT_ZOOM : 1) * aerialZoom) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
   const camera = dialogueLift ? { ...baseCamera, y: baseCamera.y - dialogueLift } : baseCamera;
+  // Felice's thought sits above her head in screen space; near the top edge it moves below her instead.
+  const thoughtSpot = (() => {
+    const feet = projectPoint(player, camera), lift = (SMALL_FIGURE_PLACES.includes(save.place) ? .065 : .13) * camera.zoom;
+    const above = feet.y - lift > .2, x = Math.min(.8, Math.max(.2, feet.x)), y = above ? feet.y - lift : feet.y + .02 * camera.zoom;
+    return { above, point: { x: .5 + (x - .5 - camera.x) / camera.zoom, y: .5 + (y - .5 - camera.y) / camera.zoom } };
+  })();
   const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
   // In the routine, the arrow points at what is still open in this room: the bathroom, the homework or the school door.
   const routineItem = routineTarget === save.place ? ({ home: "wash", bedroom: "homework", school: "school-door" } as Partial<Record<Place, string>>)[save.place] : undefined;
@@ -883,7 +898,7 @@ export function Game() {
           {spot.furniture && <BenchArt winter={winter && save.place === "garden"}/>}
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
-        {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
+        {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span></div>}
         {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide ?? routineGuide)?.to === exit.to ? "quest-exit" : ""} ${nearbyExit?.to === exit.to ? "nearby-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}{(guide ?? storyGuide ?? routineGuide)?.to === exit.to && <em> · {travelMinutes(save.place, exit.to)} Min.</em>}</small></div>)}
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id || routineSpot?.id === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
@@ -892,7 +907,7 @@ export function Game() {
           {event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 && <span className="pixel-chocolate felice-chocolate" aria-label="Felice behält die Schokolade"/>}
         </div>
         {/* Felice's thought floats above her as a handwritten bubble instead of a card in the corner. */}
-        {active && thought && <aside className="felice-thought" role="status" data-testid="felice-thought" key={thought.key} style={labelStyle({ x: Math.min(.8, Math.max(.2, player.x)), y: Math.max(.17, player.y - .13) })}><p><small>Felice denkt</small>{thought.key.endsWith(":go") && triggerHere ? "Hier ist es. Am Funkeln geht es los." : thought.text}</p></aside>}
+        {active && thought && <aside className={`felice-thought${thoughtSpot.above ? "" : " is-below"}`} role="status" data-testid="felice-thought" key={thought.key} style={labelStyle(thoughtSpot.point)}><p><small>Felice denkt</small>{thought.key.endsWith(":go") && triggerHere ? "Hier ist es. Am Funkeln geht es los." : thought.text}</p></aside>}
         {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
         {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+9}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
         <WorldAtmosphere place={save.place} season={sceneSeason}/>
@@ -909,19 +924,28 @@ export function Game() {
       const current = timelineRef.current;
       // A brand-new game opens with the autumn intro; returning players continue directly.
       if (!current.flags.includes(INTRO_FLAG) && !current.active && !current.progress["beginning-2025-11-01"]?.completedAt) { clearMovement(); setIntro(true); }
-    }} roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay && arrivalShot === null} transitioning={transitioning} place={inWorld ? event?.scene === "encounter" ? "Radegast · Am Treffpunkt" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed} menu={overlay || !inWorld ? [] : [
-      { label: "Tasche", shortcut: "I", onSelect: () => { clearMovement(); setInventoryOpen(true); } },
-      { label: "Erinnerungsalbum", shortcut: "J", onSelect: () => { clearMovement(); setJournal(true); } },
-      { label: "Smartphone", onSelect: () => { clearMovement(); setPhone(true); } },
-      { label: ui.nextStep ? "Ziel-Anzeige aus" : "Ziel-Anzeige an", onSelect: toggleNextStep },
-      { label: "Spielstand", onSelect: () => { clearMovement(); setSaveOpen(true); } },
-    ]}/>
+    }} roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay && arrivalShot === null} transitioning={transitioning} progress={{ chapter: startChapter.number, chapterTitle: startChapter.title, completed: datedCompleted, done: !nextEvent(timeline), resume: timeline.progress["beginning-2025-11-01"]?.completedAt ? `${longDate(day.date)} · ${PLACES[save.place].name}` : null }}/>
+    {started && paused && <PauseMenu tab={pauseTab} onTab={setPauseTab} onResume={resumeGame} place={inWorld ? event?.scene === "encounter" ? "Radegast · Am Treffpunkt" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed} tabs={[
+      ...(overlay || !inWorld ? [] : [
+        { id: "tasche", label: "Tasche", content: <InventoryContent ids={timeline.inventory} onOpenMemory={() => { resumeGame(); setJournal(true); }}/> },
+        { id: "karte", label: "Karte", content: <WorldMap place={save.place} target={nextStep.place}/> },
+        { id: "spielstand", label: "Spielstand", content: <SaveContent/> },
+      ]),
+      { id: "optionen", label: "Optionen", content: <div className="pause-options">
+        <div className="pause-switches">
+          <button aria-pressed={!muted} onClick={() => worldAudio.toggleMuted()}><span>Musik und Geräusche</span><b>{muted ? "Aus" : "An"}</b></button>
+          <button aria-pressed={ui.nextStep} onClick={toggleNextStep}><span>„Als Nächstes“ anzeigen</span><b>{ui.nextStep ? "An" : "Aus"}</b></button>
+        </div>
+        <section className="pause-controls" aria-label="Steuerung"><h3>Steuerung</h3><ul><li><kbd>WASD</kbd> oder Pfeile · laufen</li><li><kbd>E</kbd> · sprechen und benutzen</li><li><kbd>1</kbd>–<kbd>9</kbd> · Antwort wählen</li><li><kbd>J</kbd> · Erinnerungsbuch</li><li><kbd>I</kbd> · Tasche</li><li><kbd>Esc</kbd> · Menü</li></ul><p>Am Handy: Joystick zum Laufen, der große Knopf rechts zum Sprechen und Benutzen. Das Gerät quer halten.</p></section>
+        {timeline.progress["our-story-finale"]?.completedAt && <button className="memory-primary" onClick={() => { resumeGame(); setCreditsOpen(true); }}>Abspann ansehen</button>}
+        </div> },
+    ]}/>}
     {started && inWorld && !paused && !transitioning && <>
       <div className="hud-left">
         <div className="day-clock" data-testid="day-clock" data-date={historicalDate(day.date)}><time dateTime={day.date}>{longDate(day.date)}</time><strong aria-label={`Uhrzeit ${clockText(session ? sceneMinute : day.minute)}`}>{clockText(session ? sceneMinute : day.minute)}</strong><small>{session ? "Szenenzeit" : activityAt(save.place, day.minute)}<span className="calendar-season" aria-label="Jahreszeit">{day.season}</span></small></div>
         {ui.nextStep && !legacyView && !worldSave.chapter && (session ? sessionStep && <div className="next-step session-step" data-testid="next-step" data-status="active"><b>Jetzt</b><strong>{sessionStep}</strong></div> : <div className="next-step" data-testid="next-step" data-status={nextStep.status}><b>Als Nächstes</b><strong>{nextStep.title}</strong><span>{nextStep.detail}</span></div>)}
       </div>
-      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${event.date ? historicalDate(event.date) : eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span className="session-mark" data-mark={event ? sceneMark(event).symbol : "✎"}>{event ? `${sceneMark(event).symbol} ${sceneMark(event).label}` : "✎ Entwurf"}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
+      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "ENTWURF OHNE DATUM" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${event.date ? historicalDate(event.date) : eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span className="session-mark" data-mark={event ? sceneMark(event).symbol : "✎"}>{event ? `${sceneMark(event).symbol} ${sceneMark(event).label}` : "✎ Entwurf"}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <nav className="hud-doors" aria-label="Spielmenüs">
@@ -948,11 +972,9 @@ export function Game() {
     {phone && (!event || !["chat","love","confession","message"].includes(event.scene)) && <PhoneHub key={phoneChatDate ?? "hub"} chatDate={phoneChatDate} timeline={timeline} activeId={session?.id} paused={paused} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} blocked={paused || needsLandscape} onClose={()=>{setPhone(false);setPhoneChatDate(null);}} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onJump={()=>{setPhone(false);jumpStory();}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}}/>}
     {storyToast && started && <aside className={`story-unlocked${storyToast.special ? " special-memory" : ""}`} role="status"><span aria-hidden="true">{storyToast.special ? "♥" : "✦"}</span><div><small>ERINNERUNG BEWAHRT</small><strong>{historicalDate(storyToast.date)} · {storyToast.title}</strong></div><button onClick={() => { setStoryToast(null); clearMovement(); setJournal(true); }}>Im Buch ansehen</button><button aria-label="Erinnerungshinweis schließen" onClick={() => setStoryToast(null)}>×</button></aside>}
     {journal && <dialog ref={journalRef} className="story-modal journal-modal" onCancel={() => { setJournal(false); clearMovement(); }}>
-      <div className="journal-heading"><div><small>FELICE × ELIAS · VERSION {GAME_VERSION}</small><h1>Unsere Geschichte</h1><p>{datedCompleted} {datedCompleted === 1 ? "datierte Erinnerung" : "datierte Erinnerungen"} bewahrt · Historische Daten bleiben beim Wiederholen erhalten.</p></div><div className="journal-duo" aria-label="Felice und Elias"><CharacterArt id="felice"/><CharacterArt id="elias"/></div><button className="modal-close" aria-label="Erinnerungsbuch schließen" onClick={() => setJournal(false)}>×</button></div>
+      <div className="journal-heading"><h1>Unser Erinnerungsbuch</h1><button className="modal-close book-close" aria-label="Erinnerungsbuch schließen" onClick={() => setJournal(false)}>Zurück ins Spiel <kbd>J</kbd></button></div>
       <TimelineJournal save={timeline} busyId={session?.id} draftActive={Boolean(legacyView)} onSelect={selectTimelineEvent} onJump={jumpStory} onDraft={e => { if(e.chapter) selectChapter(e.chapter); }} onCredits={() => { setJournal(false); setCreditsOpen(true); }}/>
-      <WorldMap place={save.place} target={nextStep.place}/>
       <NamesPanel save={names} error={namesError} onRename={changeName} onVisibility={mode => persistNames({ ...namesRef.current, visibility: mode })}/>
-      <div className="journal-bottom"><section><h2>Eure Orte</h2><p>Wohnung / Garten ↔ Radegast ↔ Haltestelle ↔ Zörbig · Markt ↔ Schulweg ↔ Pausenhof ↔ Turnhalle. Von Radegast nach Gölzau zum Schützenhaus.</p><p>WASD / Pfeile oder Joystick · E zum Sprechen & Benutzen · J für das Buch · Esc für Pause</p><small>Fortschritt wird automatisch auf diesem Gerät gespeichert. Ergänzte Dialoge und Szenen sind fiktionalisierte Rekonstruktionen. Historische Angaben und Spielzeit werden getrennt gespeichert.</small></section><button className="memory-primary" onClick={() => setJournal(false)}>Zurück ins Spiel</button></div>
     </dialog>}
     {dialogue && <DialogueBox speaker={dialogue.speaker} key={`${dialogue.speaker}:${dialogue.text}:${dialogue.choices?.join("|")}`} art={dialogue.art ?? speakerGraphic(dialogue.speaker) ?? undefined} text={dialogue.text} emotion={dialogue.emotion} choices={dialogue.choices} paused={paused} blocked={paused || needsLandscape} onAdvance={finishDialogue} onCancel={()=>{setDialogue(null);clearMovement();}} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} ending={dialogue.ending} note={dialogue.action === "calendar" ? "Kalender" : dialogue.action === "sequence" || dialogue.action === "encounter" ? originalNote(event?.id, dialogue.text) : undefined}/>}
 

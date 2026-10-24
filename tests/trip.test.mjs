@@ -4,7 +4,7 @@ import { PLACES, SPAWNS, canWalk } from "../game/story.ts";
 import { REST_SPOTS } from "../game/day.ts";
 import { speakerGraphic } from "../game/graphics.ts";
 import { TRIP, exitOpen, onTrip, wakePlace } from "../game/routines.ts";
-import { STORY_EVENTS, beginEvent, completeEvent, eventById, eventStatus, initialTimeline, jumpToNext, nextEvent, sleepToStoryDay, storyTrigger } from "../game/timeline.ts";
+import { STORY_EVENTS, beginEvent, completeEvent, eventById, eventStatus, initialTimeline, jumpToNext, nextEvent, sceneMark, sleepToStoryDay, storyTrigger } from "../game/timeline.ts";
 
 const TRIP_IDS = ["klassenfahrt-anreise", "klassenfahrt-parlament", "klassenfahrt-pokalabend", "klassenfahrt-europapark", "klassenfahrt-hotelabend", "klassenfahrt-heimreise"];
 const player = { x: .5, y: .7 };
@@ -26,7 +26,7 @@ test("Klassenfahrt: bestätigter Wochenablauf in Kapitel 6 zwischen Frühling un
     const event = eventById(id);
     assert.equal(event.chapterNumber, 6, id);
     assert.equal(event.confirmed, true, id);
-    assert.match(event.description, /rekonstruiert/, id);
+    assert.equal(sceneMark(event).symbol, "✎", id);
   }
   assert.equal(eventById("klassenfahrt-parlament").place, "parliament");
   assert.match(eventById("klassenfahrt-pokalabend").description, /Leverkusen gegen Bayern/);

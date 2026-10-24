@@ -76,12 +76,12 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { left: .10, right: .29, top: .56, bottom: .695 }, { left: .755, right: .865, top: .69, bottom: .72 },
     { left: .455, right: .55, top: .30, bottom: .37 },
   ] },
-  eliasroom: { name: "Elias’ Zimmer", subtitle: "Ein wiederkehrender Ort · Einrichtung als Spielinterpretation", exits: [{ x: .50, y: .90, to: "zoerbig", label: "Nach draußen", spawn: { x: .69, y: .29 } }], obstacles: [
+  eliasroom: { name: "Elias’ Zimmer", subtitle: "Ein wiederkehrender Ort", exits: [{ x: .50, y: .90, to: "zoerbig", label: "Nach draußen", spawn: { x: .69, y: .29 } }], obstacles: [
     { left: .15, right: .40, top: .19, bottom: .335 }, { left: .60, right: .86, top: .16, bottom: .465 },
     { left: .075, right: .16, top: .49, bottom: .65 }, { left: .74, right: .90, top: .73, bottom: .82 },
     { left: .44, right: .565, top: .12, bottom: .265 },
   ] },
-  // Klassenfahrt 20.–24.04.2026. Layouts sind Spielinterpretationen; die Bilder sind vorläufige Pixelentwürfe.
+  // Klassenfahrt 20.–24.04.2026. Layouts are game interpretations; the pictures are provisional pixel drafts.
   hotel: { name: "B&B Hotel Kehl · Zimmer", subtitle: "Klassenfahrt · 20. bis 24. April 2026", exits: [
     { x: .16, y: .86, to: "hotelboys", label: "Zum Zimmer von Elias, Paul und Justin", spawn: { x: .34, y: .74 } },
     { x: .42, y: .88, to: "parliament", label: "Nach Straßburg", spawn: { x: .50, y: .72 } },
@@ -115,19 +115,19 @@ const FRIENDS_RING = ringFormation({ x: .215, y: .35 }, 4, .028, 1 / 16, 1);
 export const ENTITIES: Record<Place, Entity[]> = {
   playground: [
     { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden." },
-    { id: "playground-swings", name: "Schaukeln", x: .70, y: .51, display: { x: .75, y: .37 }, kind: "item", art: "landmark", text: "Die Schaukeln bewegen sich leise im Wind. Der Spielplatz ist eine atmosphärische Interpretation, kein maßstabsgetreuer Ortsplan." },
+    { id: "playground-swings", name: "Schaukeln", x: .70, y: .51, display: { x: .75, y: .37 }, kind: "item", art: "landmark", text: "Die Schaukeln bewegen sich leise im Wind." },
     { id: "playground-leaves", name: "Ein kleiner Weg", x: .29, y: .70, kind: "item", art: "landmark", text: "Ein kurzer Spaziergang, eine Pause auf der Bank. Hier darf der Alltag einfach langsam sein." },
   ],
   christmasmarket: [
-    { id: "market-elias", name: "Elias", x: .58, y: .74, kind: "person", art: "elias", text: "Die Lichter sehen schön aus. Wollen wir noch eine kleine Runde zusammen gehen? Freie Dialogrekonstruktion." },
+    { id: "market-elias", name: "Elias", x: .58, y: .74, kind: "person", art: "elias", text: "Die Lichter sehen schön aus. Wollen wir noch eine kleine Runde zusammen gehen?" },
     { id: "market-lights", name: "Lichterketten", x: .56, y: .45, display: { x: .61, y: .185 }, kind: "item", art: "star", text: "Warme Lichter über dem Weg. Alles glitzert ein bisschen." },
     { id: "market-tree", name: "Weihnachtsbaum", x: .49, y: .425, display: { x: .51, y: .225 }, kind: "item", art: "star", text: "Ein beleuchteter Baum, kalte Winterluft und Zeit zu zweit. Euer Besuch am 06.12.2025 gehört zur gemeinsamen Geschichte." },
-    { id: "market-stall", name: "Ein warmer Stand", x: .32, y: .42, display: { x: .20, y: .295 }, kind: "item", art: "landmark", text: "An den Ständen wird es warm und gemütlich. Was ihr damals gegessen oder gekauft habt, bleibt offen." },
+    { id: "market-stall", name: "Ein warmer Stand", x: .32, y: .42, display: { x: .20, y: .295 }, kind: "item", art: "landmark", text: "An den Ständen wird es warm und gemütlich. Es riecht nach Kinderpunsch und gebrannten Mandeln." },
   ],
   eliasroom: [
-    { id: "elias-room-elias", name: "Elias", x: .49, y: .56, kind: "person", art: "elias", text: "Schön, dass du hier bist. Wir können reden, den Computer ansehen oder uns einfach hinsetzen. Freie Dialogrekonstruktion." },
+    { id: "elias-room-elias", name: "Elias", x: .49, y: .56, kind: "person", art: "elias", text: "Schön, dass du hier bist. Wir können reden, den Computer ansehen oder uns einfach hinsetzen." },
     { id: "elias-computer", name: "Elias’ Computer", x: .29, y: .38, display: { x: .275, y: .255 }, kind: "item", art: "landmark", text: "Computer und Programmieren waren schon am Anfang gemeinsame Gesprächsthemen." },
-    { id: "elias-shelf", name: "Regal", x: .22, y: .57, display: { x: .12, y: .52 }, kind: "item", art: "book", text: "Ein paar Bücher und freie Plätze im Regal. Diese Gegenstände gestalten den Raum, ohne weitere biografische Tatsachen zu behaupten." },
+    { id: "elias-shelf", name: "Regal", x: .22, y: .57, display: { x: .12, y: .52 }, kind: "item", art: "book", text: "Ein paar Bücher und noch viel Platz im Regal." },
     { id: "elias-notes", name: "Platz für Gedanken", x: .67, y: .76, display: { x: .80, y: .745 }, kind: "item", art: "book", text: "Wünsche, Ideen, gemeinsame Erinnerungen. Manche Gespräche brauchen keine große Unternehmung." },
   ],
   hotel: [
@@ -135,23 +135,23 @@ export const ENTITIES: Record<Place, Entity[]> = {
     { id: "hotel-suitcase", name: "Koffer", x: .75, y: .68, display: { x: .75, y: .58 }, kind: "item", art: "landmark", text: "Fünf Tage Klassenfahrt passen erstaunlich gut in einen Koffer." },
   ],
   hotelboys: [
-    { id: "hotelboys-elias", name: "Elias", x: .40, y: .58, kind: "person", art: "elias", text: "Schön, dass du da bist. Bei uns ist immer was los. Freie Dialogrekonstruktion." },
+    { id: "hotelboys-elias", name: "Elias", x: .40, y: .58, kind: "person", art: "elias", text: "Schön, dass du da bist. Bei uns ist immer was los." },
     { id: "hotelboys-paul", name: "Paul", x: .58, y: .68, kind: "person", art: "paul", text: "Ich sag’s ja: Das beste Zimmer im ganzen Hotel." },
     { id: "hotelboys-justin", name: "Justin", x: .76, y: .40, kind: "person", art: "justin", text: "Der Fernseher läuft gleich. Setz dich ruhig dazu." },
   ],
   parliament: [
-    { id: "parliament-building", name: "Europäisches Parlament", x: .50, y: .45, display: { x: .50, y: .24 }, kind: "item", art: "landmark", text: "Das Europäische Parlament in Straßburg. Die Szene zeigt nur den Platz davor; was ihr drinnen erlebt habt, bleibt offen." },
+    { id: "parliament-building", name: "Europäisches Parlament", x: .50, y: .45, display: { x: .50, y: .24 }, kind: "item", art: "landmark", text: "Das Europäische Parlament in Straßburg. Ganz schön viel Glas." },
     { id: "parliament-river", name: "Die Ill", x: .22, y: .60, display: { x: .09, y: .55 }, kind: "item", art: "landmark", text: "Direkt am Parlament fließt Wasser vorbei. Ein guter Platz, um kurz stehen zu bleiben." },
     { id: "parliament-flags", name: "Fahnen", x: .76, y: .54, display: { x: .76, y: .38 }, kind: "item", art: "sign", text: "Viele Fahnen nebeneinander. Ganz schön bunt für ein so ernstes Gebäude." },
-    { id: "parliament-nino", name: "Nino", x: .64, y: .70, kind: "person", art: "nino", text: "Krass, wie groß das alles ist. Freie Dialogrekonstruktion." },
-    { id: "parliament-richard", name: "Richard", x: .70, y: .76, kind: "person", art: "richard", text: "Hat jemand gesehen, wo Herr Kluger hin ist? Freie Dialogrekonstruktion." },
+    { id: "parliament-nino", name: "Nino", x: .64, y: .70, kind: "person", art: "nino", text: "Krass, wie groß das alles ist." },
+    { id: "parliament-richard", name: "Richard", x: .70, y: .76, kind: "person", art: "richard", text: "Hat jemand gesehen, wo Herr Kluger hin ist?" },
   ],
   europapark: [
-    { id: "europapark-coaster", name: "Achterbahn", x: .62, y: .46, display: { x: .68, y: .27 }, kind: "item", art: "landmark", text: "Eine Achterbahn als Pixelentwurf. Welche Bahn ihr gefahren seid, nennt das Spiel nicht." },
+    { id: "europapark-coaster", name: "Achterbahn", x: .62, y: .46, display: { x: .68, y: .27 }, kind: "item", art: "landmark", text: "Eine Achterbahn. Von hier unten hört man das Kreischen bis zum Eingang." },
     { id: "europapark-fountain", name: "Brunnen", x: .26, y: .58, display: { x: .26, y: .46 }, kind: "item", art: "landmark", text: "Ein Brunnen zwischen den Wegen. Hier kann man kurz durchatmen." },
     { id: "europapark-stand", name: "Imbissstand", x: .70, y: .74, display: { x: .84, y: .64 }, kind: "item", art: "landmark", text: "Nach der Achterbahn ist ein Snack eine gute Idee." },
   ],
-  radegast: [{ id: "radegast-way", name: "Weg zur Bushaltestelle", x: .56, y: .61, kind: "item", art: "sign", text: "Von Felices Wohnung geht es entlang der Häuser und am Grün vorbei zur Haltestelle. Der Weg ist für das Spiel verkürzt." }],
+  radegast: [{ id: "radegast-way", name: "Weg zur Bushaltestelle", x: .56, y: .61, kind: "item", art: "sign", text: "Von Felices Wohnung geht es entlang der Häuser und am Grün vorbei zur Haltestelle." }],
   zoerbig: [
     { id: "zoerbig-stop", name: "Zörbig · Markt", x: .60, y: .26, display: { x: .60, y: .19 }, kind: "item", art: "landmark", text: "Am Markt kommt ihr mit dem Bus an. Links oben liegt die Löwen-Apotheke, rechts das Rathaus. Unten rechts geht es direkt zur Schule." },
     { id: "zoerbig-pharmacy", name: "Löwen-Apotheke", x: .255, y: .285, display: { x: .17, y: .165 }, kind: "item", art: "landmark", text: "Die Löwen-Apotheke steht an der oberen linken Ecke des Marktes." },
@@ -200,7 +200,7 @@ export const ENTITIES: Record<Place, Entity[]> = {
   ],
   bus: [
     { id: "elias-bus", name: "Elias", x: .485, y: .49, kind: "person", art: "elias", text: "Ein gewöhnlicher Weg fühlt sich zusammen gleich anders an." },
-    { id: "timetable", name: "Fahrplan · Radegast–Zörbig", x: .45, y: .455, display: { x: .45, y: .32 }, kind: "item", art: "sign", text: "Radegast ↔ Zörbig. Euer Schulbus verbindet die Haltestelle mit der Sekundarschule Zörbig. Rechts führt der Spielweg nach Gölzau." },
+    { id: "timetable", name: "Fahrplan · Radegast–Zörbig", x: .45, y: .455, display: { x: .45, y: .32 }, kind: "item", art: "sign", text: "Radegast ↔ Zörbig. Euer Schulbus verbindet die Haltestelle mit der Sekundarschule Zörbig. Rechts geht es nach Gölzau." },
     { id: "ticket", name: "Fahrkarte", x: .39, y: .48, display: { x: .405, y: .40 }, kind: "item", art: "ticket", text: "Eine Fahrkarte für den gemeinsamen Weg." },
   ],
   school: [
@@ -234,7 +234,7 @@ export const CHAPTERS: Chapter[] = [
     { id: "dog-ball", place: "garden", target: "ball", label: "Hol den Spielball", speaker: "Felice", text: "Ob du Lust auf eine kleine Runde hast?", item: "Spielball" },
     { id: "dog-play", place: "garden", target: "anuk", label: "Spiele mit Anuk", speaker: "Felice", text: "Anuk flitzt dem Ball hinterher und kommt zu dir zurück. Willkommen zu Hause, kleiner Freund.", item: "-Spielball" },
   ] },
-  { id: "christmas", title: "Das erste Weihnachtsessen", date: "Historisches Datum noch offen", icon: "✦", intro: "Elias ist zum ersten Mal bei Felice zu Hause zum Weihnachtsessen. Der vorhandene Ablauf ist ein fiktionalisierter Szenenentwurf.", ending: "Zum ersten Mal Elias bei Felice zu Hause, gemeinsam am Weihnachtstisch. Das historische Datum und der genaue Ablauf werden noch ergänzt.", reward: "Weihnachtsstern im Erinnerungsbuch", steps: [
+  { id: "christmas", title: "Das erste Weihnachtsessen", date: "Historisches Datum noch offen", icon: "✦", intro: "Elias ist zum ersten Mal bei Felice zu Hause zum Weihnachtsessen.", ending: "Zum ersten Mal Elias bei Felice zu Hause, gemeinsam am Weihnachtstisch. Das historische Datum und der genaue Ablauf werden noch ergänzt.", reward: "Weihnachtsstern im Erinnerungsbuch", steps: [
     { id: "xmas-meet", place: "bus", target: "elias-bus", label: "Begrüße Elias an der Haltestelle", speaker: "Elias", text: "Unser erstes Weihnachtsessen bei dir zu Hause. Ich freue mich darauf. Gehen wir zusammen?" },
     { id: "xmas-family", place: "home", target: "family", label: "Begrüßt Felices Mutter im Wohnzimmer", speaker: "Felices Mutter", text: "Frohe Weihnachten! Schön, dass du heute zum ersten Mal mit uns hier isst, Elias." },
     { id: "xmas-stepfather", place: "home", target: "stepfather", label: "Begrüßt Felices Stiefvater", speaker: "Felices Stiefvater", text: "Willkommen, Elias. Wir sind heute zu acht am Tisch. Macht es euch gemütlich." },

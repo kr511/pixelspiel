@@ -23,8 +23,7 @@ export function resolveStoryIllustration(illustration: string): string {
 
 export function eventDateText(event: StoryEvent) {
   if (!event.date) return event.period ? `${event.period} · Genaues Datum offen` : historicalDate(null);
-  if (event.source === "future") return `${historicalDate(event.date)} · Inszenierter Ausblick`;
-  if (event.source === "staged") return `${event.period ?? historicalDate(event.date)} · Inszenierung`;
+  if (event.source === "staged") return event.period ?? historicalDate(event.date);
   return `${historicalDate(event.date)}${event.until && event.until !== event.date ? ` – ${historicalDate(event.until)}` : ""}`;
 }
 export function PhoneTabs({ tab, onChange }: { tab: PhoneTab; onChange: (tab: PhoneTab) => void }) {
@@ -59,8 +58,8 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
     </>}
     {tab === "WhatsApp" && <ChatHistory currentDate={timeline.clock.date} currentMinute={timeline.clock.minute} initialDate={chatDate}/>}
     {tab === "Verlauf" && <>
-      <div className="phone-page-heading"><small>GESPEICHERTE NACHRICHTEN</small><h3>Unsere Abende</h3><p>Die Abende zeigen echte Nachrichten aus eurem Chat, wortgetreu und mit Uhrzeit. Nur ältere Spielstände enthalten noch rekonstruierte Zeilen.</p></div>
-      {selected && <div className="phone-history-detail"><button className="phone-back" onClick={() => setSelectedId(null)}>← Alle Gespräche</button><h4>{selected.title}</h4><time>{eventDateText(selected)}</time>{messages.length ? messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}`} key={`${selected.id}-${index}`}><small>{line.speaker}{line.original ? ` · ORIGINAL${line.time ? ` · ${line.time}` : ""}` : line.speaker === "Erzählung" ? "" : " · REKONSTRUKTION"}</small><p>{line.text}</p>{selected.scene !== "chat" && progress?.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {progress.answers[String(index)]}</small>}</div>) : <p>Dieses Gespräch wurde geöffnet. Die erste Nachricht ist noch unterwegs.</p>}<button className="memory-primary" disabled={!canSelect(selected)} onClick={() => select(selected)}>{timeline.progress[selected.id]?.completedAt ? "Diesen Abend erneut erleben" : "Gespräch fortsetzen"} →</button></div>}
+      <div className="phone-page-heading"><small>GESPEICHERTE NACHRICHTEN</small><h3>Unsere Abende</h3><p>Die Abende zeigen echte Nachrichten aus eurem Chat, wortgetreu und mit Uhrzeit.</p></div>
+      {selected && <div className="phone-history-detail"><button className="phone-back" onClick={() => setSelectedId(null)}>← Alle Gespräche</button><h4>{selected.title}</h4><time>{eventDateText(selected)}</time>{messages.length ? messages.map((line, index) => <div className={`chat-message from-${line.speaker.toLowerCase()}`} key={`${selected.id}-${index}`}><small>{line.speaker}{line.original ? ` · ORIGINAL${line.time ? ` · ${line.time}` : ""}` : line.speaker === "Erzählung" ? "" : " · nachgestellt"}</small><p>{line.text}</p>{selected.scene !== "chat" && progress?.answers?.[String(index)] && <small className="chat-answer-choice">Deine Entscheidung: {progress.answers[String(index)]}</small>}</div>) : <p>Dieses Gespräch wurde geöffnet. Die erste Nachricht ist noch unterwegs.</p>}<button className="memory-primary" disabled={!canSelect(selected)} onClick={() => select(selected)}>{timeline.progress[selected.id]?.completedAt ? "Diesen Abend erneut erleben" : "Gespräch fortsetzen"} →</button></div>}
       {!selected && <div className="phone-list">{chats.map(event => <button className="phone-event-row" key={event.id} onClick={() => setSelectedId(event.id)}><span aria-hidden="true">{event.symbol ?? "✉"}</span><div><small>{eventDateText(event)}</small><strong>{event.title}</strong><p>{timeline.progress[event.id]?.completedAt ? "Gespeicherter Abend" : "Bisherige Nachrichten"}</p></div><b aria-hidden="true">→</b></button>)}{chats.length === 0 && <p className="phone-empty">Hier erscheinen die Gespräche, sobald du sie erlebt hast.</p>}</div>}
     </>}
     {tab === "Kalender" && <>
@@ -75,7 +74,7 @@ export function PhonePages({ tab, timeline, blocked = false, onSelectMemory, onO
       <div className="phone-memory-grid">{dated.map(event => {
         const status = eventStatus(timeline, event);
         const illustration = resolveStoryIllustration(event.illustration);
-        return <button className={`phone-memory-card${status === "gesperrt" ? " locked-silhouette" : ""}`} key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span className="phone-memory-image" style={status === "gesperrt" ? undefined : { backgroundImage: `url(${illustration})` }}><i aria-hidden="true">{status === "gesperrt" ? "◇" : event.symbol ?? "♡"}</i></span><small>{eventDateText(event)}</small><strong>{event.title}</strong><span>{status === "abgeschlossen" ? "✓ Erneut erleben" : status === "verfügbar" ? "Erleben →" : "Noch gesperrt"}</span></button>;
+        return <button className={`phone-memory-card${status === "gesperrt" ? " locked-silhouette" : ""}`} key={event.id} disabled={!canSelect(event)} onClick={() => select(event)}><span className={`phone-memory-image${event.scene === "chat" ? " chat-night" : ""}`} style={status === "gesperrt" || event.scene === "chat" ? undefined : { backgroundImage: `url(${illustration})` }}><i aria-hidden="true">{status === "gesperrt" ? "◇" : event.symbol ?? "♡"}</i></span><small>{eventDateText(event)}</small><strong>{event.title}</strong><span>{status === "abgeschlossen" ? "✓ Erneut erleben" : status === "verfügbar" ? "Erleben →" : "Noch gesperrt"}</span></button>;
       })}</div>
     </>}
   </section>;
