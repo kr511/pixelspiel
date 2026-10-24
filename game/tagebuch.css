@@ -389,3 +389,161 @@ main.pixel-game.version-095.ui-tagebuch .book-progress progress { appearance:non
 main.pixel-game.version-095.ui-tagebuch .book-progress progress::-webkit-progress-bar { background:rgba(246,238,223,.2); }
 main.pixel-game.version-095.ui-tagebuch .book-progress progress::-webkit-progress-value { background:var(--px-rose); }
 main.pixel-game.version-095.ui-tagebuch .book-progress progress::-moz-progress-bar { background:var(--px-rose); }
+
+/* ---------- Start screen: a diary card over the town ---------- */
+main.pixel-game.version-095.ui-tagebuch .start-screen.with-backdrop { background:var(--px-night); }
+main.pixel-game.version-095.ui-tagebuch .start-screen.with-backdrop::after { content:""; position:absolute; inset:0; background:rgba(30,36,51,.38); pointer-events:none; }
+main.pixel-game.version-095.ui-tagebuch .start-card { position:relative; z-index:2; width:min(100%,520px); box-sizing:border-box; padding:38px 44px 30px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; background:var(--px-paper); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; filter:none; backdrop-filter:none; }
+main.pixel-game.version-095.ui-tagebuch .start-card::before { content:""; position:absolute; top:0; left:50%; width:130px; height:24px; margin-left:-65px; background:var(--px-washi); opacity:.9; transform:rotate(-2deg); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-kicker { margin:6px 0 0; font:500 13px/1.3 var(--font-pixel); letter-spacing:.12em; text-transform:uppercase; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .start-card h1 { margin:0; font:600 clamp(2.6rem,7vw,4rem)/1 var(--font-pixel); letter-spacing:0; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .start-card h1 span { display:inline; margin:0; color:var(--px-rose); font:inherit; }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-subtitle { margin:-6px 0 0; font:600 30px/1.1 var(--font-hand); letter-spacing:0; text-transform:none; color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-teaser { display:block; max-width:380px; margin:0; font:600 15px/1.5 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .start-progress { width:100%; display:flex; flex-direction:column; gap:8px; }
+main.pixel-game.version-095.ui-tagebuch .start-progress > div { display:flex; justify-content:space-between; gap:10px; font:800 13px/1.3 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .start-progress span { display:inline; margin:0; max-width:none; font:inherit; color:inherit; }
+main.pixel-game.version-095.ui-tagebuch .start-progress ol { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; margin:0; padding:0; list-style:none; }
+main.pixel-game.version-095.ui-tagebuch .start-progress li { height:10px; background:var(--px-line); }
+main.pixel-game.version-095.ui-tagebuch .start-progress li.is-done { background:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .start-progress li.is-current { background:var(--px-washi); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter { width:100%; min-height:58px; margin-top:4px; padding:10px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--px-rose); color:#fff; border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; transform:none; cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter > span { display:flex; flex-direction:column; align-items:flex-start; gap:2px; max-width:none; margin:0; color:inherit; }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter b { font:600 22px/1.1 var(--font-pixel); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter small { font:700 13px/1.2 var(--font-body); color:#FBE7EB; }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:hover:not(:disabled) { filter:brightness(1.06); transform:none; background:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:disabled { background:var(--px-line); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:focus-visible { outline:3px solid var(--px-ink); outline-offset:3px; }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-place { font:500 12px/1.3 var(--font-pixel); color:var(--px-ink-2); }
+@media (max-height:520px) {
+  main.pixel-game.version-095.ui-tagebuch .start-card { width:min(100%,460px); padding:20px 26px 14px; gap:8px; }
+  main.pixel-game.version-095.ui-tagebuch .start-card h1 { font-size:2.3rem; }
+  main.pixel-game.version-095.ui-tagebuch .start-card .start-subtitle { font-size:22px; }
+  main.pixel-game.version-095.ui-tagebuch .start-card .start-enter { min-height:50px; }
+  main.pixel-game.version-095.ui-tagebuch .start-card .start-teaser, main.pixel-game.version-095.ui-tagebuch .start-card .start-place { display:none; }
+}
+
+/* ---------- Pause menu: the world rests, a side sheet holds everything else ---------- */
+main.pixel-game.version-095.ui-tagebuch .pause-overlay { position:fixed; inset:0; z-index:70; display:flex; justify-content:flex-end; background:rgba(30,36,51,.62); backdrop-filter:blur(3px); pointer-events:auto; font-family:var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch .pause-title { position:absolute; left:max(40px,8vw); top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:6px; color:var(--px-paper); }
+main.pixel-game.version-095.ui-tagebuch .pause-title strong { font:600 58px/1 var(--font-pixel); }
+main.pixel-game.version-095.ui-tagebuch .pause-title span { font:600 28px/1.1 var(--font-hand); color:#E4D5BA; }
+main.pixel-game.version-095.ui-tagebuch .pause-sheet { position:relative; width:min(480px,100vw); height:100%; box-sizing:border-box; padding:22px 24px 16px; display:flex; flex-direction:column; gap:12px; background:var(--px-paper); color:var(--px-ink); border-left:3px solid var(--px-ink); overflow:hidden; }
+main.pixel-game.version-095.ui-tagebuch .pause-resume { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:52px; padding:10px 16px; background:var(--px-rose); color:#fff; border:3px solid var(--px-ink); clip-path:var(--px-cut); font:600 20px/1 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .pause-resume kbd { background:var(--px-paper); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .pause-resume:focus-visible { outline:3px solid var(--px-ink); outline-offset:3px; }
+main.pixel-game.version-095.ui-tagebuch .pause-place { margin:0; font:700 13px/1.3 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-tabs { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); border:3px solid var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .pause-tabs button { min-height:42px; padding:6px 4px; background:var(--px-paper-2); color:var(--px-ink); border:0; border-left:2px solid var(--px-ink); font:500 15px/1 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .pause-tabs button:first-child { border-left:0; }
+main.pixel-game.version-095.ui-tagebuch .pause-tabs button[aria-selected="true"] { background:var(--px-ink); color:var(--px-paper); }
+main.pixel-game.version-095.ui-tagebuch .pause-tabs button:focus-visible { outline:3px solid var(--px-rose); outline-offset:-4px; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel { flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:4px; overscroll-behavior:contain; }
+main.pixel-game.version-095.ui-tagebuch .pause-autosave { font:700 12px/1.3 var(--font-body); color:var(--px-ink-2); }
+/* Contents inside the sheet and in the bag window */
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-body { display:flex; flex-direction:column; gap:12px; padding:0; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:0; padding:0; list-style:none; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid button { width:100%; min-height:84px; padding:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); clip-path:var(--px-cut); box-shadow:none; cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid button[aria-pressed="true"] { background:var(--px-rose-soft); border-color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid span { font-size:30px; color:#6E3B30; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid small { font:700 11px/1.2 var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal,.save-content) .inventory-detail { padding:14px 16px; background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); clip-path:var(--px-cut); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-detail > small { font:500 11px/1.3 var(--font-pixel); letter-spacing:.1em; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-detail h2 { margin:2px 0 6px; font:800 18px/1.25 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-detail p { margin:0 0 10px; font:600 14px/1.5 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-symbol { display:none; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-empty { font:600 14px/1.5 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) :is(.memory-primary,.memory-secondary), main.pixel-game.version-095.ui-tagebuch .save-file-pick { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:6px 14px; border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; font:500 15px/1.2 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .memory-primary { background:var(--px-rose); color:#fff; }
+main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .memory-secondary, main.pixel-game.version-095.ui-tagebuch .save-file-pick { background:var(--px-paper-2); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .save-content { display:flex; flex-direction:column; gap:10px; }
+main.pixel-game.version-095.ui-tagebuch .save-content .save-status { font:700 12px/1.4 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-options { display:flex; flex-direction:column; gap:14px; }
+main.pixel-game.version-095.ui-tagebuch .pause-switches { display:flex; flex-direction:column; gap:8px; }
+main.pixel-game.version-095.ui-tagebuch .pause-switches button { display:flex; align-items:center; justify-content:space-between; min-height:46px; padding:6px 12px; background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); clip-path:var(--px-cut); font:800 14px var(--font-body); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .pause-switches b { padding:3px 10px; background:var(--px-line); color:var(--px-ink-2); font:500 13px var(--font-pixel); }
+main.pixel-game.version-095.ui-tagebuch .pause-switches button[aria-pressed="true"] b { background:var(--px-forest); color:var(--px-paper); }
+main.pixel-game.version-095.ui-tagebuch .pause-controls h3 { margin:0 0 6px; font:600 26px/1 var(--font-hand); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .pause-controls ul { margin:0; padding:0; list-style:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 12px; font:700 13px/1.4 var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch .pause-controls p { margin:8px 0 0; font:600 13px/1.5 var(--font-body); color:var(--px-ink-2); }
+/* Map in paper colours */
+main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-panel { padding:0; border:0; background:none; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-heading { flex-direction:column; gap:4px; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-heading h2 { font:600 28px/1 var(--font-hand); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-heading p, main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-heading > span, main.pixel-game.version-095.ui-tagebuch .pause-panel .world-map-caption { margin:0; font:600 13px/1.45 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-town { fill:var(--px-cream); stroke:var(--px-ink); stroke-width:2; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-town-title { fill:var(--px-ink-2); font-family:var(--font-pixel); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-footpath { stroke:var(--px-line); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-connection { stroke:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-route-label { fill:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node circle { fill:var(--px-paper); stroke:var(--px-ink); stroke-width:2; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node rect { fill:var(--px-paper); stroke:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node text { fill:var(--px-ink); font-family:var(--font-body); font-weight:700; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node.is-current circle { fill:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node.is-current rect { fill:var(--px-mint); stroke:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node.is-target circle { fill:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .map-node.is-target rect { fill:var(--px-rose-soft); stroke:var(--px-rose); }
+/* Names */
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-panel { padding:0; border:0; background:none; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-heading { flex-direction:column; gap:8px; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-heading h2 { font:600 26px/1 var(--font-hand); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-heading p, main.pixel-game.version-095.ui-tagebuch .pause-panel .names-heading > label { font:600 13px/1.45 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-heading select, main.pixel-game.version-095.ui-tagebuch .pause-panel .name-card input { background:#fff; color:var(--px-ink); border:2px solid var(--px-ink); border-radius:0; font:700 13px var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-group h3 { font:500 12px/1.3 var(--font-pixel); letter-spacing:.06em; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .names-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .name-card { background:var(--px-cream); border:2px solid var(--px-ink); border-radius:0; }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .name-card label > span { color:var(--px-ink-2); font:700 11px var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch .pause-panel .name-card button { background:var(--px-forest); color:var(--px-paper); border:2px solid var(--px-ink); border-radius:0; }
+/* Bag window (key I) and save window share the paper look */
+main.pixel-game.version-095.ui-tagebuch .inventory-modal[open] { width:min(640px,calc(100vw - 24px)); padding:18px 20px; background:var(--px-paper); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .inventory-modal::backdrop { background:rgba(30,36,51,.62); }
+main.pixel-game.version-095.ui-tagebuch .inventory-heading { padding:0 0 12px; }
+main.pixel-game.version-095.ui-tagebuch .inventory-heading small { font:500 12px/1.3 var(--font-pixel); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .inventory-heading h1 { font:600 32px/1 var(--font-hand); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .inventory-modal .modal-close { background:none; border:0; color:var(--px-ink-2); font:600 24px var(--font-pixel); box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .inventory-modal .journal-bottom { display:flex; justify-content:flex-end; gap:10px; margin-top:12px; padding:0; border:0; background:none; color:var(--px-ink-2); font:600 12px var(--font-body); }
+@media (max-height:520px) {
+  main.pixel-game.version-095.ui-tagebuch .pause-title strong { font-size:38px; }
+  main.pixel-game.version-095.ui-tagebuch .pause-title span { font-size:20px; }
+  main.pixel-game.version-095.ui-tagebuch .pause-sheet { width:min(440px,62vw); padding:10px 12px 8px; gap:8px; }
+  main.pixel-game.version-095.ui-tagebuch .pause-resume { min-height:44px; font-size:16px; }
+  main.pixel-game.version-095.ui-tagebuch .pause-place, main.pixel-game.version-095.ui-tagebuch .pause-autosave { display:none; }
+  main.pixel-game.version-095.ui-tagebuch .pause-tabs button { min-height:40px; font-size:13px; }
+  main.pixel-game.version-095.ui-tagebuch :is(.pause-panel,.inventory-modal) .inventory-grid button { min-height:64px; }
+}
+
+/* ---------- Closing credits: a slow roll through the year ---------- */
+main.pixel-game.version-095.ui-tagebuch .credits-modal[open] { width:min(640px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); padding:0; display:flex; flex-direction:column; background:var(--px-paper); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; text-align:center; font-family:var(--font-body); }
+main.pixel-game.version-095.ui-tagebuch .credits-modal::backdrop { background:rgba(20,22,32,.9); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll { flex:1 1 auto; max-height:none; min-height:0; padding:32px 28px 40vh; overflow-y:auto; scroll-behavior:auto; }
+main.pixel-game.version-095.ui-tagebuch .credits-roll:focus-visible { outline:3px solid var(--px-rose); outline-offset:-6px; }
+main.pixel-game.version-095.ui-tagebuch .credits-roll header small, main.pixel-game.version-095.ui-tagebuch .credits-roll h2 small { display:block; font:500 12px/1.4 var(--font-pixel); letter-spacing:.1em; text-transform:uppercase; color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll h1 { margin:6px 0 2px; font:600 54px/1 var(--font-hand); color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll header p { margin:0; font:700 14px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-stats { gap:16px; margin:22px 0 10px; }
+main.pixel-game.version-095.ui-tagebuch .credits-stats > div { padding:8px 12px; background:var(--px-cream); border:2px solid var(--px-ink); clip-path:var(--px-cut); }
+main.pixel-game.version-095.ui-tagebuch .credits-stats dt { font:500 11px/1.3 var(--font-pixel); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-stats dd { font:600 24px/1.1 var(--font-pixel); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll section { margin-top:42px; }
+main.pixel-game.version-095.ui-tagebuch .credits-picture { width:min(360px,80%); height:170px; margin:0 auto 14px; background:var(--px-line) center/cover; border:8px solid #fff; outline:3px solid var(--px-ink); box-shadow:5px 5px 0 rgba(43,36,32,.3); transform:rotate(-1.5deg); image-rendering:pixelated; }
+main.pixel-game.version-095.ui-tagebuch .credits-roll section:nth-of-type(even) .credits-picture { transform:rotate(1.5deg); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll h2 { margin:0 0 8px; font:600 32px/1.05 var(--font-hand); color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll ul { font:700 15px/1.8 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll li small { font:500 11px/1.2 var(--font-pixel); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-roll section p { font:600 15px/1.6 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-note { margin:40px 0 0; font:700 13px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .credits-end { display:flex; flex-direction:column; align-items:center; gap:6px; margin:70px 0 0; font:600 40px/1.15 var(--font-hand); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .credits-end span:nth-child(2) { color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .credits-end b { font:400 34px var(--font-pixel); color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .credits-modal .journal-bottom { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:10px 12px; margin:0; background:var(--px-paper-2); border-top:3px solid var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .credits-modal :is(.memory-primary,.memory-secondary) { min-height:42px; padding:6px 14px; border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; font:500 15px/1.2 var(--font-pixel); cursor:pointer; background:var(--px-cream); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .credits-modal .memory-primary { background:var(--px-rose); color:#fff; }
+
+/* ---------- Graduation snapshots as polaroids ---------- */
+main.pixel-game.version-095.ui-tagebuch .graduation-photos { background:var(--px-night); }
+main.pixel-game.version-095.ui-tagebuch .graduation-photo-background { background:linear-gradient(rgba(30,36,51,.72),rgba(30,36,51,.9)),url('/rooms/graduation-gym-v08.webp') center/cover; }
+main.pixel-game.version-095.ui-tagebuch .graduation-snapshot { padding:14px 14px 30px; background:#fff; border:3px solid var(--px-ink); box-shadow:8px 8px 0 rgba(10,8,8,.45); }
+main.pixel-game.version-095.ui-tagebuch .graduation-snapshot figcaption { font:600 28px/1.1 var(--font-hand); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .graduation-snapshot figcaption small { font:500 12px/1.3 var(--font-pixel); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .snapshot-memory-caption { font:600 26px/1.1 var(--font-hand); color:var(--px-paper); }
+main.pixel-game.version-095.ui-tagebuch .start-backdrop-caption { z-index:3; padding:4px 10px; background:var(--px-paper); color:var(--px-ink); border:2px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); font:500 13px/1.2 var(--font-pixel); box-shadow:none; backdrop-filter:none; }

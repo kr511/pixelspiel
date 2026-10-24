@@ -34,7 +34,7 @@ export function GraduationPhotos({ blocked, onComplete }: { blocked: boolean; on
           <div className="snapshot-person snapshot-elias"><CharacterArt id="elias"/></div>
           <div className="snapshot-sunlight"/>
         </div>
-        <figcaption>{caption}<small>Elias & Felice · Sommer 2026</small></figcaption>
+        <figcaption>{caption}<small>Elias & Felice · 26.06.2026</small></figcaption>
       </figure>)}
     </div>
     <span className="snapshot-white" style={{ opacity:state.flash }} aria-hidden="true" data-testid="snapshot-white"/>

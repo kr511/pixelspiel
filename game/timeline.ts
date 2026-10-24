@@ -196,7 +196,7 @@ const SCHOOL_DESCRIPTIONS: Record<17 | 19 | 21, string> = {
 };
 const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
   id: `school-first-feelings-${day}`, title: day === 17 ? "Fragen auf dem Schulhof" : day === 19 ? "Ein kleines Kompliment" : "Gedanken über Umarmungen",
-  date: `2025-11-${day}`, period: "17.–21.11.2025 · Rekonstruierte Schul- und Alltagsszene", source: "staged", chapterNumber: 1,
+  date: `2025-11-${day}`, source: "staged", chapterNumber: 1,
   place: "school", start: 360, end: 430, spawn: { x: .60, y: .88 }, illustration: "/rooms/school-court-secondary-v075.webp", symbol: "✎", cast: ["Felice", "Elias", "Paul", "Justin"],
   description: SCHOOL_DESCRIPTIONS[day], steps,
 });
