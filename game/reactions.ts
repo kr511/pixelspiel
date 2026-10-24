@@ -120,7 +120,7 @@ export const REACTIONS: Record<string, Record<string, Reaction>> = {
     "Erst mal Zeh ins Wasser": said("Elias", "Feigling. Ich bin schon drin!"),
   },
   "autumn-everyday/school": {
-    "Über Schule sprechen": said("Elias", "Erzähl. Wie läuft es bei dir gerade?"),
+    "Über Schule sprechen": said("Elias", "Erzähl. Wie sind die Neuen in deiner Klasse?"),
     "Über Training und Hobbys sprechen": said("Elias", "Und? Wie lief das letzte Training?"),
   },
 };

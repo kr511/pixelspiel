@@ -51,3 +51,13 @@ test("Szenen erkennen wörtlich zitierte echte Nachrichten", async () => {
   assert.equal(originalTime("new-year-2026", newYear.steps[1].text), "00:00");
   assert.equal(originalTime("new-year-2026", newYear.steps[0].text), undefined);
 });
+
+test("Altlasten: kein vergessenes Heft im Alltag, Schießfreunde abends und am Wochenende", () => {
+  const ids = (place, minute, date) => routineEntities(place, minute, ENTITIES[place], false, false, date).map(entity => entity.id);
+  assert.ok(!ids("school", 800, "2026-01-07").includes("notebook"));
+  assert.ok(routineEntities("school", 800, ENTITIES.school, false, true, "2026-01-07").some(entity => entity.id === "notebook"), "im alten Schulkapitel bleibt es");
+  assert.ok(!ids("range", 600, "2026-01-07").includes("range-host"), "Mittwochvormittag");
+  assert.ok(ids("range", 1080, "2026-01-07").includes("range-host"), "Mittwochabend");
+  assert.ok(ids("range", 600, "2026-01-10").includes("range-host"), "Samstag");
+  assert.ok(ids("range", 600, "2026-01-07").includes("shoot"), "die Bahn bleibt");
+});

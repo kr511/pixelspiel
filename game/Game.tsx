@@ -48,7 +48,7 @@ import { advanceRest, beginRest, hasLeft, leaveRest, restPosition, type RestMoti
 import { easeInput, facing, movementStep, walkingFrame } from "./motion";
 import { advanceActor, availableSeat, canChangePose, initialActors, requestPose, standingActor, type Actor, type Actors, type Pose } from "./actors";
 import { sceneBackground, speakerGraphic } from "./graphics";
-import { cameraFor, offscreenGuide } from "./camera";
+import { cameraFor, offscreenGuide, projectPoint } from "./camera";
 import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, activityAt, travelMinutes, clockText, longDate, parseDay, seasonalLight, nightShade, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
@@ -68,6 +68,8 @@ function lyingInBed(bed = BED): Rest {
 const THOUGHT_MS = 6000, THOUGHT_REPEAT_MS = 75000;
 /** Small landscape phones; keep in sync with game/mobile.css. */
 const COMPACT_QUERY = "(max-height: 520px) and (orientation: landscape)", COMPACT_ZOOM = 1.4;
+const AERIAL_PLACES: Place[] = ["radegast", "schoolway"];
+const SMALL_FIGURE_PLACES: Place[] = ["radegast", "zoerbig", "school", "schoolway"];
 
 type Direction = "front" | "left" | "back" | "right";
 type Dialogue = { speaker: string; art?: string; text: string; target?: string; ending?: boolean; choices?: string[]; emotion?: Emotion; action?: "school" | "pose" | "kitchen" | "encounter" | "calendar" | "sequence" | "routine"; response?: boolean; actorId?: string; kitchenId?: string; routineId?: string; morning?: boolean };
@@ -633,7 +635,7 @@ export function Game() {
     const next = beginChapter(save,id);
     setSave(next); changeRest(null); setPhotoMoment(null); position(SPAWNS[next.place]); setJournal(false);
     const c = CHAPTERS.find(c => c.id === id)!;
-    setDialogue({ speaker: "Undatierter Szenenentwurf", text: `Fiktionalisierter vorhandener Ablauf. Historisches Datum und genaue Details werden noch ergänzt.\n\n${c.intro}`, action: "calendar" });
+    setDialogue({ speaker: "Undatierter Szenenentwurf", text: c.intro, action: "calendar" });
   }
 
   function restoreDraft() {
@@ -862,8 +864,16 @@ export function Game() {
   // Cutscene camera: while Elias rides in, push in on him and settle back to the full view.
   const arrivalShot = event?.scene === "encounter" && (eventState?.cursor ?? 0) === 0 ? Math.min(1, arrivalTime / 3) : null;
   const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
-  const baseCamera = cameraFor(focus, (compact ? COMPACT_ZOOM : 1) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
+  // The aerial views of Radegast and the school path are drawn at a smaller scale, so the camera moves closer there.
+  const aerialZoom = AERIAL_PLACES.includes(save.place) && event?.scene !== "encounter" ? 1.6 : 1;
+  const baseCamera = cameraFor(focus, Math.min(2.2, (compact ? COMPACT_ZOOM : 1) * aerialZoom) * (arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1));
   const camera = dialogueLift ? { ...baseCamera, y: baseCamera.y - dialogueLift } : baseCamera;
+  // Felice's thought sits above her head in screen space; near the top edge it moves below her instead.
+  const thoughtSpot = (() => {
+    const feet = projectPoint(player, camera), lift = (SMALL_FIGURE_PLACES.includes(save.place) ? .065 : .13) * camera.zoom;
+    const above = feet.y - lift > .2, x = Math.min(.8, Math.max(.2, feet.x)), y = above ? feet.y - lift : feet.y + .02 * camera.zoom;
+    return { above, point: { x: .5 + (x - .5 - camera.x) / camera.zoom, y: .5 + (y - .5 - camera.y) / camera.zoom } };
+  })();
   const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
   // In the routine, the arrow points at what is still open in this room: the bathroom, the homework or the school door.
   const routineItem = routineTarget === save.place ? ({ home: "wash", bedroom: "homework", school: "school-door" } as Partial<Record<Place, string>>)[save.place] : undefined;
@@ -888,7 +898,7 @@ export function Game() {
           {spot.furniture && <BenchArt winter={winter && save.place === "garden"}/>}
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
-        {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
+        {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span></div>}
         {exits.filter(exit => !exit.markerHidden).map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide ?? routineGuide)?.to === exit.to ? "quest-exit" : ""} ${nearbyExit?.to === exit.to ? "nearby-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}{(guide ?? storyGuide ?? routineGuide)?.to === exit.to && <em> · {travelMinutes(save.place, exit.to)} Min.</em>}</small></div>)}
         {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && sceneActors[entity.id] ? {...sceneActors[entity.id],moving:false} : sceneActors[entity.id]} quest={step?.place === save.place && step.target === entity.id || routineSpot?.id === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
@@ -897,7 +907,7 @@ export function Game() {
           {event?.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 && <span className="pixel-chocolate felice-chocolate" aria-label="Felice behält die Schokolade"/>}
         </div>
         {/* Felice's thought floats above her as a handwritten bubble instead of a card in the corner. */}
-        {active && thought && <aside className="felice-thought" role="status" data-testid="felice-thought" key={thought.key} style={labelStyle({ x: Math.min(.8, Math.max(.2, player.x)), y: Math.max(.17, player.y - .13) })}><p><small>Felice denkt</small>{thought.key.endsWith(":go") && triggerHere ? "Hier ist es. Am Funkeln geht es los." : thought.text}</p></aside>}
+        {active && thought && <aside className={`felice-thought${thoughtSpot.above ? "" : " is-below"}`} role="status" data-testid="felice-thought" key={thought.key} style={labelStyle(thoughtSpot.point)}><p><small>Felice denkt</small>{thought.key.endsWith(":go") && triggerHere ? "Hier ist es. Am Funkeln geht es los." : thought.text}</p></aside>}
         {bedOccupied && <span className="bed-name-label" style={labelStyle({ x: .385, y: .09 })}>Felice</span>}
         {rest?.companion && <div className={`room-player pose-${rest.companion.actor.pose} bench-companion`} style={{...labelStyle(rest.companion.actor.position), zIndex: Math.round(rest.companion.actor.position.y*100)+9}} aria-label={rest.companion.phase === "resting" ? "Elias sitzt neben Felice" : "Elias geht zum Ruheplatz"} data-testid="seated-elias" data-rest-id={rest.spot.id} data-pose={rest.companion.actor.pose}><CharacterArt id="elias" pose={rest.companion.actor.pose} direction={rest.companion.actor.direction} walking={rest.companion.actor.moving} frame={rest.companion.actor.frame}/><span className="room-player-label">Elias</span></div>}
         <WorldAtmosphere place={save.place} season={sceneSeason}/>
@@ -935,7 +945,7 @@ export function Game() {
         <div className="day-clock" data-testid="day-clock" data-date={historicalDate(day.date)}><time dateTime={day.date}>{longDate(day.date)}</time><strong aria-label={`Uhrzeit ${clockText(session ? sceneMinute : day.minute)}`}>{clockText(session ? sceneMinute : day.minute)}</strong><small>{session ? "Szenenzeit" : activityAt(save.place, day.minute)}<span className="calendar-season" aria-label="Jahreszeit">{day.season}</span></small></div>
         {ui.nextStep && !legacyView && !worldSave.chapter && (session ? sessionStep && <div className="next-step session-step" data-testid="next-step" data-status="active"><b>Jetzt</b><strong>{sessionStep}</strong></div> : <div className="next-step" data-testid="next-step" data-status={nextStep.status}><b>Als Nächstes</b><strong>{nextStep.title}</strong><span>{nextStep.detail}</span></div>)}
       </div>
-      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${event.date ? historicalDate(event.date) : eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span className="session-mark" data-mark={event ? sceneMark(event).symbol : "✎"}>{event ? `${sceneMark(event).symbol} ${sceneMark(event).label}` : "✎ Entwurf"}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
+      {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "ENTWURF OHNE DATUM" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${event.date ? historicalDate(event.date) : eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span className="session-mark" data-mark={event ? sceneMark(event).symbol : "✎"}>{event ? `${sceneMark(event).symbol} ${sceneMark(event).label}` : "✎ Entwurf"}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
       {notices[0] && active && <aside className="day-notice" role="status" data-testid="day-notice" key={`${notices[0].date}-${notices[0].minute}`}><strong>Uhrzeit: {clockText(notices[0].minute)}</strong><span>{notices[0].label}</span></aside>}
       <nav className="hud-doors" aria-label="Spielmenüs">
