@@ -69,7 +69,9 @@ def mobile_layout(page):
       return {
         viewport:[innerWidth,innerHeight],
         scroll:[document.documentElement.scrollWidth,document.documentElement.scrollHeight],
-        titleClockOverlap:overlaps(box('.world-title'),box('.day-clock')),
+        doorsClockOverlap:overlaps(box('.hud-doors'),box('.day-clock')),
+        doorsWorldOverlap:overlaps(box('.hud-doors'),box('.world-viewport')),
+        clockWorldOverlap:overlaps(box('.day-clock'),box('.world-viewport')),
         thoughtJoystickOverlap:overlaps(box('.felice-thought'),box('.joystick')),
         labelsOverlap:labels.flatMap((a,i) => labels.slice(i+1)
           .filter(b => overlaps(a,b)).map(b => [a.id,b.id])),
@@ -180,7 +182,9 @@ def main():
                 context, page = open_scenario(fixture("school"), size)
                 page.wait_for_timeout(150)
                 layout = mobile_layout(page)
-                assert not layout["titleClockOverlap"], layout
+                assert not layout["doorsClockOverlap"], layout
+                # The HUD lives in the margins beside the square world, never on top of it.
+                assert not layout["doorsWorldOverlap"] and not layout["clockWorldOverlap"], layout
                 assert not layout["thoughtJoystickOverlap"], layout
                 assert not layout["labelsOverlap"], layout
                 assert layout["scroll"] == list(size), layout
@@ -205,9 +209,10 @@ def main():
                 page.wait_for_timeout(700)
                 page.mouse.up()
                 assert point(page)["y"] < right["y"] - .09
-                page.get_by_role("button", name="Pause", exact=True).click()
+                page.get_by_role("button", name="Menü öffnen", exact=True).click()
                 page.get_by_role("button", name="Zurück zum Spiel", exact=True).click()
-                page.get_by_role("button", name="Tasche öffnen", exact=True).click()
+                page.get_by_role("button", name="Menü öffnen", exact=True).click()
+                page.locator(".pause-menu button").filter(has_text="Tasche").click()
                 assert page.locator(".inventory-modal").is_visible()
                 page.get_by_role("button", name="Tasche schließen", exact=True).click()
                 page.set_viewport_size({"width": size[1], "height": size[0]})
