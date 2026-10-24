@@ -44,3 +44,10 @@ test("Zimmer: Schulsachen nur an Alltagstagen, Foto weg von der Tür, Bett und B
   const bed = REST_SPOTS.find(spot => spot.id === "felice-bed"), edge = REST_SPOTS.find(spot => spot.id === "felice-bed-edge");
   assert.ok(Math.hypot(bed.approach.x - edge.approach.x, bed.approach.y - edge.approach.y) > .08, "Hinlegen und Bettkante liegen auseinander");
 });
+
+test("Szenen erkennen wörtlich zitierte echte Nachrichten", async () => {
+  const { originalTime } = await import("../game/timeline.ts");
+  const newYear = STORY_EVENTS.find(event => event.id === "new-year-2026");
+  assert.equal(originalTime("new-year-2026", newYear.steps[1].text), "00:00");
+  assert.equal(originalTime("new-year-2026", newYear.steps[0].text), undefined);
+});

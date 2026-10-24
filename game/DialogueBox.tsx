@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { PixelPortrait } from "./PixelPortrait";
-import { dialogueAdvanceIntent, dialogueCharacters, dialogueEmotion, nextVisibleLength, portraitIdForSpeaker, type Emotion } from "./dialogue";
+import { EMOTION_NAMES, dialogueAdvanceIntent, dialogueCharacters, dialogueEmotion, nextVisibleLength, portraitIdForSpeaker, type Emotion } from "./dialogue";
 
 export type DialogueBoxProps = {
   speaker: string; art?: string; text: string; emotion?: Emotion; choices?: string[];
@@ -34,6 +34,8 @@ export function DialogueBox({ speaker, art, text, emotion, choices, blocked, onA
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, reducedMotionSnapshot, serverSnapshot);
   const finished = visible >= characters.length;
   const portraitEmotion = dialogueEmotion(text, emotion);
+  // People show their mood in handwriting; the narration and the school door stay neutral.
+  const mood = portraitEmotion !== "neutral" && !["narrator", "school-bell"].includes(portraitIdForSpeaker(speaker, art)) ? EMOTION_NAMES[portraitEmotion] : null;
 
   useEffect(() => {
     const node = dialogRef.current;
@@ -61,6 +63,9 @@ export function DialogueBox({ speaker, art, text, emotion, choices, blocked, onA
   }
 
   return <dialog ref={dialogRef} className={`fx-dialogue${ending ? " fx-dialogue-ending" : ""}`} data-testid="dialogue-box" data-emotion={portraitEmotion} aria-labelledby="fx-dialogue-speaker" aria-describedby="fx-dialogue-accessible-text" onCancel={event => { event.preventDefault(); if (!blocked) onCancel?.(); }} onKeyDown={event => {
+    // Number keys pick an answer once the line is fully shown.
+    const picked = /^[1-9]$/.test(event.key) && finished && !blocked ? choices?.[Number(event.key) - 1] : undefined;
+    if (picked) { event.preventDefault(); event.stopPropagation(); act(picked); return; }
     if (event.key !== "Enter" && event.code !== "Space" && event.key !== " ") return;
     event.stopPropagation();
     if (event.repeat) { event.preventDefault(); return; }
@@ -69,18 +74,29 @@ export function DialogueBox({ speaker, art, text, emotion, choices, blocked, onA
     if (finished && button && !blocked) return;
     event.preventDefault(); act();
   }}>
-    <div className="fx-dialogue-top"><div className="fx-dialogue-speaker-portrait"><PixelPortrait id={portraitIdForSpeaker(speaker, art)} emotion={portraitEmotion}/></div><div className="fx-dialogue-nameplate"><small>{note ?? (ending ? "ERINNERUNG BEWAHRT" : "FIKTIONALISIERTER DIALOG")}</small><h2 id="fx-dialogue-speaker">{speaker}</h2></div>{onCancel && <button className="fx-dialogue-close" aria-label="Gespräch unterbrechen" disabled={blocked} onClick={onCancel}>×</button>}</div>
-    <div className="fx-dialogue-body" aria-busy={!finished}>
-      <div ref={textRef} tabIndex={0} className="fx-dialogue-text" data-testid="dialogue-text" data-visible={visible} data-complete={finished} onClick={() => act()} aria-label={finished ? "Dialogtext. Tippen zum Fortsetzen." : "Dialogtext. Tippen zeigt die ganze Nachricht."}>
-        <span aria-hidden="true">{characters.slice(0, visible).join("")}{!finished && <span className="fx-typewriter-cursor">▍</span>}</span>
+    <div className="fx-dialogue-card">
+      <div className="fx-dialogue-top">
+        <div className="fx-dialogue-speaker-portrait"><PixelPortrait id={portraitIdForSpeaker(speaker, art)} emotion={portraitEmotion}/></div>
+        <div className="fx-dialogue-nameplate">
+          <h2 id="fx-dialogue-speaker">{speaker}</h2>
+          {mood && <span className="fx-dialogue-mood">{mood}</span>}
+          {(ending || note) && <small className={`fx-dialogue-mark${!ending && note?.startsWith("♥ Original") ? " is-original" : ""}`}>{ending ? "♥ Erinnerung bewahrt" : note}</small>}
+        </div>
+        {onCancel && <button className="fx-dialogue-close" aria-label="Gespräch unterbrechen" disabled={blocked} onClick={onCancel}>×</button>}
       </div>
-      <p id="fx-dialogue-accessible-text" className="fx-dialogue-sr">{text}</p>
-      {blocked && <p className="fx-dialogue-pause" role="status">Gespräch pausiert</p>}
-      <div className="fx-dialogue-controls">
-        {onPause && <button className="dialogue-pause" onClick={onPause} aria-label={paused ? "Gespräch fortsetzen" : "Gespräch pausieren"}>{paused ? "▶ Fortsetzen" : "Ⅱ Pause"}</button>}
-        {choices?.length ? <div className="fx-dialogue-choices" aria-label="Deine Antwort">{choices.map((choice, index) => <button key={`${index}-${choice}`} ref={index === 0 ? firstChoiceRef : undefined} data-testid="dialogue-choice" data-choice={choice} disabled={blocked || !finished} onClick={() => act(choice)}>{choice}</button>)}</div> : <button className="fx-dialogue-next" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>{!finished ? "Text anzeigen" : ending ? "Das bleibt ♥" : "Weiter"}<span aria-hidden="true">▸</span></button>}
-        {!!choices?.length && !finished && <button className="fx-dialogue-reveal" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>Text anzeigen <span aria-hidden="true">▸</span></button>}
-        <small className="fx-dialogue-hint">{choices && choices.length > 1 && finished ? "Wähle deine Antwort" : <><span className="desktop-hint">Enter · Leertaste · </span>Tippen</>}</small>
+      <div className="fx-dialogue-body" aria-busy={!finished}>
+        <div ref={textRef} tabIndex={0} className="fx-dialogue-text" data-testid="dialogue-text" data-visible={visible} data-complete={finished} onClick={() => act()} aria-label={finished ? "Dialogtext. Tippen zum Fortsetzen." : "Dialogtext. Tippen zeigt die ganze Nachricht."}>
+          <span aria-hidden="true">{characters.slice(0, visible).join("")}{!finished && <span className="fx-typewriter-cursor">▍</span>}</span>
+        </div>
+        <p id="fx-dialogue-accessible-text" className="fx-dialogue-sr">{text}</p>
+        {blocked && <p className="fx-dialogue-pause" role="status">Gespräch pausiert</p>}
+        {choices?.length ? <div className="fx-dialogue-choices" aria-label="Deine Antwort">{choices.map((choice, index) => <button key={`${index}-${choice}`} ref={index === 0 ? firstChoiceRef : undefined} data-testid="dialogue-choice" data-choice={choice} disabled={blocked || !finished} onClick={() => act(choice)}><kbd aria-hidden="true">{index + 1}</kbd><span>{choice}</span></button>)}</div> : null}
+        <div className="fx-dialogue-controls">
+          {onPause && <button className="dialogue-pause" onClick={onPause} aria-label={paused ? "Gespräch fortsetzen" : "Gespräch pausieren"}>{paused ? "▶ Fortsetzen" : "❚❚ Pause"}</button>}
+          {!choices?.length && <button className="fx-dialogue-next" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>{!finished ? "Text anzeigen" : ending ? "Das bleibt ♥" : "Weiter"}<span aria-hidden="true">▸</span></button>}
+          {!!choices?.length && !finished && <button className="fx-dialogue-reveal" data-testid="dialogue-next" disabled={blocked} onClick={() => act()}>Text anzeigen <span aria-hidden="true">▸</span></button>}
+          <small className="fx-dialogue-hint">{choices && choices.length > 1 && finished ? <><span className="desktop-hint">Mit {choices.length === 2 ? "1 oder 2" : `1 bis ${choices.length}`} wählen</span><span className="mobile-hint">Antwort antippen</span></> : <><span className="desktop-hint">Enter · Leertaste · </span>Tippen</>}</small>
+        </div>
       </div>
     </div>
   </dialog>;
