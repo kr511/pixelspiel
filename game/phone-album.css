@@ -93,6 +93,8 @@
 .timeline-card .memory-original p { flex:none; font:italic 14px/1.45 Georgia,serif; color:#f0d0b7; margin:0 0 7px; white-space:pre-line; overflow-wrap:anywhere; }
 .memory-original small { display:block; font:9px/1.5 monospace; color:#cab69a; font-style:normal; }
 .memory-original .memory-original-heading { font-size:10px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; color:#e3c7a6; }
+.memory-answers { margin:0 0 14px; font-size:13px; color:#e9dccd; }
+.memory-answers small { display:block; font-size:10px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; color:#e3c7a6; }
 .memory-artifacts { margin:0 0 14px; }
 .memory-artifact+ .memory-artifact { margin-top:7px; }
 .timeline-card .memory-artifact button { display:flex; min-height:48px; width:100%; font-size:11px; line-height:1.4; text-align:left; background:#2c4134; border-color:#889575; gap:8px; }

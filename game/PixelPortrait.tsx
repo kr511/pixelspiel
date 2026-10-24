@@ -28,7 +28,7 @@ export function PixelPortrait({ id, emotion = "neutral" }: PixelPortraitProps) {
     <g clipPath={`url(#${clip})`}>
       <path d="M0 0H100V112H0Z" fill={emotion === "love" ? "#59404b" : emotion === "sad" ? "#36444f" : "#394d46"}/>
       <path d="M0 80H100V112H0Z" fill="#293c37"/>
-      {normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : <>
+      {normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : normalized === "school-bell" ? <BellPortrait/> : <>
         {known ? <svg x="0" y="0" width="100" height="112" viewBox={portraitFrame} preserveAspectRatio={isFelice ? "xMidYMin meet" : "none"} overflow="hidden"><image href={assetUrl(graphic.sheet)} {...dimensions} preserveAspectRatio="none"/></svg> : <FallbackPortrait seed={seed} skin={skin}/>}
         {/* Faces have real independent eyes, eyebrows and mouths for all eight emotions. */}
         {isFelice ? <FeliceExpression emotion={emotion}/> : isElias ? <EliasExpression emotion={emotion}/> : <g transform="translate(0 -1)" data-face-expression={emotion}>
@@ -130,6 +130,10 @@ function FallbackPortrait({ seed, skin }: { seed: number; skin: string }) {
   return <><path d="M25 13H75V20H82V73H73V81H24V73H17V25H25Z" fill={hair}/><path d="M28 75H72V82H84V93H92V112H8V93H16V82H28Z" fill={shirt}/><path d="M42 62H60V78H42Z" fill={skin}/><path d="M26 22H73V29H67V34H28Z" fill={hair}/></>;
 }
 
+/** The school door speaks through its bell, not through a stranger's face. */
+function BellPortrait() {
+  return <><path d="M46 16H54V22H46Z" fill="#8a6a3c"/><path d="M40 22H60V28H66V58H72V68H28V58H34V28H40Z" fill="#e2b04a"/><path d="M40 28H46V58H40Z" fill="#f3d27a"/><path d="M28 68H72V74H28Z" fill="#b5852f"/><path d="M45 74H55V82H45Z" fill="#8a6a3c"/></>;
+}
 function NarratorPortrait() {
   return <><path d="M20 31H48V35H52V31H80V86H54V91H46V86H20Z" fill="#d6c5a1"/><path d="M25 37H45V79H25ZM55 37H75V79H55Z" fill="#efdfbd"/><path d="M29 44H41V47H29ZM29 54H41V57H29ZM59 44H71V47H59ZM59 54H71V57H59Z" fill="#ad9974"/><path d="M38 14H44V11H50V16H54V22H50V28H44V22H38Z" fill="#d7949d"/></>;
 }

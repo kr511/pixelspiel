@@ -1,6 +1,7 @@
 import { advanceClock, clockText, initialDay, parseDay, sleepUntilMorning, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, type DaySave, type Season } from "./day.ts";
 import { CHAPTERS, PLACES, type ChapterId, type Place, type Point, type StorySave } from "./story.ts";
 import { ORIGINAL_CHATS, type ChatLine } from "./texte/index.ts";
+import { REACTIONS, type Reaction } from "./reactions.ts";
 import { isSchoolDay } from "./school-calendar.ts";
 
 export const TIMELINE_KEY = "felice-elias.timeline.v09";
@@ -12,7 +13,7 @@ export const STORY_END = "2026-11-02";
 /** `original` marks a verbatim WhatsApp message; `time` is its real "HH:MM". */
 export type StoryLine = { speaker: "Felice" | "Elias" | "Erzählung"; text: string; emotion?: string; choices?: string[]; original?: boolean; time?: string };
 export type ChatTopic = { id: string; title: string; icon: string; lines: StoryLine[] };
-export type StoryBeat = { id: string; target: Point; label: string; speaker: string; art?: string; text: string; emotion?: string; choices?: string[]; animation?: "hug" | "handhold" | "kiss" | "sit" | "walk" | "fireworks" | "reflection" | "sleep" | "inspect" | "arrival" | "heart" | "fade"; place?: Place;
+export type StoryBeat = { id: string; target: Point; label: string; speaker: string; art?: string; text: string; emotion?: string; choices?: string[]; reactions?: Record<string, Reaction>; animation?: "hug" | "handhold" | "kiss" | "sit" | "walk" | "fireworks" | "reflection" | "sleep" | "inspect" | "arrival" | "heart" | "fade"; place?: Place;
   /** Who stands in this beat besides Felice; defaults to the event cast. */
   cast?: string[] };
 export type StoryEvent = {
@@ -173,7 +174,7 @@ const sequence = (config: SequenceConfig): StoryEvent => ({
   source: config.source ?? "historical", symbol: config.symbol ?? "♥", cast: config.cast ?? ["Felice", "Elias"], special: config.special,
   description: config.description, illustration: config.illustration ?? "/rooms/felice-bedroom-v10.webp",
   staging: { start: config.start ?? 960, end: config.end ?? 1000, spawn: config.spawn ?? { x: .5, y: .7 }, timeConfirmed: config.timeConfirmed ?? false },
-  steps: config.steps, artifacts: config.artifacts, rewards: config.rewards, hint: config.hint, leaveAt: config.leaveAt,
+  steps: config.steps.map(step => REACTIONS[`${config.id}/${step.id}`] ? { ...step, reactions: REACTIONS[`${config.id}/${step.id}`] } : step), artifacts: config.artifacts, rewards: config.rewards, hint: config.hint, leaveAt: config.leaveAt,
   dialogue: config.steps.map(step => ({ speaker: step.speaker === "Felice" || step.speaker === "Elias" ? step.speaker : "Erzählung", text: step.text, emotion: step.emotion, choices: step.choices })),
   interactions: config.steps.map(step => step.label),
 });
@@ -215,7 +216,7 @@ const datedEvents: StoryEvent[] = [
   schoolEpisode(17, [
     beat("question", "Elena antworten", "Sag mal, was läuft eigentlich zwischen euch?", { x: .52, y: .90 }, { speaker: "Elena", art: "elena", emotion: "surprised", choices: ["Wir verstehen uns halt einfach", "Nur verlegen grinsen"], cast: ["Elena", "Elias", "Paul", "Justin"] }),
     beat("answer", "Zu Elias, Paul und Justin gehen", "Lass die reden. Wir sind besser als die.", { x: .60, y: .76 }, { emotion: "thoughtful" }),
-    beat("continue", "Bei den dreien stehen bleiben", "Wir verstehen uns halt einfach. Und haben viel, worüber wir reden können.", { x: .55, y: .82 }, { speaker: "Felice", art: "felice", emotion: "happy" }),
+    beat("continue", "Bei den dreien stehen bleiben", "Sollen die doch denken, was sie wollen. Wir haben uns halt immer was zu erzählen.", { x: .55, y: .82 }, { speaker: "Felice", art: "felice", emotion: "happy" }),
   ]),
   schoolEpisode(19, [
     beat("meet", "Elias, Paul und Justin begrüßen", "Naaa. Gut geschlafen?", { x: .52, y: .90 }, { emotion: "happy" }),
@@ -322,7 +323,7 @@ const datedEvents: StoryEvent[] = [
     hint: "Heute beginnt die Klassenfahrt! Ich sollte zum Schulhof nach Zörbig, dort fährt der Bus ab.",
     description: "Am 20. April 2026 startet die Klassenfahrt der beiden 10. Klassen mit Frau Kaiser und Herrn Kluger. Mit dem Bus geht es nach Kehl ins B&B Hotel. Der Schulhof als Treffpunkt und die Dialoge sind rekonstruiert.", steps: [
     beat("meet", "Frau Kaiser am Treffpunkt", "Guten Morgen! Koffer in den Bus, dann wird durchgezählt. Fünf Tage Kehl, Straßburg und Europa-Park.", { x: .40, y: .80 }, { speaker: "Frau Kaiser", art: "kaiser", emotion: "happy", cast: ["Frau Kaiser", "Herr Kluger", "Nino", "Richard"] }),
-    beat("elias", "Elias vor dem Bus treffen", "Fünf Tage zusammen unterwegs. Ich freu mich richtig drauf.", { x: .62, y: .78 }, { emotion: "happy", choices: ["Ich mich auch", "Hoffentlich wird die Fahrt nicht zu lang"], cast: ["Elias", "Paul", "Justin"] }),
+    beat("elias", "Elias am Treffpunkt treffen", "Fünf Tage zusammen unterwegs. Ich freu mich richtig drauf.", { x: .62, y: .78 }, { emotion: "happy", choices: ["Ich mich auch", "Hoffentlich wird die Fahrt nicht zu lang"], cast: ["Elias", "Paul", "Justin"] }),
     beat("arrive", "Im Hotel ankommen", "Nach der langen Busfahrt: Ankunft im B&B Hotel in Kehl. Straßburg liegt gleich auf der anderen Rheinseite.", { x: .50, y: .62 }, { place: "hotel", speaker: "Erzählung", emotion: "happy", animation: "arrival", cast: [] }),
   ] }),
   sequence({ id: "klassenfahrt-parlament", title: "Klassenfahrt: Europäisches Parlament", date: "2026-04-21", chapterNumber: 6, place: "parliament", start: 600, end: 780, spawn: { x: .50, y: .72 }, illustration: "/rooms/trip-parliament-v11.webp", symbol: "★", cast: ["Felice", "Elena", "Luca", "Jason"],
@@ -573,6 +574,16 @@ function routineThought(save: TimelineSave) {
   if (!done("school") && minute < SCHOOL_END) return "Der Unterricht hat schon angefangen. Schnell ins Schulgebäude!";
   if (!done("homework")) return "Die Schule ist vorbei. Zu Hause noch Hausaufgaben machen, dann ins Bett.";
   return "Alles erledigt für heute. Jetzt kann ich ins Bett.";
+}
+/** Where the day's routine leads next: the bathroom, school or the homework desk. Story scenes take precedence. */
+export function routinePlace(save: TimelineSave): Place | null {
+  if (save.active) return null;
+  const { date, minute } = save.clock;
+  const done = (task: string) => save.flags.includes(`routine-${date}-${task}`);
+  if (schoolPending(save)) return "school";
+  if (!isRoutineDay(date)) return null;
+  if (!done("school") && minute < SCHOOL_END) return minute < SCHOOL_START && !done("wash") ? "home" : "school";
+  return "bedroom";
 }
 /** Felice's gentle thought about what could come next; the key changes only when the situation does. */
 export function storyHint(save: TimelineSave): { key: string; text: string } | null {

@@ -4,6 +4,7 @@ import { movementStep, walkingFrame } from "./motion.ts";
 import { isSchoolArrival, isSchoolMorning, isSchoolMorningEntity, SCHOOL_ARRIVAL } from "./school.ts";
 import { SCHOOL_END, SCHOOL_START } from "./day.ts";
 import { GRADUATION_DAY, isSchoolDay } from "./school-calendar.ts";
+import { isRoutineDay } from "./timeline.ts";
 // Ambient routines use the existing actors; story casts are never hidden.
 // Outside story chapters only Felice's mother and stepfather stay home; the others are out and return for the Christmas dinner.
 const AWAY_FROM_HOME = ["halfsister","halfsister-partner","stepsister","stepsister-partner"];
@@ -12,6 +13,8 @@ const SCHOOL_FRIENDS = ["friends", "jason", "luca", "wyatt"];
 const GRADUATION_KEEPSAKES = ["graduation-certificates", "graduation-photo"];
 export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false, inStory = false, date?: string): Entity[] {
   if (place === "home" && !inStory) entities = entities.filter(e => !AWAY_FROM_HOME.includes(e.id));
+  // The homework pile belongs to the routine days; afterwards the desk chair stays free.
+  if (place === "bedroom" && !inStory && date && !isRoutineDay(date)) entities = entities.filter(e => e.id !== "homework");
   if (place === "gym" && !inStory && date && date !== GRADUATION_DAY) entities = date > GRADUATION_DAY ? entities.filter(e => GRADUATION_KEEPSAKES.includes(e.id)) : [];
   if (place === "school" && !inStory && date) {
     // Classmates are only around on school days, before and after the lessons.
