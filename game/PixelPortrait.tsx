@@ -29,7 +29,7 @@ export function PixelPortrait({ id, emotion = "neutral" }: PixelPortraitProps) {
     <g clipPath={`url(#${clip})`}>
       <path d="M0 0H100V112H0Z" fill={emotion === "love" ? "#59404b" : emotion === "sad" ? "#36444f" : "#394d46"}/>
       <path d="M0 80H100V112H0Z" fill="#293c37"/>
-      {normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : <>
+      {normalized === "shadow" ? <ShadowPortrait/> : normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : <>
         {known ? <svg x="0" y="0" width="100" height="112" viewBox={portraitFrame} preserveAspectRatio={isFelice ? "xMidYMin meet" : "none"} overflow="hidden"><image href={assetUrl(graphic.sheet)} {...dimensions} preserveAspectRatio="none"/></svg> : <FallbackPortrait seed={seed} skin={skin}/>}
         {/* Faces have real independent eyes, eyebrows and mouths for all eight emotions. */}
         {main ? <g transform={isElias ? "translate(0 5) rotate(-9 50 50)" : "translate(0 -1)"} data-face-expression={emotion}>
@@ -82,6 +82,17 @@ function FallbackPortrait({ seed, skin }: { seed: number; skin: string }) {
   const hair = ["#73503e", "#a0784a", "#454244", "#9a543c", "#867868"][seed % 5];
   const shirt = ["#57777e", "#986b75", "#7e8258", "#5b6684", "#947d55"][Math.floor(seed / 5) % 5];
   return <><path d="M25 13H75V20H82V73H73V81H24V73H17V25H25Z" fill={hair}/><path d="M28 75H72V82H84V93H92V112H8V93H16V82H28Z" fill={shirt}/><path d="M42 62H60V78H42Z" fill={skin}/><path d="M26 22H73V29H67V34H28Z" fill={hair}/></>;
+}
+
+/** The adventure's antagonist: a dark pixel silhouette with pale glowing eyes. */
+function ShadowPortrait() {
+  return <g data-portrait="shadow">
+    <path d="M0 0H100V112H0Z" fill="#1d1630"/>
+    <path d="M34 22H66V30H74V56H70V66H78V80H88V112H12V80H22V66H30V56H26V30H34Z" fill="#0d0918"/>
+    <path d="M22 80H30V88H22ZM70 84H78V92H70ZM46 96H54V104H46Z" fill="#2c2148"/>
+    <rect x="38" y="42" width="8" height="4" fill="#d6c8ff"/><rect x="54" y="42" width="8" height="4" fill="#d6c8ff"/>
+    <rect x="40" y="43" width="4" height="2" fill="#ffffff"/><rect x="56" y="43" width="4" height="2" fill="#ffffff"/>
+  </g>;
 }
 
 function NarratorPortrait() {

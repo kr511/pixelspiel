@@ -18,7 +18,7 @@ export class WorldAudio {
   private muted = false;
   private enabled = false;
   private place: Place = "bedroom";
-  private mood: "world" | "evening" | "love" = "world";
+  private mood: "world" | "evening" | "love" | "shadow" = "world";
   private listeners = new Set<() => void>();
   private lastStep = -Infinity;
   private effects = new Set<AudioScheduledSourceNode>();
@@ -57,7 +57,7 @@ export class WorldAudio {
     if (this.place !== place) this.stopAmbience();
     this.place = place; this.enabled = enabled; this.sync();
   }
-  setMood(mood: "world" | "evening" | "love") {
+  setMood(mood: "world" | "evening" | "love" | "shadow") {
     if (this.mood === mood) return;
     this.mood = mood; this.stopAmbience(); this.sync();
   }
@@ -79,7 +79,8 @@ export class WorldAudio {
     const buffer = this.context.createBuffer(1, this.context.sampleRate * (music ? 16 : 4), this.context.sampleRate);
     const samples = buffer.getChannelData(0);
     let smooth = 0;
-    const melody = this.mood === "love" ? [261.63,329.63,392,329.63,293.66,349.23,392,523.25] : [220,261.63,329.63,261.63,196,246.94,293.66,246.94];
+    // "shadow": a slow, low minor line for the adventure's Shadow scenes (quiet, never startling).
+    const melody = this.mood === "love" ? [261.63,329.63,392,329.63,293.66,349.23,392,523.25] : this.mood === "shadow" ? [146.83,174.61,164.81,138.59,146.83,130.81,155.56,138.59] : [220,261.63,329.63,261.63,196,246.94,293.66,246.94];
     for (let i=0;i<samples.length;i++) {
       const time = i / this.context.sampleRate;
       smooth = (smooth + (Math.random()*2-1)*.035)/1.035;

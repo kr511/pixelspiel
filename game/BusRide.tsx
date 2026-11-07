@@ -24,7 +24,8 @@ function Strip({ className, trees, ground, poles = false }: { className: string;
   return <svg className={className} viewBox="0 0 960 270" preserveAspectRatio="none" aria-hidden="true">{tile(0)}{tile(480)}</svg>;
 }
 
-export function BusRide({ paused, onDone }: { paused: boolean; onDone: () => void }) {
+/** The adventure reuses the ride with its own caption, thoughts and a shorter (still skippable) duration. */
+export function BusRide({ paused, onDone, caption = "Radegast → Zörbig · Montag, 10. November", thoughts = THOUGHTS, duration = END }: { paused: boolean; onDone: () => void; caption?: string; thoughts?: { from: number; to: number; text: string }[]; duration?: number }) {
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
   const finished = useRef(false);
@@ -39,12 +40,12 @@ export function BusRide({ paused, onDone }: { paused: boolean; onDone: () => voi
       if (!document.hidden && previous !== undefined) elapsedRef.current += Math.min(100, now - previous);
       previous = now;
       setElapsed(elapsedRef.current);
-      if (elapsedRef.current >= END) { finish(); return; }
+      if (elapsedRef.current >= duration) { finish(); return; }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [paused]);
+  }, [paused, duration]);
 
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
@@ -55,7 +56,7 @@ export function BusRide({ paused, onDone }: { paused: boolean; onDone: () => voi
     return () => window.removeEventListener("keydown", key, true);
   }, []);
 
-  const fade = span(elapsed, 0, 1200) * (1 - span(elapsed, END - 1300, END));
+  const fade = span(elapsed, 0, 1200) * (1 - span(elapsed, duration - 1300, duration));
   const running = paused ? "paused" : "running";
   return <div className="bus-ride" role="dialog" aria-modal="true" aria-label="Busfahrt nach Zörbig: Felice lehnt am Fenster und denkt nach" data-testid="bus-ride" data-elapsed={Math.round(elapsed)} style={{ opacity: fade }}>
     <div className="bus-window">
@@ -68,8 +69,8 @@ export function BusRide({ paused, onDone }: { paused: boolean; onDone: () => voi
     <div className="bus-pole" aria-hidden="true"/>
     <div className="bus-seat" aria-hidden="true"/>
     <div className="bus-felice" style={{ animationPlayState: running }}><CharacterArt id="felice" portrait/></div>
-    {THOUGHTS.map(thought => { const opacity = span(elapsed, thought.from, thought.from + 700) * (1 - span(elapsed, thought.to - 700, thought.to)); return opacity > 0 ? <p key={thought.from} className="bus-thought" style={{ opacity, transform: `translateY(${(1 - opacity) * 8}px)` }}><small>Felice denkt</small>{thought.text}</p> : null; })}
-    <p className="bus-caption">Radegast → Zörbig · Montag, 10. November</p>
+    {thoughts.map(thought => { const opacity = span(elapsed, thought.from, thought.from + 700) * (1 - span(elapsed, thought.to - 700, thought.to)); return opacity > 0 ? <p key={thought.from} className="bus-thought" style={{ opacity, transform: `translateY(${(1 - opacity) * 8}px)` }}><small>Felice denkt</small>{thought.text}</p> : null; })}
+    <p className="bus-caption">{caption}</p>
     <button className="intro-skip bus-skip" onClick={finish}>Überspringen <kbd>Enter</kbd></button>
   </div>;
 }

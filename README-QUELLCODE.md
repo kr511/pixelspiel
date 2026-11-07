@@ -1,5 +1,16 @@
 # Felice × Elias World
 
+## Neu in V1.0 – Die verlorenen Erinnerungen
+
+Ein vollständiges Story-Rätsel-Adventure als neuer Hauptmodus. Elias ist verschwunden, der **Schatten** hält ihn im Erinnerungsarchiv gefangen. Felice löst im **Prolog** ein Escape-Room-Rätsel in ihrer Wohnung und holt in **Radegast**, auf dem **Schulweg**, in **Zörbig** und an **Weihnachten** vier Erinnerungsfragmente zurück. Im **Finale** befreit sie Elias; es folgen eine Dialogszene, ein persönlicher Brief und der Abspann.
+
+- 12 Rätsel (Code, Muster, Kombination, Reihenfolge, Deduktion, Schalter), je drei Hinweisstufen, Überspringen nach Fehlversuchen
+- Inventar (untersuchen, kombinieren, in der Welt benutzen), Ermittlungsakte mit Beweisen und Schlussfolgerungen, Quest-Tagebuch mit Haupt- und Nebenquests, Erinnerungsalbum, Einstellungen (Textgröße, reduzierte Effekte, Gedanken)
+- Steuerung: **E** untersuchen · **I** Tasche · **J** Tagebuch · **K** Akte · **H** Hinweis · **Esc** Pause/Hauptmenü
+- Eigener Spielstand `felice-elias.adventure.v1` mit Autosave; die Chronik **„Unser Jahr“** bleibt im Startmenü vollständig spielbar
+
+Aufbau, Rätselliste und Softlock-Schutz: [game/adventure/README.md](game/adventure/README.md)
+
 Version **0.9** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **01.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
 
 ## Neu in V0.9

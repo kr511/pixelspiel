@@ -14,6 +14,8 @@ export function routineEntities(place: Place, minute: number, entities: Entity[]
 export const CHRISTMAS_MARKET_OPENS = "2025-12-06";
 export const ELIAS_ROOM_OPENS = "2026-03-20";
 export function exitOpen(to: Place, date: string) {
+  // The memory archive belongs to the adventure only; the chronicle never shows its rift.
+  if (to === "archive") return false;
   return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
 }
 

@@ -5,6 +5,8 @@ export type SceneGraphic = { background: string; fallback?: string; crop?: { x: 
 // Each foreground copies only the specified furniture/tree silhouette from the same scene.
 const rect = (left: number, top: number, right: number, bottom: number, depth = bottom) => ({ clip: `polygon(${left}% ${top}%,${right}% ${top}%,${right}% ${bottom}%,${left}% ${bottom}%)`, depth });
 export const SCENE_GRAPHICS: Record<Place, SceneGraphic> = {
+  // Adventure finale: hand-drawn pixel SVG in the style of the other story scenes.
+  archive: { background: "/rooms/archive-v1.svg", outdoors: false, light: "#c7b8ff", foreground: [] },
   playground: { background: "/rooms/story-playground-pixel-v10.png", fallback: "/rooms/story-playground-v09.svg", winter: "/rooms/story-playground-winter-v09.svg", outdoors: true, light: "#e4e8ca", foreground: [] },
   // The winter playground and market pixel paintings are not delivered yet; the
   // SVG scenes the game already fell back to are referenced directly.

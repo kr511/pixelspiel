@@ -40,6 +40,20 @@ import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, TRAVEL_MINUTES, activityAt, clockText, parseDay, seasonalLight, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
+import { addPlayTime, felice as advFelice, formatPlayTime, hasFlag as advHasFlag, narrate as advNarrate, newAdventure, type AdventureSave, type After as AdvAfter, type Line as AdvLine, type Outcome as AdvOutcome } from "./adventure/core";
+import { chooseWords, finishMinigame, mainProgress, chapterOf as advChapterOf, hotspotById, ambience as advAmbience, chapterDef as advChapter, combineEvidence, combineItems, enterPlace as advEnterPlace, exitGate, finishAdventure, hotspotsAt, interact as advInteractAt, objective as advObjective, openPuzzleRecord, revealHint, skipPuzzle, submitPuzzle, thought as advThought, applyItem as advUseItem, walkBlocked } from "./adventure/engine";
+import { browserStorage, loadAdventure, setAsideDamaged, writeAdventure } from "./adventure/storage";
+import { AdventureBag, AdventureCredits, AdventureHud, AdventureJournal, AdventureProp, EliasMessage, HintPanel, LOCAL_SAVE_NOTE, RewardBurst, ShadowGlitch, savedTime, type JournalTab } from "./adventure/AdventureUI";
+import { PuzzlePanel } from "./adventure/PuzzlePanel";
+import { TargetChallenge } from "./adventure/TargetChallenge";
+import { FxSprite } from "./adventure/fx";
+import { ADVENTURE_INTRO, ADV_RIDE_THOUGHTS, ADV_RIDE_MS, FRAGMENTS, MAIN_PUZZLES, eliasMessageFor, spokenWords } from "./adventure/content";
+import "./adventure/adventure.css";
+
+type GameMode = "chronicle" | "adventure";
+/** Active play time is folded into the save at every write and at least this often. */
+const ADV_AUTOSAVE_MS = 30000;
+const solvedCount = (save: AdventureSave) => Object.values(save.puzzles).filter(record => record.status === "gelöst").length;
 
 const BUS_RIDE_FLAG = "bus-ride-first-day";
 const BED = REST_SPOTS.find(spot => spot.id === "felice-bed")!;
@@ -84,11 +98,39 @@ export function Game() {
   const [replay, setReplay] = useState<{ session: StorySession; state: EventProgress } | null>(null);
   const replayRef = useRef(replay);
   const [legacyView, setLegacyView] = useState<{ save: StorySave; player: Point; direction: Direction } | null>(null);
-  const session = replay?.session ?? timeline.active;
+  // "Die verlorenen Erinnerungen": the puzzle adventure has its own save key and never touches the chronicle's saves.
+  const [mode, setModeState] = useState<GameMode>("adventure");
+  const modeRef = useRef<GameMode>("adventure");
+  function setMode(value: GameMode) { modeRef.current = value; setModeState(value); }
+  const adventure = mode === "adventure";
+  // Saves: main slot + checkpoint slot in localStorage; a damaged main save is never overwritten without the player's choice.
+  const [advInitial] = useState(() => loadAdventure(browserStorage()));
+  const [adv, setAdv] = useState<AdventureSave>(advInitial.save);
+  const advRef = useRef(advInitial.save);
+  const advReadable = useRef(advInitial.state !== "damaged");
+  const [advDamaged, setAdvDamaged] = useState(advInitial.state === "damaged");
+  const [advError, setAdvError] = useState<string | null>(advInitial.state === "unavailable" ? "Dieser Browser erlaubt gerade kein lokales Speichern (privates Fenster oder gesperrte Websitedaten). Du kannst spielen, aber der Fortschritt geht beim Schließen verloren." : null);
+  const [advSavedAt, setAdvSavedAt] = useState<string | null>(advInitial.save.savedAt);
+  const [advSaveMessage, setAdvSaveMessage] = useState<string | null>(advInitial.state === "migrated" ? "Dein Spielstand aus der vorherigen Version wurde übernommen." : null);
+  const playAcc = useRef(0);
+  const [advRide, setAdvRide] = useState<AdvAfter | null>(null);
+  const [advMinigame, setAdvMinigame] = useState(false);
+  const [advReward, setAdvReward] = useState<{ key: number; title: string; symbol: string; main?: string; fragment: boolean } | null>(null);
+  const [advFx, setAdvFx] = useState<{ key: number; name: "shadow-dissolve" | "heart-burst" } | null>(null);
+  /** A scene change that waits until Elias' message was answered. */
+  const advPendingTravel = useRef<Place | null>(null);
+  const [advScript, setAdvScript] = useState<{ lines: AdvLine[]; index: number; after?: AdvAfter } | null>(null);
+  const [advPuzzle, setAdvPuzzle] = useState<string | null>(null);
+  const [advJournal, setAdvJournal] = useState<JournalTab | null>(null);
+  const [advBag, setAdvBag] = useState(false);
+  const [advHint, setAdvHint] = useState(false);
+  const [advCutscene, setAdvCutscene] = useState<"elias-message" | "credits" | null>(null);
+  const [glitch, setGlitch] = useState(0);
+  const session = adventure ? null : replay?.session ?? timeline.active;
   const event = session ? eventById(session.id) : undefined;
   const eventState = replay?.state ?? (session ? timeline.progress[session.id] ?? emptyEvent() : null);
   const sequenceBeat = event?.steps?.[eventState?.cursor ?? 0];
-  const save: StorySave = event ? { ...worldSave, place: sequenceBeat?.place ?? event.place, chapter: null, bag: event.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 ? ["Schokolade"] : [] } : worldSave;
+  const save: StorySave = adventure ? { ...worldSave, place: adv.place, chapter: null, bag: [] } : event ? { ...worldSave, place: sequenceBeat?.place ?? event.place, chapter: null, bag: event.scene === "encounter" && (eventState?.cursor ?? 0) >= 3 ? ["Schokolade"] : [] } : worldSave;
   const [phone, setPhone] = useState(false);
   const [intro, setIntro] = useState(false);
   // First school morning (10.11.): the bus ride to Zörbig plays once, seen from inside.
@@ -151,18 +193,23 @@ export function Game() {
   const memoryError = useMemories(s => s.storageError);
   const transitioning = phase === "entering" || phase === "leaving";
   const inWorld = phase === "room";
-  const overlay = intro || Boolean(busRide) || Boolean(calendarFlip) || inventoryOpen;
+  const advOverlay = Boolean(advScript || advPuzzle || advJournal || advBag || advHint || advCutscene || advRide || advMinigame);
+  const overlay = intro || Boolean(busRide) || Boolean(calendarFlip) || inventoryOpen || advOverlay;
   const active = started && !paused && !needsLandscape && inWorld && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay;
   const chapter = CHAPTERS.find(c => c.id === save.chapter);
   const step = currentStep(save);
   const draftPlaying = Boolean(legacyView || worldSave.chapter && currentStep(worldSave));
-  const exits = event ? [] : PLACES[save.place].exits.filter(exit => save.chapter || exitOpen(exit.to, day.date));
+  const exits = event ? [] : PLACES[save.place].exits.filter(exit => adventure ? exitGate(adv, save.place, exit.to).visible : save.chapter || exitOpen(exit.to, day.date));
+  const advAmb = advAmbience(adv, save.place);
+  const advGoal = advObjective(adv);
   const guide = step && step.place !== save.place ? routeTo(save.place, step.place) : undefined;
   const dogFollows = save.place === "garden" && save.completed.includes("dog") && save.chapter !== "dog";
   // Legacy drafts keep their own cast; otherwise Elias follows the story phase.
-  const eliasHere = Boolean(save.chapter) || followingElias || visitingElias === save.place || eliasPresent(save.place, id => Boolean(timeline.progress[id]?.completedAt));
-  const anukHere = Boolean(save.chapter) || anukPresent(id => Boolean(timeline.progress[id]?.completedAt));
-  const sourceEntities = (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)).filter(entity => (entity.art !== "elias" || eliasHere) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
+  // In the adventure Elias is missing; only the adventure's own hotspots (and the trapped Elias in the archive) appear.
+  const eliasHere = !adventure && (Boolean(save.chapter) || followingElias || visitingElias === save.place || eliasPresent(save.place, id => Boolean(timeline.progress[id]?.completedAt)));
+  const anukHere = !adventure && (Boolean(save.chapter) || anukPresent(id => Boolean(timeline.progress[id]?.completedAt)));
+  const advEntities: Entity[] = adventure ? hotspotsAt(adv, save.place).map(spot => ({ id: spot.id, name: spot.name, x: spot.x, y: spot.y, display: spot.display, kind: spot.kind, art: spot.art, text: "" })) : [];
+  const sourceEntities = adventure ? advEntities : (event ? [] : routineEntities(save.place, save.chapter ? 840 : day.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)).filter(entity => (entity.art !== "elias" || eliasHere) && (entity.kind !== "dog" || anukHere)).map(entity => ({ ...entity, name: displayName(entity, names) }));
   const sceneEntities = sourceEntities.filter(e => !rest?.elias || e.art !== "elias").map(e => cinema && !cinema.sequence && e.art === "elias" ? {...e,...castPoint(undefined,player,cinema,save.place)} : e.id === "anuk" && dogFollows ? { ...e, ...dog } : actors[e.id] ? { ...e, ...actors[e.id].position } : e);
   const nearbyExit = exits.filter(e => Math.hypot(e.x-player.x, e.y-player.y) < .105).sort((a,b) => Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
   const nearbyEntity = sceneEntities.map(e => ({ e, d: Math.hypot(e.x - player.x, e.y - player.y), companion: e.id === "anuk" && save.completed.includes("dog") && save.chapter !== "dog" })).filter(v => v.d < .115 && !(v.companion && nearbyExit) && (!nearbyExit || v.d < Math.hypot(nearbyExit.x-player.x, nearbyExit.y-player.y))).sort((a,b) => Number(a.companion)-Number(b.companion) || a.d-b.d)[0]?.e;
@@ -172,19 +219,22 @@ export function Game() {
   const sequenceNearby = event?.scene === "sequence" && sequenceBeat && Math.hypot(player.x-sequenceBeat.target.x, player.y-sequenceBeat.target.y) < .13;
   const target = restTarget ?? nearbyEntity ?? nearbyExit;
   const targetName = restTarget?.name ?? nearbyEntity?.name ?? nearbyExit?.label;
-  const sceneMinute = event ? event.scene === "chat" ? Math.min(1380, Math.max(event.staging.start, 1020 + (eventState?.topics.length ?? 0) * 120)) : event.scene === "sequence" ? Math.round(event.staging.start+(event.staging.end-event.staging.start)*(eventState?.cursor??0)/Math.max(1,(event.steps?.length??1)-1)) : event.staging.start : save.chapter === "graduation" ? 840 : day.minute;
-  const sceneSeason = save.chapter === "graduation" ? "Sommer" : save.chapter === "christmas" ? "Winter" : storySeason(event, day);
+  const sceneMinute = adventure ? advAmb.minute : event ? event.scene === "chat" ? Math.min(1380, Math.max(event.staging.start, 1020 + (eventState?.topics.length ?? 0) * 120)) : event.scene === "sequence" ? Math.round(event.staging.start+(event.staging.end-event.staging.start)*(eventState?.cursor??0)/Math.max(1,(event.steps?.length??1)-1)) : event.staging.start : save.chapter === "graduation" ? 840 : day.minute;
+  const sceneSeason = adventure ? advAmb.season : save.chapter === "graduation" ? "Sommer" : save.chapter === "christmas" ? "Winter" : storySeason(event, day);
   const light = seasonalLight(sceneSeason, sceneMinute);
   const winter = sceneSeason === "Winter";
   const upcoming = nextEvent(timeline);
   // Memories start from the world: a place, an object or Elias, never a menu button.
-  const pendingTrigger = !session && !legacyView && !worldSave.chapter && upcoming && canTrigger(timeline, upcoming) ? storyTrigger(upcoming) : null;
+  const pendingTrigger = !adventure && !session && !legacyView && !worldSave.chapter && upcoming && canTrigger(timeline, upcoming) ? storyTrigger(upcoming) : null;
   const triggerHere = pendingTrigger && pendingTrigger.mode !== "phone" && pendingTrigger.place === save.place ? pendingTrigger : null;
   const triggerDistance = triggerHere ? Math.hypot(player.x-triggerHere.point.x, player.y-triggerHere.point.y) : Infinity;
   const triggerNear = Boolean(triggerHere && triggerDistance < triggerHere.radius);
   const storyGuide = !guide && pendingTrigger && pendingTrigger.place !== save.place ? routeTo(save.place, pendingTrigger.place) : undefined;
-  const hint = !started || session || legacyView ? null : worldSave.chapter && step ? { key: `draft:${worldSave.chapter}:${worldSave.step}`, text: step.label } : storyHint(timeline);
-  const waitMinutes = !session && !legacyView ? waitingMinutes(timeline) : null;
+  const hint = !started ? null : adventure ? adv.settings.thoughts ? advThought(adv) : null : session || legacyView ? null : worldSave.chapter && step ? { key: `draft:${worldSave.chapter}:${worldSave.step}`, text: step.label } : storyHint(timeline);
+  const waitMinutes = !adventure && !session && !legacyView ? waitingMinutes(timeline) : null;
+  // Adventure guidance: the hotspot of the current task, or the exit towards its place.
+  const advTarget = adventure && advGoal.place ? advGoal.place === save.place ? sceneEntities.find(entity => entity.id === advGoal.target) : routeTo(save.place, advGoal.place) : undefined;
+  const advGuide = adventure && advGoal.place && advGoal.place !== save.place ? routeTo(save.place, advGoal.place) : undefined;
   const datedCompleted = STORY_EVENTS.filter(e => e.confirmed && timeline.progress[e.id]?.completedAt).length;
   const arrived = eventState && eventState.cursor > 0 ? 1 : Math.min(1, arrivalTime / 3);
   // Treffpunkt: Elias rides up the cobbled road, then turns onto the meadow beside the pavilion.
@@ -199,12 +249,46 @@ export function Game() {
   function updateActors(next: Actors) { actorsRef.current = next; setActors(next); }
 
   function position(point: Point) { playerRef.current = point; setPlayer(point); setWalking(false); clearMovement(); }
+  /**
+   * Every adventure change is written at once. Solved puzzles, chapter changes and manual saves
+   * also refresh the checkpoint slot. Active play time collected since the last write is folded in.
+   */
+  const persistAdventure = useCallback((raw: AdventureSave, options: { checkpoint?: boolean } = {}) => {
+    const prior = advRef.current;
+    const next = addPlayTime(raw, playAcc.current, advChapterOf(prior)); playAcc.current = 0;
+    const checkpoint = options.checkpoint || advChapterOf(prior) !== advChapterOf(next) || solvedCount(next) > solvedCount(prior);
+    const result = advReadable.current ? writeAdventure(browserStorage(), next, { checkpoint }) : null;
+    const stored = result?.ok ? { ...next, savedAt: result.savedAt, chapter: advChapterOf(next) } : next;
+    advRef.current = stored; setAdv(stored);
+    // Rewards that are felt, not only read: a returning fragment spins up to the HUD, a finished main puzzle is announced.
+    const newFragment = FRAGMENTS.find(fragment => next.fragments.includes(fragment.id) && !prior.fragments.includes(fragment.id));
+    const doneBefore = mainProgress(prior).filter(entry => entry.solved).length, doneNow = mainProgress(next).filter(entry => entry.solved);
+    if (newFragment || doneNow.length > doneBefore) {
+      const main = doneNow.length > doneBefore ? `Haupt-Rätsel ${doneNow.length}/${MAIN_PUZZLES.length} gelöst` : undefined;
+      setAdvReward({ key: Date.now(), title: newFragment?.title ?? doneNow[doneNow.length - 1].title, symbol: newFragment?.symbol ?? "✦", main, fragment: Boolean(newFragment) });
+      if (next.settings.effects !== "reduced") { try { navigator.vibrate?.([30, 50, 70]); } catch { /* optional */ } }
+    }
+    if (!result) return null;
+    if (result.ok) { setAdvSavedAt(result.savedAt); setAdvError(null); } else setAdvError(result.error);
+    return result;
+  }, []);
+  /** Moves Felice to another place of the adventure (exits, travel after a puzzle, the bus ride). */
+  const advTravel = useCallback((place: Place, spawn: Point = SPAWNS[place]) => {
+    const outcome = advEnterPlace(advRef.current, place);
+    persistAdventure({ ...outcome.save, position: spawn });
+    playerRef.current = spawn; setPlayer(spawn); setWalking(false); clearMovement();
+    if (outcome.lines.length) setAdvScript({ lines: outcome.lines, index: 0 });
+  }, [persistAdventure]);
   const setSave = useCallback((next: StorySave) => {
+    if (modeRef.current === "adventure") {
+      if (next.place !== advRef.current.place) advTravel(next.place, playerRef.current);
+      return;
+    }
     setStory(next);
     if (!readable.current) return;
     try { window.localStorage.setItem(STORY_KEY, JSON.stringify(next)); setSaveError(null); }
     catch { setSaveError("Speichern ist gerade nicht möglich. Dein Fortschritt bleibt für diese Sitzung erhalten."); }
-  }, [setStory, setSaveError]);
+  }, [setStory, setSaveError, advTravel]);
   const persistTimeline = useCallback((next: TimelineSave) => {
     timelineRef.current = next; dayRef.current = next.clock; setTimeline(next);
     if (!timelineReadable.current) return;
@@ -237,15 +321,17 @@ export function Game() {
     catch { setNamesError("Bitte verwende einen Namen mit höchstens 32 Zeichen."); }
   }
   const spendTime = useCallback((minutes: number, place = save.place) => {
-    if (sessionRef.current || legacyView || worldSave.chapter && currentStep(worldSave)) return;
+    // The adventure plays outside the calendar: no time passes in the chronicle.
+    if (modeRef.current === "adventure" || sessionRef.current || legacyView || worldSave.chapter && currentStep(worldSave)) return;
     const result = advanceTimelineClock(dayRef.current, minutes);
     persistDay(result.save);
     setNotices(previous => [...previous, ...result.notices.map(notice => ({ ...notice, label: `${activityAt(place, notice.minute % 1440)} · ${PLACES[place].name}` }))]);
   }, [persistDay, save.place, legacyView, worldSave]);
   useEffect(() => { if (started) persistTimeline(timelineRef.current); }, [started, persistTimeline]);
   useEffect(() => {
+    if (adventure) { worldAudio.setMood(advAmb.mood); return; }
     worldAudio.setMood(cinema?.kind === "kiss" || event?.scene === "confession" && (eventState?.cursor ?? 0) >= 1 || event?.scene === "love" && (eventState?.cursor ?? 0) >= 2 ? "love" : event && event.scene !== "encounter" ? "evening" : "world");
-  }, [event, eventState?.cursor, cinema?.kind]);
+  }, [event, eventState?.cursor, cinema?.kind, adventure, advAmb.mood]);
   useEffect(() => {
     if (!notices.length || !active || document.hidden) return;
     const timer = window.setTimeout(() => setNotices(previous => previous.slice(1)), 4500);
@@ -283,7 +369,7 @@ export function Game() {
   const move = useCallback((seconds: number) => {
     const next = { ...actorsRef.current };
     let changed = false;
-    for (const entity of event ? [] : routineEntities(save.place, save.chapter ? 840 : dayRef.current.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)) {
+    for (const entity of event || modeRef.current === "adventure" ? [] : routineEntities(save.place, save.chapter ? 840 : dayRef.current.minute, inhabitants(save.place,visitingElias),followingElias,!!save.chapter)) {
       const actor = next[entity.id];
       if (!actor || restRef.current?.elias && entity.art === "elias") continue;
       const updated = followingElias && entity.art === "elias" ? advanceFollower(save.place,actor,playerRef.current,seconds) : advanceActor(save.place, entity.id, actor, seconds);
@@ -333,7 +419,7 @@ export function Game() {
     if (magnitude > 1) { dx /= magnitude; dy /= magnitude; }
     setDirection(Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "front" : "back");
     const p = playerRef.current;
-    const { x, y } = movementStep(p, { x: dx, y: dy }, seconds, (x, y) => storyCanWalk(save.place, x, y, { pasture: event?.scene === "encounter" }));
+    const { x, y } = movementStep(p, { x: dx, y: dy }, seconds, (x, y) => storyCanWalk(save.place, x, y, { pasture: event?.scene === "encounter" }) && !(modeRef.current === "adventure" && walkBlocked(advRef.current, save.place, x, y)));
     // Leaving a trigger zone re-arms it, so an interrupted memory can start again.
     if (triggerHere && Math.hypot(x-triggerHere.point.x, y-triggerHere.point.y) > triggerHere.radius*1.8) triggerArmed.current = true;
     const distance = Math.hypot(x-p.x,y-p.y);
@@ -375,6 +461,7 @@ export function Game() {
       changeRest({ spot: restTarget, elias: false, motion: beginRest(save.place, playerRef.current, restTarget) }); spendTime(ACTION_MINUTES); return;
     }
     if (nearbyEntity) {
+      if (modeRef.current === "adventure") { setDirection(directionBetween(playerRef.current, nearbyEntity)); runAdventure(advInteractAt(advRef.current, nearbyEntity.id)); return; }
       if (nearbyEntity.id === "graduation-photo" && (step?.target === nearbyEntity.id || save.completed.includes("graduation"))) {
         setPhotoMoment({ target: step?.target === nearbyEntity.id ? nearbyEntity.id : undefined }); return;
       }
@@ -409,6 +496,11 @@ export function Game() {
       const entitySpeaks = !matches || step.speaker === original?.name;
       setDialogue({ speaker: entitySpeaks ? nearbyEntity.name : step.speaker, art: entitySpeaks && nearbyEntity.kind !== "item" ? nearbyEntity.art : undefined, text: matches ? step.text : nearbyEntity.text, target: matches ? nearbyEntity.id : undefined, choices: matches && nearbyEntity.id === "elias-bus" ? ["Zusammen losgehen", "Ich freue mich auf den Tag mit dir"] : undefined });
     } else if (nearbyExit) {
+      if (modeRef.current === "adventure") {
+        const gate = exitGate(advRef.current, save.place, nearbyExit.to);
+        if (!gate.open) { setAdvScript({ lines: [advFelice(gate.reason ?? "Hier komme ich gerade nicht weiter.")], index: 0 }); return; }
+        advTravel(nearbyExit.to, nearbyExit.spawn); return;
+      }
       if(followingElias) {
         const native=ENTITIES[nearbyExit.to].find(entity=>entity.art === "elias");
         const id=native?.id ?? ELIAS_GUEST.id;
@@ -420,7 +512,7 @@ export function Game() {
       if (firstSchoolBus) { setBusRide(nearbyExit); return; }
       setSave({ ...save, place: nearbyExit.to }); position(nearbyExit.spawn); spendTime(TRAVEL_MINUTES, nearbyExit.to);
     }
-  }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint, triggerNear, triggerHere, upcoming]);
+  }, [active, nearbyEntity, nearbyExit, rest, restTarget, step, save, setSave, spendTime, event, eventState, encounterNearby, sequenceBeat, sequenceNearby, followingElias, eliasPoint, triggerNear, triggerHere, upcoming, advTravel]);
 
   function finishDialogue(choice?: string) {
     if (!dialogue) return;
@@ -501,8 +593,13 @@ export function Game() {
     const down = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLElement && event.target.closest('dialog,input,select,textarea,[contenteditable="true"]')) return;
       if (event.code === "Escape" && started && !transitioning && !intro) { event.preventDefault(); useInput.getState().setPaused(!useInput.getState().paused); clearMovement(); return; }
-      if (event.code === "KeyJ" && started && inWorld && !paused && !needsLandscape && !phone && !photoMoment && !overlay && !event.repeat) { event.preventDefault(); clearMovement(); setJournal(v => !v); return; }
-      if (event.code === "KeyI" && active && !event.repeat) { event.preventDefault(); clearMovement(); setInventoryOpen(true); return; }
+      if (modeRef.current === "adventure" && active && !event.repeat && ["KeyJ","KeyI","KeyK","KeyH","KeyQ"].includes(event.code)) {
+        event.preventDefault(); clearMovement();
+        if (event.code === "KeyI") setAdvBag(true); else if (event.code === "KeyH") setAdvHint(true); else setAdvJournal(event.code === "KeyK" ? "case" : "quests");
+        return;
+      }
+      if (event.code === "KeyJ" && modeRef.current === "chronicle" && started && inWorld && !paused && !needsLandscape && !phone && !photoMoment && !overlay && !event.repeat) { event.preventDefault(); clearMovement(); setJournal(v => !v); return; }
+      if (event.code === "KeyI" && modeRef.current === "chronicle" && active && !event.repeat) { event.preventDefault(); clearMovement(); setInventoryOpen(true); return; }
       if (!active) return;
       if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.code)) {
         event.preventDefault(); pressedKeys.add(event.code);
@@ -717,13 +814,173 @@ export function Game() {
     return () => window.clearTimeout(timer);
   }, [thought]);
 
+  /* ------------------------------------------------ Abenteuer: Die verlorenen Erinnerungen */
+  /** Applies an engine outcome: autosave first (so a skipped dialogue never loses progress), then show it. */
+  function runAdventure(outcome: AdvOutcome) {
+    persistAdventure({ ...outcome.save, position: playerRef.current });
+    if (outcome.lines.length) setAdvScript({ lines: outcome.lines, index: 0, after: outcome.after });
+    else runAdventureAfter(outcome.after);
+  }
+  function runAdventureAfter(after?: AdvAfter) {
+    if (!after) return;
+    if ((after.glitch || after.cutscene === "shadow" || after.cutscene === "barrier") && advRef.current.settings.effects !== "reduced") setGlitch(Date.now());
+    if (after.cutscene === "bus") { clearMovement(); setAdvRide(after); return; }
+    if (after.cutscene === "barrier") setAdvFx({ key: Date.now(), name: "shadow-dissolve" });
+    if (after.minigame) { clearMovement(); setAdvMinigame(true); return; }
+    // Elias' message comes first; a scene change waits until Felice has answered.
+    if (after.cutscene === "elias-message" && after.travel) { advPendingTravel.current = after.travel; setAdvCutscene("elias-message"); return; }
+    if (after.travel) advTravel(after.travel);
+    if (after.puzzle) { persistAdventure(openPuzzleRecord(advRef.current, after.puzzle)); setAdvPuzzle(after.puzzle); }
+    if (after.cutscene === "elias-message" || after.cutscene === "credits") setAdvCutscene(after.cutscene);
+  }
+  function answerElias(wordId: string) {
+    persistAdventure(chooseWords(advRef.current, wordId));
+    setAdvCutscene(null); clearMovement();
+    const travel = advPendingTravel.current; advPendingTravel.current = null;
+    if (travel) advTravel(travel);
+  }
+  function finishTargets() {
+    setAdvMinigame(false); worldAudio.play("complete");
+    runAdventure(finishMinigame(advRef.current, "targets"));
+  }
+  function finishAdventureRide() {
+    const ride = advRide; setAdvRide(null);
+    advTravel(ride?.travel ?? "school");
+  }
+  function advanceAdventureScript(choice?: string) {
+    const script = advScript;
+    if (!script) return;
+    const current = script.lines[script.index];
+    const picked = current?.choices?.find(entry => entry.label === choice);
+    if (picked?.id) { persistAdventure(chooseWords(advRef.current, picked.id)); setAdvFx({ key: Date.now(), name: "heart-burst" }); }
+    const lines = picked?.reply?.length ? [...script.lines.slice(0, script.index + 1), ...picked.reply, ...script.lines.slice(script.index + 1)] : script.lines;
+    if (script.index + 1 >= lines.length) { setAdvScript(null); clearMovement(); runAdventureAfter(script.after); return; }
+    setAdvScript({ lines, index: script.index + 1, after: script.after });
+  }
+  function skipAdventureScript() { const script = advScript; setAdvScript(null); clearMovement(); runAdventureAfter(script?.after); }
+  function submitAdventurePuzzle(id: string, answer: unknown) {
+    const result = submitPuzzle(advRef.current, id, answer);
+    persistAdventure(result.save);
+    if (result.ok) {
+      worldAudio.play("complete");
+      window.setTimeout(() => { setAdvPuzzle(null); runAdventure({ save: advRef.current, lines: result.lines, after: result.after }); }, 700);
+    } else {
+      worldAudio.play("interact");
+      if (advRef.current.settings.effects !== "reduced") { try { navigator.vibrate?.(60); } catch { /* optional */ } }
+    }
+    return { ok: Boolean(result.ok), feedback: result.feedback };
+  }
+  function skipAdventurePuzzle(id: string) {
+    const outcome = skipPuzzle(advRef.current, id);
+    if (outcome.save === advRef.current) return;
+    setAdvPuzzle(null); setAdvHint(false); worldAudio.play("complete"); runAdventure(outcome);
+  }
+  const advNearby = adventure ? sceneEntities.map(entity => ({ entity, distance: Math.hypot(entity.x - player.x, entity.y - player.y) })).filter(entry => entry.distance < .14).sort((a, b) => a.distance - b.distance)[0]?.entity : undefined;
+  function applyAdventureItem(item: string) { setAdvBag(false); runAdventure(advUseItem(advRef.current, item, advNearby?.id)); }
+  function combineAdventureItems(a: string, b: string) {
+    const outcome = combineItems(advRef.current, a, b);
+    const text = outcome.lines.map(entry => entry.text).join(" ");
+    if (outcome.ok) { worldAudio.play("complete"); setAdvBag(false); runAdventure(outcome); } else persistAdventure(outcome.save);
+    return { ok: outcome.ok, text };
+  }
+  function combineAdventureEvidence(a: string, b: string) {
+    const outcome = combineEvidence(advRef.current, a, b);
+    persistAdventure(outcome.save);
+    if (outcome.ok) worldAudio.play("complete");
+    return { ok: outcome.ok, text: outcome.lines.map(entry => entry.text).join(" ") };
+  }
+  const chroniclePlayer = useRef<Point | null>(null);
+  function resetTransient() {
+    setDialogue(null); setAdvScript(null); setAdvPuzzle(null); setAdvJournal(null); setAdvBag(false); setAdvHint(false); setAdvCutscene(null); setAdvMinigame(false); setAdvReward(null); setAdvFx(null);
+    setJournal(false); setPhone(false); setInventoryOpen(false); changeRest(null); setCinema(null); setFollowingElias(false); setVisitingElias(null); setStoryToast(null); setNotices([]);
+    if (replayRef.current) { replayRef.current = null; setReplay(null); }
+    clearMovement();
+  }
+  const advInProgress = !adv.completedAt && (adv.flags.length > 0 || adv.evidence.length > 0);
+  /**
+   * Starts or continues the adventure. A damaged save is only ever replaced here, after the player
+   * chose "Neues Spiel" or "Letzten Checkpoint fortsetzen"; the damaged text is kept under its own key.
+   */
+  function startAdventure(fresh: boolean) {
+    if (modeRef.current === "chronicle" && started) chroniclePlayer.current = playerRef.current;
+    resetTransient(); setMode("adventure");
+    if (advDamaged) { setAsideDamaged(browserStorage()); advReadable.current = true; setAdvDamaged(false); }
+    let current = advRef.current;
+    if (fresh) { playAcc.current = 0; current = { ...newAdventure(), settings: advRef.current.settings }; advRef.current = current; persistAdventure(current, { checkpoint: true }); setAdvSaveMessage(null); }
+    else persistAdventure(current, { checkpoint: true });
+    position(current.position ?? SPAWNS[current.place]); setDirection("front");
+    setStarted(true);
+    if (!advHasFlag(current, "letter-read")) setAdvScript({ lines: ADVENTURE_INTRO, index: 0 });
+    else if (!current.completedAt) { const goal = advObjective(current); setAdvScript({ lines: [advNarrate(`Willkommen zurück! ${advChapter(current).subtitle}${current.playSeconds >= 60 ? ` · bisher ${formatPlayTime(current.playSeconds)} gespielt` : ""}.`), advFelice(`Wo war ich? Ach ja: ${goal.text}`, "thoughtful")], index: 0 }); }
+  }
+  function saveAdventureNow() {
+    if (modeRef.current !== "adventure") return;
+    if (!advReadable.current) { setAdvSaveMessage("Speichern ist erst nach deiner Wahl im Startmenü möglich."); return; }
+    const result = persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }, { checkpoint: true });
+    const message = result?.ok ? `Gespeichert um ${savedTime(result.savedAt)} Uhr ✓` : null;
+    setAdvSaveMessage(message);
+    // The confirmation fades back to the regular autosave line after a while.
+    if (message) window.setTimeout(() => setAdvSaveMessage(current => current === message ? null : current), 10000);
+  }
+  function startChronicle() {
+    resetTransient(); setMode("chronicle");
+    if (chroniclePlayer.current) position(chroniclePlayer.current);
+    else if (!timelineRef.current.active) position(SPAWNS[worldSave.place]);
+    setStarted(true);
+    const current = timelineRef.current;
+    // A brand-new game opens with the autumn intro; returning players continue directly.
+    if (!current.flags.includes(INTRO_FLAG) && !current.active && !current.progress["beginning-2025-11-01"]?.completedAt) { clearMovement(); setIntro(true); }
+  }
+  function backToMenu() {
+    if (modeRef.current === "adventure") persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }, { checkpoint: true });
+    else { chroniclePlayer.current = playerRef.current; if (legacyView) restoreDraft(); }
+    resetTransient(); setIntro(false); setStarted(false); useInput.getState().setPaused(false);
+  }
+  function finishAdventureCredits() {
+    setAdvCutscene(null);
+    const outcome = advEnterPlace(finishAdventure(advRef.current), "bedroom");
+    persistAdventure({ ...outcome.save, position: { x: .47, y: .72 } }, { checkpoint: true }); changeRest(null); position({ x: .47, y: .72 }); setDirection("back");
+    setAdvScript({ lines: [advNarrate("Felices Zimmer. Draußen wird es hell. Elias ist da – und eure Erinnerungen leuchten wieder."), advNarrate("Abenteuer abgeschlossen! Im Tagebuch findest du alle Erinnerungen. Über das Pausenmenü (oben rechts) kannst du die Chronik „Unser Jahr“ spielen oder das Abenteuer neu beginnen.")], index: 0 });
+  }
+  useEffect(() => {
+    if (!glitch) return;
+    const timer = window.setTimeout(() => setGlitch(0), 900);
+    return () => window.clearTimeout(timer);
+  }, [glitch]);
+  useEffect(() => {
+    if (!advReward) return;
+    const timer = window.setTimeout(() => setAdvReward(null), 3400);
+    return () => window.clearTimeout(timer);
+  }, [advReward]);
+  useEffect(() => {
+    if (!advFx) return;
+    const timer = window.setTimeout(() => setAdvFx(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [advFx]);
+  // Active play time (no pause, no hidden tab, no rotate prompt) plus a quiet autosave of position and time.
+  useEffect(() => {
+    if (!started || !adventure || paused || needsLandscape) return;
+    let last = performance.now();
+    const tick = window.setInterval(() => { const now = performance.now(); if (!document.hidden) playAcc.current += Math.min(5, (now - last) / 1000); last = now; }, 1000);
+    const autosave = window.setInterval(() => { if (!document.hidden && advReadable.current) persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }); }, ADV_AUTOSAVE_MS);
+    return () => { window.clearInterval(tick); window.clearInterval(autosave); };
+  }, [started, adventure, paused, needsLandscape, persistAdventure]);
+  // Closing the tab, switching apps on the phone or locking the screen writes the latest state.
+  useEffect(() => {
+    if (!started || !adventure) return;
+    const flush = () => { if (advReadable.current) persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }); };
+    const hidden = () => { if (document.visibilityState === "hidden") flush(); };
+    window.addEventListener("pagehide", flush); document.addEventListener("visibilitychange", hidden);
+    return () => { window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", hidden); };
+  }, [started, adventure, persistAdventure]);
+
   function jumpStory() {
     if (session || legacyView) return;
     const next = nextEvent(timelineRef.current);
     if (!next) return;
     persistTimeline(jumpToNext(timelineRef.current));
     setJournal(false); setNotices([]); clearMovement();
-    setDialogue({ speaker: "Ein paar Seiten weiter", text: `Die Zeit vergeht in eurem Tempo.\n\n${historicalDate(next.date)} – ${next.scene === "encounter" ? "Bei den Pferden in Radegast wartet die nächste Geschichte." : next.scene === "sequence" ? "Die nächste Szene wartet in eurer Welt. Folge ihrer goldenen Markierung." : "Ein gemeinsamer Moment wartet auf Felices Handy. Nimm in ihrem Zimmer am Bett oder Schreibtisch Platz."}`, action: "calendar" });
+    setDialogue({ speaker: "Ein paar Seiten weiter", text: `Die Zeit vergeht in eurem Tempo.\n\n${historicalDate(next.date)} – ${next.scene === "encounter" ? "Am Treffpunkt in Radegast wartet die nächste Geschichte." : next.scene === "sequence" ? "Die nächste Szene wartet in eurer Welt. Folge ihrer goldenen Markierung." : "Ein gemeinsamer Moment wartet auf Felices Handy. Nimm in ihrem Zimmer am Bett oder Schreibtisch Platz."}`, action: "calendar" });
   }
 
   function openPhone() {
@@ -760,10 +1017,11 @@ export function Game() {
   const focus = arrivalShot === null ? player : { x: player.x+(eliasPoint.x-player.x)*Math.min(1,arrivalShot*1.6), y: player.y+(eliasPoint.y-player.y)*Math.min(1,arrivalShot*1.6) };
   const camera = cameraFor(focus, arrivalShot !== null ? 1+.32*Math.sin(Math.PI*arrivalShot) : cinema?.kind === "kiss" ? 1+Math.min(.3,cinema.elapsed/4000*.3) : 1);
   const cutscene = arrivalShot !== null || Boolean(cinema && cinema.sequence) || finale;
-  const questTarget = sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
+  const questTarget = adventure ? advTarget : sequenceBeat?.target ?? (step ? step.place === save.place ? sceneEntities.find(e => e.id === step.target) : guide : triggerHere?.point ?? storyGuide);
   const arrow = questTarget ? offscreenGuide(questTarget, camera) : null;
+  const advExitLocked = Boolean(adventure && !restTarget && !nearbyEntity && nearbyExit && !exitGate(adv, save.place, nearbyExit.to).open);
 
-  return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason}>
+  return <main className="game-shell pixel-game version-five version-six version-061 version-065 version-07 version-075 version-08 version-09" data-name-mode={names.visibility} data-scene={inWorld ? save.place : "shooting"} data-chapter={event?.id ?? save.chapter ?? "free"} data-replay={Boolean(replay)} data-atmosphere-active={active} data-minute={day.minute} data-date={day.date} data-day={day.day} data-season={sceneSeason} data-mode={mode} data-adv-chapter={adventure ? advGoal.chapter : undefined} data-adv-text={adventure ? adv.settings.textSize : undefined} data-adv-effects={adventure ? adv.settings.effects : undefined}>
     <link rel="preload" as="image" href={assetUrl("/rooms/felice-bedroom-v10.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/rest-poses-v065.png")}/>
     <link rel="preload" as="image" href={assetUrl("/characters/neighbors-poses-v065.png")}/>
@@ -774,14 +1032,16 @@ export function Game() {
         {event?.scene === "encounter" && <EncounterElias position={eliasPoint} arriving={eventState?.cursor === 0} cursor={eventState?.cursor ?? 0}/>}
         {event?.scene === "sequence" && <SequenceCast event={event} beat={sequenceBeat} player={player} effect={cinema} place={save.place} conversing={Boolean(dialogue)}/> }
         {sequenceBeat && <div className="story-target" data-testid="story-target" data-x={sequenceBeat.target.x} data-y={sequenceBeat.target.y} style={labelStyle(sequenceBeat.target)}><span>✦</span><small>{sequenceBeat.label}</small></div>}
-        {save.place === "radegast" && <span className="town-place-label" style={labelStyle({ x: .19, y: .17 })}>{event ? "Radegast · Bei den Pferden" : "Felices Wohnung"}</span>}
+        {save.place === "radegast" && <span className="town-place-label" style={labelStyle({ x: .19, y: .17 })}>{event ? "Radegast · Am Treffpunkt" : "Felices Wohnung"}</span>}
+        {adventure && save.place === "archive" && !advHasFlag(adv, "barrier-down") && <div className="adv-barrier" data-testid="adv-barrier" aria-label="Eine Barriere aus Schatten" style={{ top: "44%" }}><i/><i/><i/></div>}
         {spots.map(spot => <div key={spot.id} className={`rest-spot rest-${spot.kind}${restTarget?.id === spot.id ? " nearby-rest" : ""}`} style={{...labelStyle(spot.furniture ?? spot.approach), zIndex: Math.round((spot.furniture ?? spot.position).y*100)+8}} aria-label={spot.name}>
           {spot.furniture && <BenchArt winter={winter && save.place === "garden"}/>}
           {restTarget?.id === spot.id && !rest && <span className="entity-name">{spot.name}</span>}
         </div>)}
         {triggerHere && <div className={`story-trigger${triggerNear ? " near" : ""}`} data-testid="story-trigger" data-mode={triggerHere.mode} style={labelStyle(triggerHere.point)} aria-label={triggerHere.label}><span aria-hidden="true">✦</span>{triggerNear && <small>{triggerHere.label}</small>}</div>}
-        {exits.map(exit => <div key={exit.to} className={`world-exit ${(guide ?? storyGuide)?.to === exit.to ? "quest-exit" : ""}`} style={labelStyle(exit)}><span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg></span><small>{exit.label}</small></div>)}
-        {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && actors[entity.id] ? {...actors[entity.id],moving:false} : actors[entity.id]} quest={step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} />)}
+        {exits.map(exit => { const locked = adventure && !exitGate(adv, save.place, exit.to).open; return <div key={exit.to} className={`world-exit ${(adventure ? advGuide : guide ?? storyGuide)?.to === exit.to && !locked ? "quest-exit" : ""}${locked ? " adv-locked-exit" : ""}${exit.to === "archive" ? " adv-rift-exit" : ""}`} data-locked={locked || undefined} style={labelStyle(exit)}><span>{locked ? <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6Z" fill="none" stroke="currentColor" strokeWidth="2"/></svg> : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 19 19 5M6 5h13v13" fill="none" stroke="currentColor" strokeWidth="2"/></svg>}</span><small>{exit.label}{locked ? " · gesperrt" : ""}</small></div>; })}
+        {sceneEntities.map(entity => <WorldEntity key={entity.id} entity={entity} actor={dialogue && actors[entity.id] ? {...actors[entity.id],moving:false} : actors[entity.id]} quest={adventure ? advGoal.target === entity.id : step?.place === save.place && step.target === entity.id} nearby={active && nearbyEntity?.id === entity.id} look={adventure ? hotspotById(entity.id)?.look?.(adv) : undefined}/>)}
+        {adventure && advAmb.shadow > 0 && <div className="adv-shadow-veil" aria-hidden="true" style={{ opacity: advAmb.shadow }}/>}
         {save.place === "bedroom" && memoryProgress["goelzau-shooting"] && <span className="room-trophy" style={labelStyle({x:.855,y:.49})} aria-label="Erinnerungsmedaille" data-testid="shooting-medal">✦</span>}
         <div className={`room-player facing-${direction} pose-${restPose}${bedOccupied ? " in-bed" : ""}${walking && active ? " walking" : ""}`} data-testid="felice-player" data-pose={restPose} data-rest-id={rest?.spot.id} data-rest-phase={rest?.motion.phase ?? "none"} data-x={player.x.toFixed(3)} data-y={player.y.toFixed(3)} data-direction={direction} style={{...labelStyle(player),zIndex:bedOccupied ? 80 : Math.round(player.y*100)+10}}>
           {<CharacterArt id="felice" direction={direction} walking={walking && active || cinema?.kind === "walk"} frame={cinema?.kind === "walk" ? Math.floor(cinema.elapsed/180)%3 : walkFrame} pose={restPose}/>}<span className="room-player-label">Felice</span>
@@ -797,17 +1057,50 @@ export function Game() {
       {active && arrow && <div className="offscreen-guide" style={labelStyle(arrow)} role="status" aria-label={`Aufgabenziel: ${step?.label}`}><span style={{ transform: `rotate(${arrow.angle}deg)` }}>➜</span><small>{guide?.label ?? "Dein nächstes Ziel"}</small></div>}
     </div>
     {(phase === "memory" || phase === "leaving") && <ShootingMemory blocked={paused || needsLandscape || transitioning} onComplete={completeShooting} onLeave={useMemories.getState().leave}/>}
-    <GameUI started={started} onStart={() => {
-      setStarted(true);
-      const current = timelineRef.current;
-      // A brand-new game opens with the autumn intro; returning players continue directly.
-      if (!current.flags.includes(INTRO_FLAG) && !current.active && !current.progress["beginning-2025-11-01"]?.completedAt) { clearMovement(); setIntro(true); }
-    }} roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay && arrivalShot === null} transitioning={transitioning} place={inWorld ? event?.scene === "encounter" ? "Radegast · Bei den Pferden" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed} menu={overlay || !inWorld ? [] : [
+    <GameUI started={started} onStart={startChronicle} controls={adventure ? ["WASD / Pfeile · Laufen", "E · Untersuchen", "I · Tasche", "J · Tagebuch", "K · Akte", "H · Hinweis", "Esc · Menü"].join("\u00a0\u00a0 ") : undefined} modes={[
+      // Replacing an existing adventure always asks once; the chronicle's saves are never touched.
+      ...(advDamaged ? [
+        ...(advInitial.recovered ? [{ id: "adventure-continue", label: "Letzten Checkpoint fortsetzen", detail: `${advChapter(advInitial.recovered).subtitle} · Spielzeit ${formatPlayTime(advInitial.recovered.playSeconds)}`, primary: true, onSelect: () => startAdventure(false) }] : []),
+        { id: "adventure-new", label: "Neues Spiel", detail: "Die verlorenen Erinnerungen · von vorn beginnen", primary: !advInitial.recovered, confirm: "Ein neues Abenteuer beginnen? Der beschädigte Spielstand wird beiseitegelegt. Die Chronik „Unser Jahr“ bleibt unberührt.", onSelect: () => startAdventure(true) },
+      ] : advInProgress ? [
+        { id: "adventure-continue", label: "Spiel fortsetzen", detail: `${advChapter(adv).subtitle} · ${PLACES[adv.place].name}${advSavedAt ? ` · gespeichert ${new Date(advSavedAt).toLocaleDateString("de-DE")} ${savedTime(advSavedAt)}` : ""} · ${formatPlayTime(adv.playSeconds)}`, primary: true, onSelect: () => startAdventure(false) },
+        { id: "adventure-new", label: "Neues Spiel", detail: "Die verlorenen Erinnerungen · von vorn beginnen", confirm: `Wirklich neu beginnen? Dein Spielstand (${advChapter(adv).subtitle}) wird ersetzt. Die Chronik „Unser Jahr“ bleibt unberührt.`, onSelect: () => startAdventure(true) },
+      ] : adv.completedAt ? [
+        { id: "adventure-epilog", label: "Zurück zu Elias", detail: `Die verlorenen Erinnerungen · abgeschlossen ♥ · ${formatPlayTime(adv.playSeconds)}`, primary: true, onSelect: () => startAdventure(false) },
+        { id: "adventure-new", label: "Neues Spiel", detail: "Das Abenteuer noch einmal von vorn erleben", confirm: "Noch einmal von vorn? Dein abgeschlossenes Abenteuer wird durch ein neues ersetzt.", onSelect: () => startAdventure(true) },
+      ] : [
+        { id: "adventure-new", label: "Neues Spiel", detail: "Die verlorenen Erinnerungen · Rette Elias · ca. 30 Minuten", primary: true, onSelect: () => startAdventure(true) },
+      ]),
+      { id: "chronicle", label: "Unser Jahr (Chronik)", detail: "Das bisherige Spiel: euer gemeinsames Jahr in acht Kapiteln", onSelect: startChronicle },
+    ]}
+      saveNote={LOCAL_SAVE_NOTE}
+      saveStatus={adventure ? advError ?? advSaveMessage ?? (advSavedAt ? `Automatisch gespeichert · zuletzt ${savedTime(advSavedAt)} Uhr · Spielzeit ${formatPlayTime(adv.playSeconds)}` : undefined) : undefined}
+      startNotice={advDamaged ? `Der Abenteuer-Spielstand auf diesem Gerät ist beschädigt und kann nicht geladen werden. ${advInitial.recovered ? `Der letzte Checkpoint (${advChapter(advInitial.recovered).subtitle}) ist noch lesbar.` : "Es gibt keinen lesbaren Checkpoint."} Der beschädigte Stand wird nicht gelöscht, sondern beiseitegelegt.` : advError}
+      roomActive={inWorld && !needsLandscape && !journal && !dialogue && !phone && !photoMoment && !cinema && !finale && !overlay && arrivalShot === null} transitioning={transitioning} place={inWorld ? adventure ? `${advChapter(adv).subtitle} · ${PLACES[save.place].name}` : event?.scene === "encounter" ? "Radegast · Am Treffpunkt" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={adventure ? 0 : completed} menu={!inWorld ? [] : adventure ? [
+      // Saving works from every pause, even in the middle of a dialogue or puzzle.
+      { label: "Spiel speichern", keepOpen: true, primary: true, onSelect: saveAdventureNow },
+      ...(overlay ? [] : [
+        { label: "Tagebuch & Aufgaben", shortcut: "J", onSelect: () => { clearMovement(); setAdvJournal("quests"); } },
+        { label: "Ermittlungsakte", shortcut: "K", onSelect: () => { clearMovement(); setAdvJournal("case"); } },
+        { label: "Erinnerungsalbum", onSelect: () => { clearMovement(); setAdvJournal("album"); } },
+        { label: "Tasche", shortcut: "I", onSelect: () => { clearMovement(); setAdvBag(true); } },
+        { label: "Hinweis", shortcut: "H", onSelect: () => { clearMovement(); setAdvHint(true); } },
+        { label: "Einstellungen", onSelect: () => { clearMovement(); setAdvJournal("settings"); } },
+      ]),
+      { label: "Hauptmenü", onSelect: backToMenu },
+    ] : overlay ? [] : [
       { label: "Tasche", shortcut: "I", onSelect: () => { clearMovement(); setInventoryOpen(true); } },
       { label: "Erinnerungsalbum", shortcut: "J", onSelect: () => { clearMovement(); setJournal(true); } },
       { label: "Smartphone", onSelect: () => { clearMovement(); setPhone(true); } },
+      { label: "Hauptmenü", onSelect: backToMenu },
     ]}/>
-    {started && inWorld && !paused && !transitioning && <>
+    {started && inWorld && !paused && !transitioning && adventure && <>
+      <AdventureHud save={adv} onJournal={() => { clearMovement(); setAdvJournal("quests"); }} onCase={() => { clearMovement(); setAdvJournal("case"); }} onBag={() => { clearMovement(); setAdvBag(true); }} onHint={() => { clearMovement(); setAdvHint(true); }}/>
+      {active && thought && <aside className="felice-thought adv-thought" role="status" data-testid="felice-thought" key={thought.key}><span className="thought-dots" aria-hidden="true"><i/><i/><i/></span><p><small>Felice denkt</small>{thought.text}</p></aside>}
+      {active && rest && <div className="memory-interaction rest-actions"><span>{!settled ? rest.motion.phase === "leaving" ? "Du stehst auf" : "Du gehst zum Ruheplatz" : rest.spot.kind === "bed" ? "Du liegst im Bett" : "Du sitzt einen Moment"}</span><button data-testid="world-interact" disabled={rest.motion.phase === "leaving"} onClick={interact}><kbd>E</kbd>Aufstehen</button></div>}
+      {active && !rest && target && <div className="memory-interaction"><span>{targetName}{advExitLocked ? " · gesperrt" : ""}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{restTarget ? restTarget.kind === "bed" ? "Hinlegen" : "Hinsetzen" : nearbyEntity ? nearbyEntity.kind === "person" ? "Ansprechen" : "Untersuchen" : advExitLocked ? "Ansehen" : "Weitergehen"}</button></div>}
+    </>}
+    {started && inWorld && !paused && !transitioning && !adventure && <>
       <div className="day-clock" data-testid="day-clock"><time dateTime={day.date}>{historicalDate(day.date)}</time><strong>Uhrzeit: {clockText(day.minute)}</strong><small>{session ? "Aktuelle Spielzeit · während der Szene pausiert" : `Tag ${day.day} · ${activityAt(save.place, day.minute)}`}</small><span className="calendar-season" aria-label="Jahreszeit">{day.season} · Kalender</span></div>
       {(event || legacyView) && <div className="story-session-bar" role="status"><div><small>{legacyView ? "FIKTIONALISIERTER SZENENENTWURF" : replay ? "ERINNERUNG ERNEUT ERLEBEN" : `KAPITEL ${event?.chapterNumber ?? 1} · ${STORY_CHAPTERS.find(c=>c.number===(event?.chapterNumber??1))?.title ?? "Der Anfang"}`}</small><strong>{event ? `${eventDateText(event)} · ${event.title}` : "Historisches Datum noch offen"}</strong><span>{event ? event.source === "future" ? "Spielerischer Ausblick · kein abgeschlossenes historisches Ereignis" : event.source === "staged" ? "Spielbare Alltagsszene · Dialog und Ablauf sind gestaltet" : `Rekonstruierte Dialoge · Szenenzeit ${clockText(sceneMinute)}${event.staging.timeConfirmed ? " Uhr" : " Uhr (inszeniert)"}` : "Ablauf und Dialoge sind noch unbestätigt."}</span></div><button onClick={legacyView ? restoreDraft : leaveStory}>{replay || legacyView ? "Zurück in die Welt" : "Unterbrechen"}</button></div>}
       {started && !event && !session && isRoutineDay(day.date) && <aside className="routine-list" data-testid="routine-list" aria-label="Heute zu tun"><small>Heute · {historicalDate(day.date)}</small><ul>{ROUTINE_TASKS.map(task => <li key={task.id} className={routineDone(timeline.flags, day.date, task.id) ? "is-done" : undefined}>{routineDone(timeline.flags, day.date, task.id) ? "☑" : "☐"} {task.label}</li>)}</ul></aside>}
@@ -827,7 +1120,7 @@ export function Game() {
       {active && !rest && target && event?.scene !== "sequence" && !(triggerNear && triggerHere?.mode === "interact") && <div className="memory-interaction"><span>{targetName}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{restTarget ? restTarget.kind === "bed" ? "Hinlegen · 10 Min." : "Hinsetzen · 10 Min." : nearbyEntity ? nearbyEntity.id === "school-door" && day.minute < SCHOOL_END ? "Unterricht besuchen" : nearbyEntity.kind === "person" || nearbyEntity.kind === "dog" ? "Ansprechen · 10 Min." : save.place === "kitchen" ? "Aktion wählen" : "Anschauen / benutzen" : "Weitergehen · 30 Min."}</button></div>}
       {active && event?.scene === "sequence" && !sequenceBeat && <div className="memory-interaction sequence-actions"><span>Alle Schritte dieser Szene sind erlebt.</span><button onClick={finishCurrentEvent}>Diesen Moment bewahren</button></div>}
       {active && sequenceNearby && <div className="memory-interaction sequence-actions"><span>{sequenceBeat?.label}</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>Diesen Moment erleben</button></div>}
-      {active && encounterNearby && <div className="memory-interaction encounter-actions"><span>Bei den Pferden · Elias</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{eventState?.cursor === 1 ? "Gespräch beginnen" : eventState?.cursor === 2 ? "Schokolade annehmen" : eventState?.cursor === 3 ? "Schokolade bei dir behalten" : "Einen Moment bleiben"}</button></div>}
+      {active && encounterNearby && <div className="memory-interaction encounter-actions"><span>Am Treffpunkt · Elias</span><button data-testid="world-interact" onClick={interact}><kbd>E</kbd>{eventState?.cursor === 1 ? "Gespräch beginnen" : eventState?.cursor === 2 ? "Schokolade annehmen" : eventState?.cursor === 3 ? "Schokolade bei dir behalten" : "Einen Moment bleiben"}</button></div>}
     </>}
     {photoMoment && <GraduationPhotos blocked={paused || needsLandscape} onComplete={completePhotos}/> }
     {phone && event && eventState && ["chat","love","confession","message"].includes(event.scene) && <StoryPhone event={event} state={eventState} replay={Boolean(replay)} paused={paused} onPause={() => { if (paused) void worldAudio.unlock(); useInput.getState().setPaused(!paused); clearMovement(); }} blocked={paused || needsLandscape} onChange={changeEventState} onClose={() => { setPhone(false); clearMovement(); }} onComplete={finishCurrentEvent} timeline={timeline} onSelectMemory={id=>{setPhone(false);selectTimelineEvent(id);}} onOpenAlbum={()=>{setPhone(false);setJournal(true);}} onJump={()=>{setPhone(false);jumpStory();}}/>}
@@ -842,6 +1135,19 @@ export function Game() {
     </dialog>}
     {dialogue && <DialogueBox speaker={dialogue.speaker} key={`${dialogue.speaker}:${dialogue.text}:${dialogue.choices?.join("|")}`} art={dialogue.art ?? speakerGraphic(dialogue.speaker) ?? undefined} text={dialogue.text} emotion={dialogue.emotion} choices={dialogue.choices} paused={paused} blocked={paused || needsLandscape} onAdvance={finishDialogue} onCancel={()=>{setDialogue(null);clearMovement();}} onPause={()=>{useInput.getState().setPaused(!paused);clearMovement();}} ending={dialogue.ending} note={dialogue.action === "calendar" ? "STORY-KALENDER" : dialogue.action === "sequence" || dialogue.action === "encounter" ? "FIKTIONALISIERTE REKONSTRUKTION" : "SPIELDIALOG · GESTALTETE WORTE"}/>}
 
+    {adventure && advScript && advScript.lines[advScript.index] && (() => { const current = advScript.lines[advScript.index]; return <DialogueBox key={`adv:${advScript.index}:${current.speaker}:${current.text}`} speaker={current.speaker} art={current.art ?? speakerGraphic(current.speaker) ?? undefined} text={current.text} emotion={current.emotion} choices={current.choices?.map(choice => choice.label)} paused={paused} blocked={paused || needsLandscape} onAdvance={advanceAdventureScript} onCancel={skipAdventureScript} onPause={() => { useInput.getState().setPaused(!paused); clearMovement(); }} note={current.speaker === "Der Schatten" ? "DER SCHATTEN" : "DIE VERLORENEN ERINNERUNGEN"}/>; })()}
+    {adventure && advPuzzle && <PuzzlePanel key={advPuzzle} save={adv} id={advPuzzle} blocked={paused || needsLandscape} onSubmit={answer => submitAdventurePuzzle(advPuzzle, answer)} onHint={() => persistAdventure(revealHint(advRef.current, advPuzzle))} onSkip={() => skipAdventurePuzzle(advPuzzle)} onClose={() => { setAdvPuzzle(null); clearMovement(); }}/>}
+    {adventure && advJournal && <AdventureJournal save={adv} tab={advJournal} onClose={() => { setAdvJournal(null); clearMovement(); }} onCombineEvidence={combineAdventureEvidence} onSettings={settings => persistAdventure({ ...advRef.current, settings })} onRestart={() => startAdventure(true)} onSave={saveAdventureNow} saveInfo={{ savedAt: advSavedAt, error: advError, message: advSaveMessage }}/>}
+    {adventure && advBag && <AdventureBag save={adv} nearby={advNearby ? { id: advNearby.id, name: advNearby.name } : null} onClose={() => { setAdvBag(false); clearMovement(); }} onUse={applyAdventureItem} onCombine={combineAdventureItems}/>}
+    {adventure && advHint && <HintPanel save={adv} place={save.place} onHint={id => persistAdventure(revealHint(advRef.current, id))} onSkip={skipAdventurePuzzle} onOpen={id => { setAdvHint(false); persistAdventure(openPuzzleRecord(advRef.current, id)); setAdvPuzzle(id); }} onClose={() => { setAdvHint(false); clearMovement(); }}/>}
+    {adventure && advCutscene === "elias-message" && <EliasMessage message={eliasMessageFor(adv)} onReply={answerElias}/>}
+    {adventure && advCutscene === "credits" && <AdventureCredits playSeconds={adv.playSeconds} words={spokenWords(adv)} reduced={adv.settings.effects === "reduced"} onDone={finishAdventureCredits}/>}
+    {adventure && advMinigame && <TargetChallenge blocked={paused || needsLandscape} onDone={finishTargets}/>}
+    {adventure && advReward && started && <RewardBurst key={advReward.key} title={advReward.title} symbol={advReward.symbol} main={advReward.main} fragment={advReward.fragment} reduced={adv.settings.effects === "reduced"}/>}
+    {adventure && advFx && started && <div key={advFx.key} className={`adv-fx-center adv-fx-${advFx.name}`} aria-hidden="true"><FxSprite name={advFx.name} scale={3} reduced={adv.settings.effects === "reduced"}/></div>}
+    {adventure && advRide && started && <BusRide paused={paused || needsLandscape} caption="Radegast → Zörbig · Der Schattenbus" thoughts={ADV_RIDE_THOUGHTS} duration={ADV_RIDE_MS} onDone={finishAdventureRide}/>}
+    {adventure && glitch > 0 && <ShadowGlitch key={glitch} reduced={adv.settings.effects === "reduced"}/>}
+    {adventure && advError && started && <div className="day-save-warning" role="status">{advError}</div>}
     {(saveError || memoryError) && started && <div className="memory-save-warning" role="status">{saveError ?? memoryError}<button onClick={() => {
       if (memoryError) useMemories.getState().retrySave();
       if (saveError) { try { parseStory(window.localStorage.getItem(STORY_KEY)); if (!readable.current) { setSaveError("Bitte lade die Seite neu, um den wieder lesbaren Spielstand sicher fortzusetzen."); return; } window.localStorage.setItem(STORY_KEY,JSON.stringify(save)); setSaveError(null); } catch { setSaveError("Speichern bleibt nicht möglich. Bitte erlaube lokale Browserdaten für das Spiel."); } }
@@ -857,10 +1163,13 @@ export function Game() {
   </main>;
 }
 
-function WorldEntity({ entity, actor, quest, nearby }: { entity: Entity; actor?: Actor; quest: boolean; nearby: boolean }) {
+function WorldEntity({ entity, actor, quest, nearby, look }: { entity: Entity; actor?: Actor; quest: boolean; nearby: boolean; look?: string }) {
   const point = entity.display ?? entity;
   const pose = actor?.pose ?? "standing";
-  return <div className={`world-entity entity-${entity.kind} pose-${pose} ${actor?.moving ? "actor-walking" : ""} ${quest ? "quest-entity" : ""} ${nearby ? "nearby-entity" : ""}`} data-entity={entity.id} data-rest-id={actor?.restId} data-friend={!["mother","stepfather","halfsister","partner-one","stepsister","partner-two"].includes(entity.art)} data-pose={pose} data-moving={actor?.moving ?? false} data-x={point.x.toFixed(3)} data-y={point.y.toFixed(3)} style={{...(entity.kind !== "item" ? characterStyle(entity.kind === "dog" ? "dog" : entity.art) : {}),left:`${point.x*100}%`,top:`${point.y*100}%`,zIndex:entity.display ? 110 : Math.round(entity.y*100)+9}} aria-label={entity.name}>
+  if (entity.art.startsWith("adv:")) return <div className={`world-entity entity-item adv-entity adv-${entity.art.slice(4)} ${quest ? "quest-entity" : ""} ${nearby ? "nearby-entity" : ""}`} data-entity={entity.id} data-look={look} data-x={point.x.toFixed(3)} data-y={point.y.toFixed(3)} style={{ left: `${point.x*100}%`, top: `${point.y*100}%`, zIndex: entity.display ? 110 : Math.round(entity.y*100)+9 }} aria-label={entity.name}>
+    {quest && <span className="quest-marker">!</span>}<AdventureProp art={entity.art}/><span className="entity-name">{entity.name}</span>
+  </div>;
+  return <div className={`world-entity entity-${entity.kind} pose-${pose} ${actor?.moving ? "actor-walking" : ""} ${quest ? "quest-entity" : ""} ${nearby ? "nearby-entity" : ""}${look ? ` adv-look-${look}` : ""}`} data-entity={entity.id} data-rest-id={actor?.restId} data-friend={!["mother","stepfather","halfsister","partner-one","stepsister","partner-two"].includes(entity.art)} data-pose={pose} data-moving={actor?.moving ?? false} data-x={point.x.toFixed(3)} data-y={point.y.toFixed(3)} style={{...(entity.kind !== "item" ? characterStyle(entity.kind === "dog" ? "dog" : entity.art) : {}),left:`${point.x*100}%`,top:`${point.y*100}%`,zIndex:entity.display ? 110 : Math.round(entity.y*100)+9}} aria-label={entity.name}>
     {quest && <span className="quest-marker">!</span>}{entity.kind === "person" ? <CharacterArt id={entity.art} pose={pose} walking={actor?.moving} frame={actor?.frame} direction={actor?.direction}/> : entity.kind === "dog" ? <CharacterArt id="dog"/> : entity.art === "action" ? <span className="kitchen-action-marker" aria-hidden="true">✦</span> : entity.art === "landmark" ? <span className="landmark-marker" aria-hidden="true">◇</span> : <ItemArt art={entity.art}/>}<span className="entity-name">{entity.name}</span>
   </div>;
 }

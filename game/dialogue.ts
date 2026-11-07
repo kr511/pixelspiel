@@ -16,6 +16,7 @@ const SPEAKERS: Record<string, string> = {
   elena: "elena", jason: "jason", luca: "luca", wyatt: "wyatt", ida: "ida", helena: "helena",
   linda: "linda", lina: "lina", alexandra: "alexandra", alexander: "alexander", magdalena: "magdalena",
   erzählung: "narrator", "unsere geschichte": "narrator",
+  "der schatten": "shadow", busfahrer: "host", "fahrer des schattenbusses": "host", nachbarin: "partner-two", mama: "mother",
 };
 
 /** An explicit existing asset ID takes precedence; unknown NPC names stay distinct. */

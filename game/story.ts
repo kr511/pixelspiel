@@ -1,4 +1,4 @@
-export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom";
+export type Place = "bedroom" | "home" | "kitchen" | "garden" | "radegast" | "bus" | "zoerbig" | "schoolway" | "school" | "gym" | "goelzau" | "range" | "playground" | "christmasmarket" | "eliasroom" | "archive";
 export type Point = { x: number; y: number };
 export const SCHOOL_WAY_CROP = { x: .08, y: .30, width: .84, height: .70 };
 const schoolWayPoint = (x: number, y: number): Point => ({ x: (x-.08)/.84, y: (y-.30)/.70 });
@@ -9,7 +9,9 @@ export type Entity = Point & { id: string; name: string; kind: "person" | "dog" 
 export type Exit = Point & { to: Place; label: string; spawn: Point };
 export type Obstacle = { left: number; right: number; top: number; bottom: number };
 export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit[]; obstacles: Obstacle[] }> = {
-  bedroom: { name: "Felices Zimmer", subtitle: "Hier beginnt eure Geschichte", exits: [{ x: .735, y: .66, to: "home", label: "Ins Wohnzimmer", spawn: { x: .2, y: .72 } }], obstacles: [
+  bedroom: { name: "Felices Zimmer", subtitle: "Hier beginnt eure Geschichte", exits: [{ x: .735, y: .66, to: "home", label: "Ins Wohnzimmer", spawn: { x: .2, y: .72 } },
+    // Only the adventure "Die verlorenen Erinnerungen" opens this rift (adventure/engine.ts → exitGate).
+    { x: .33, y: .72, to: "archive", label: "Durch den Riss aus Licht", spawn: { x: .5, y: .84 } }], obstacles: [
     // v10 room: narrower than the frame. Bed, vanity + stool, nightstand, shelf, chest, then the dark side margins.
     { left: .245, right: .525, top: .10, bottom: .42 }, { left: .525, right: .745, top: .10, bottom: .30 }, { left: .59, right: .665, top: .24, bottom: .36 }, { left: .245, right: .355, top: .43, bottom: .57 }, { left: .69, right: .79, top: .31, bottom: .57 }, { left: .455, right: .78, top: .79, bottom: .91 },
     { left: 0, right: .235, top: 0, bottom: 1 }, { left: .765, right: 1, top: 0, bottom: 1 },
@@ -73,6 +75,9 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
     { left: .10, right: .29, top: .56, bottom: .695 }, { left: .755, right: .865, top: .69, bottom: .72 },
     { left: .455, right: .55, top: .30, bottom: .37 },
   ] },
+  archive: { name: "Das Erinnerungsarchiv", subtitle: "Finale · Hinter der Barriere wartet Elias", exits: [{ x: .5, y: .90, to: "bedroom", label: "Zurück in Felices Zimmer", spawn: { x: .40, y: .72 } }], obstacles: [
+    { left: 0, right: .13, top: 0, bottom: 1 }, { left: .87, right: 1, top: 0, bottom: 1 }, { left: .29, right: .71, top: .57, bottom: .64 },
+  ] },
   eliasroom: { name: "Elias’ Zimmer", subtitle: "Ein wiederkehrender Ort · Einrichtung als Spielinterpretation", exits: [{ x: .50, y: .90, to: "zoerbig", label: "Nach draußen · verkürzter Spielweg", spawn: { x: .69, y: .29 } }], obstacles: [
     { left: .15, right: .40, top: .19, bottom: .335 }, { left: .60, right: .86, top: .16, bottom: .465 },
     { left: .075, right: .16, top: .49, bottom: .65 }, { left: .74, right: .90, top: .73, bottom: .82 },
@@ -83,6 +88,7 @@ export const PLACES: Record<Place, { name: string; subtitle: string; exits: Exit
 // Bestätigt: acht Personen beim Weihnachtsessen; Namen noch offen.
 // Dialoge, Kleidung und genaue Szenengestaltung sind spielerische Entwürfe.
 export const ENTITIES: Record<Place, Entity[]> = {
+  archive: [],
   playground: [
     { id: "playground-elias", name: "Elias", x: .53, y: .63, kind: "person", art: "elias", text: "Sollen wir uns einen Moment auf die Bank setzen? Hier können wir in Ruhe reden. Dieses Gespräch ist eine freie Rekonstruktion." },
     { id: "playground-swings", name: "Schaukeln", x: .70, y: .51, display: { x: .75, y: .37 }, kind: "item", art: "landmark", text: "Die Schaukeln bewegen sich leise im Wind. Der Spielplatz ist eine atmosphärische Interpretation, kein maßstabsgetreuer Ortsplan." },
@@ -288,7 +294,7 @@ function insideArea(x: number, y: number, points: Point[]) {
 export function canWalk(place: Place, x: number, y: number) {
   return (!SOLID_AREAS[place] || !SOLID_AREAS[place]!.some(points => insideArea(x,y,points))) && (!WALK_AREAS[place] || WALK_AREAS[place]!.some(points => insideArea(x,y,points))) && x >= .075 && x <= .94 && y >= .16 && y <= (place === "school" ? .96 : .92) && !PLACES[place].obstacles.some(o => x > o.left - .02 && x < o.right + .02 && y > o.top - .015 && y < o.bottom + .015);
 }
-export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 } };
+export const SPAWNS: Record<Place, Point> = { bedroom: { x: .5, y: .7 }, home: { x: .5, y: .78 }, kitchen: { x: .5, y: .85 }, garden: { x: .5, y: .38 }, radegast: { x: .435, y: .28 }, bus: { x: .5, y: .72 }, zoerbig: { x: .43, y: .275 }, schoolway: schoolWayPoint(.35,.43), school: { x: .52, y: .92 }, gym: { x: .5, y: .85 }, goelzau: { x: .86, y: .63 }, range: { x: .5, y: .8 }, playground: { x: .50, y: .86 }, christmasmarket: { x: .50, y: .87 }, eliasroom: { x: .50, y: .85 }, archive: { x: .5, y: .84 } };
 
 /** Treffpunkt collisions (cropped v11 painting): big trees, the pavilion, the bushes and the houses beyond the road. */
 export function storyCanWalk(place: Place, x: number, y: number, options: { pasture?: boolean } = {}) {
