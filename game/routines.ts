@@ -1,22 +1,56 @@
 import { canWalk, type Entity, type Place, type Point } from "./story.ts";
 import { walkingRoute, type Actor } from "./actors.ts";
 import { movementStep, walkingFrame } from "./motion.ts";
+import { isSchoolArrival, isSchoolMorning, isSchoolMorningEntity, SCHOOL_ARRIVAL } from "./school.ts";
+import { SCHOOL_END, SCHOOL_START } from "./day.ts";
+import { GRADUATION_DAY, isSchoolDay } from "./school-calendar.ts";
+import { isRoutineDay } from "./timeline.ts";
 // Ambient routines use the existing actors; story casts are never hidden.
 // Outside story chapters only Felice's mother and stepfather stay home; the others are out and return for the Christmas dinner.
 const AWAY_FROM_HOME = ["halfsister","halfsister-partner","stepsister","stepsister-partner"];
-export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false, inStory = false): Entity[] {
+const SCHOOL_FRIENDS = ["friends", "jason", "luca", "wyatt"];
+// The certificate ceremony stands in the gym only on its day; afterwards the certificates and the photo stay as a memory.
+const GRADUATION_KEEPSAKES = ["graduation-certificates", "graduation-photo"];
+export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false, inStory = false, date?: string): Entity[] {
   if (place === "home" && !inStory) entities = entities.filter(e => !AWAY_FROM_HOME.includes(e.id));
-  if (place === "school" && (minute < 420 || minute >= 1080)) return entities.filter(e => e.kind !== "person" || keepElias && e.art === "elias");
+  // The homework pile belongs to the routine days; afterwards the desk chair stays free.
+  if (place === "bedroom" && !inStory && date && !isRoutineDay(date)) entities = entities.filter(e => e.id !== "homework");
+  if (place === "gym" && !inStory && date && date !== GRADUATION_DAY) entities = date > GRADUATION_DAY ? entities.filter(e => GRADUATION_KEEPSAKES.includes(e.id)) : [];
+  if (place === "school" && !inStory && date) {
+    // Classmates are only around on school days, before and after the lessons.
+    const schoolDay = isSchoolDay(date);
+    const yardTime = minute < SCHOOL_START || minute >= SCHOOL_END;
+    entities = entities.filter(e => e.kind !== "person" || keepElias && e.art === "elias" || schoolDay && (!SCHOOL_FRIENDS.includes(e.id) || yardTime));
+  }
+  if (place === "school") {
+    // The late arrivals walk in from the market (schoolMorningArrivals) instead of standing there from the start.
+    entities = entities.filter(e => !isSchoolArrival(e.id) && (!isSchoolMorningEntity(e.id) || isSchoolMorning(minute) || keepElias && e.art === "elias"));
+    if (minute < SCHOOL_ARRIVAL || minute >= 1080) return entities.filter(e => e.kind !== "person" || keepElias && e.art === "elias");
+  }
   return entities;
 }
 
 // Places that the story has not reached yet have no path: the Christmas market (06.12.2025) and Elias' room (20.03.2026).
 export const CHRISTMAS_MARKET_OPENS = "2025-12-06";
+/** The market stands from its first visit until Christmas; in other months there is no way there. */
+export const CHRISTMAS_MARKET_CLOSES = "2025-12-26";
 export const ELIAS_ROOM_OPENS = "2026-03-20";
-export function exitOpen(to: Place, date: string) {
+// Die Klassenfahrt (20.–24.04.2026) läuft von der Abfahrt bis zur Heimreise; dazwischen schläft Felice im Hotel.
+// Sie hängt am Spielfortschritt, nicht am Kalender: Ein verpasster Reisetag wird nachgeholt, und Hotel und
+// Ausflugsorte bleiben offen, bis die Heimreise gespielt ist.
+export const TRIP = { start: "klassenfahrt-anreise", end: "klassenfahrt-heimreise", places: ["hotel", "hotelboys", "parliament", "europapark"] as Place[] };
+type Progress = Record<string, { completedAt?: string } | undefined>;
+export const onTrip = (progress: Progress) => Boolean(progress[TRIP.start]?.completedAt) && !progress[TRIP.end]?.completedAt;
+/** Where Felice wakes up: in the hotel while the trip runs, otherwise at home. */
+export const wakePlace = (progress: Progress): Place => onTrip(progress) ? "hotel" : "bedroom";
+export function exitOpen(to: Place, date: string, from: Place, progress: Progress) {
   // The memory archive belongs to the adventure only; the chronicle never shows its rift.
   if (to === "archive") return false;
-  return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
+  // Between trip places the way stays open, so Felice can always get back to the hotel and its bus home.
+  if (TRIP.places.includes(to)) return onTrip(progress) || TRIP.places.includes(from);
+  // The coach home is the Heimreise scene itself; until it is played nobody leaves Kehl early.
+  if (from === "hotel" && to === "zoerbig") return !onTrip(progress);
+  return to === "christmasmarket" ? date >= CHRISTMAS_MARKET_OPENS && date <= CHRISTMAS_MARKET_CLOSES : to === "eliasroom" ? date >= ELIAS_ROOM_OPENS : true;
 }
 
 // Outside story scenes Elias only appears where the story has already brought

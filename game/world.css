@@ -6,7 +6,7 @@
 .scene-backdrop { z-index:0; background:#8c9877; }
 .story-pixel-backdrop,.story-pixel-backdrop image { image-rendering:pixelated; }
 .scene-foreground { pointer-events:none; }
-.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v9.png') center/100% 100%; }
+.fallback-bedroom { background:#6c432f url('/rooms/felice-bedroom-v10.webp') center/100% 100%; }
 .character-art { width:100%; display:block; overflow:hidden; }
 .character-fallback { display:block; width:100%; }
 
@@ -64,6 +64,10 @@
   .version-six .world-title { top:12px; left:12px; padding:5px 8px; }
   .version-six .world-title strong { font-size:12px; } .version-six .world-title small { font-size:9px; }
   .version-six .world-title>span { width:28px; height:28px; font-size:9px; }
+  .version-six .world-title { width:180px; }
+  .version-six .world-title>span { flex-shrink:0; }
+  .version-six .world-title div { min-width:0; }
+  .version-six .world-title small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .version-six .quest-tracker { left:12px; top:90px; width:140px; padding:9px; }
   .version-six .quest-tracker strong { font-size:15px; } .version-six .quest-tracker p { font-size:10px; line-height:1.45; }
   .version-six .quest-tracker small,.version-six .quest-tracker>span,.version-six .inventory { font-size:9px; }
@@ -85,6 +89,7 @@
 @media (prefers-reduced-motion:reduce) { .world-camera { transition:none; } .world-atmosphere *,.character-idle>.character-art { animation:none!important; } }
 
 .daylight-shade { position:absolute; inset:0; z-index:118; pointer-events:none; background:#102139; transition:opacity 1.2s ease; }
+.world-night-lights { position:absolute; inset:0; width:100%; height:100%; z-index:119; pointer-events:none; transition:opacity 1.2s ease; }
 .day-clock { position:absolute; top:20px; left:50%; transform:translateX(-50%); z-index:5; min-width:190px; padding:9px 14px; border:1px solid #9ca183; border-radius:5px; background:#273e35f5; box-shadow:0 4px 18px #10251d44; }
 .day-clock strong,.day-clock small { display:block; }
 .day-clock strong { color:#f6e8c8; font:600 18px/1.2 Georgia,serif; font-variant-numeric:tabular-nums; }
@@ -116,7 +121,7 @@
   .version-061 .rest-actions { max-width:160px; bottom:12px; }
   .version-061 .rest-actions button { padding:6px 9px; font-size:10px; }
 }
-@media (prefers-reduced-motion:reduce) { .daylight-shade { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .daylight-shade,.world-night-lights { transition:none; } }
 
 /* Keep controls beside the scenery so furniture and characters stay visible. */
 .version-061 .world-viewport { width:min(calc(100vw - 460px),calc(100dvh - 80px),860px); margin-left:0; }
@@ -227,6 +232,14 @@
 /* Overhead school courtyard: match the figure scale to the building and yard. */
 .version-075[data-scene="school"] .room-player,
 .version-075[data-scene="school"] .entity-person { width:4.4%!important; }
+/* Keep the compact conversation group's names beside their own row. */
+.school-group-name { aspect-ratio:5/7; }
+.version-075[data-scene="school"] :is([data-group-name="luca"],[data-group-name="wyatt"]) .entity-name {
+  left:auto; right:100%; top:auto; bottom:12%; transform:none; margin-right:3px;
+}
+.version-075[data-scene="school"] :is([data-group-name="friends"],[data-group-name="jason"]) .entity-name {
+  left:100%; top:auto; bottom:12%; transform:none; margin-left:3px;
+}
 .version-075[data-scene="school"] .world-exit,
 .version-075[data-scene="zoerbig"] .world-exit,
 .version-075[data-scene="bus"] .world-exit,
@@ -238,6 +251,8 @@
 
 @media (max-height:600px) and (orientation:landscape) {
   .version-075[data-scene="school"] .entity-person .entity-name { font-size:8px; padding:1px 2px; }
+  .version-075[data-scene="school"] :is([data-group-name="friends"],[data-group-name="wyatt"]) .entity-name { bottom:25%; }
+  .version-075[data-scene="school"] :is([data-group-name="jason"],[data-group-name="luca"]) .entity-name { bottom:0; }
 }
 
 .version-075[data-scene="schoolway"] .room-player,
@@ -245,14 +260,14 @@
 
 /* V0.8: graduation snapshots, one soft white fade and still photographs. */
 .graduation-photos { position:fixed; inset:0; z-index:160; display:grid; place-items:center; overflow:hidden; background:#172923; }
-.graduation-photo-background { position:absolute; inset:-30px; background:linear-gradient(#152b29b8,#142620ef),url('/rooms/graduation-gym-v08.png') center/cover; filter:blur(12px); }
+.graduation-photo-background { position:absolute; inset:-30px; background:linear-gradient(#152b29b8,#142620ef),url('/rooms/graduation-gym-v08.webp') center/cover; filter:blur(12px); }
 .snapshot-stack { position:relative; width:min(570px,72vw); height:min(720px,87dvh); }
 .graduation-snapshot { position:absolute; inset:0; margin:0; padding:14px 14px 26px; background:#f5eddb; box-shadow:0 22px 80px #0008; opacity:0; transform:rotate(-2deg); transition:opacity .7s ease; display:flex; flex-direction:column; }
 .graduation-snapshot.is-visible { opacity:1; }
 .snapshot-1 { transform:rotate(2deg); }
 .snapshot-2 { transform:rotate(-1deg); }
 .snapshot-picture { position:relative; overflow:hidden; flex:1; min-height:0; background:#d4be99; }
-.snapshot-gym { position:absolute; inset:0; background:url('/rooms/graduation-gym-v08.png') 50% 10%/180%; filter:blur(1px); }
+.snapshot-gym { position:absolute; inset:0; background:url('/rooms/graduation-gym-v08.webp') 50% 10%/180%; filter:blur(1px); }
 .snapshot-person { position:absolute; bottom:-3%; width:65%; aspect-ratio:5/7; }
 .snapshot-person>.character-art { width:100%; height:100%; }
 .snapshot-felice { left:-1%; }
@@ -279,3 +294,13 @@
   .snapshot-1 .snapshot-elias { right:2%; }
   .snapshot-2 .snapshot-person { width:52%; bottom:-3%; }
 }
+.map-node.is-target circle { fill:#ffb38a; stroke:#fff3c7; stroke-width:3; animation:map-target 1.6s ease-in-out infinite; }
+.map-node.is-target rect { fill:#5b3f34; stroke:#ffb38a; }
+@keyframes map-target { 50% { r:12; } }
+@media (prefers-reduced-motion:reduce) { .map-node.is-target circle { animation:none; } }
+.day-clock .next-step { display:block; margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.12); font-size:11px; line-height:1.4; color:#f4e7cc; }
+.day-clock .next-step b { display:block; font:10px monospace; letter-spacing:.1em; text-transform:uppercase; color:#d9bd81; }
+@media (max-height:500px), (max-width:760px) { .day-clock .next-step { font-size:10px; margin-top:4px; padding-top:4px; } .day-clock .next-step span { display:none; } }
+@media (max-height:500px), (max-width:760px) { .day-clock:has(.next-step) .calendar-season { display:none; } }
+.world-night-lights .night-sparkle { animation:christmas-glow 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion:reduce) { .world-night-lights .night-sparkle { animation:none; } }

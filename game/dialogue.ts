@@ -15,7 +15,7 @@ const SPEAKERS: Record<string, string> = {
   paul: "paul", justin: "justin", schulleiter: "host", bürgermeister: "stepfather",
   elena: "elena", jason: "jason", luca: "luca", wyatt: "wyatt", ida: "ida", helena: "helena",
   linda: "linda", lina: "lina", alexandra: "alexandra", alexander: "alexander", magdalena: "magdalena",
-  erzählung: "narrator", "unsere geschichte": "narrator",
+  erzählung: "narrator", "unsere geschichte": "narrator", schule: "school-bell",
   "der schatten": "shadow", busfahrer: "host", "fahrer des schattenbusses": "host", nachbarin: "partner-two", mama: "mother",
 };
 

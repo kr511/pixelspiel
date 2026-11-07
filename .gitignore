@@ -40,6 +40,10 @@ next-env.d.ts
 *.tsbuildinfo
 /dist/
 /dist-pages/
+# Private WhatsApp history (scripts/chat-import.mjs): stays on this computer, never on GitHub.
+/public/chat/
+/spiel/chat/
+WhatsApp Chat*.zip
 /.wrangler/
 # Checkout-local execution profile and tool state; never publish them.
 /.sites-runtime/

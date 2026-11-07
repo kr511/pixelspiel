@@ -97,7 +97,7 @@ export function ShootingMemory({ blocked, onComplete, onLeave }: Props) {
         }}
         onKeyUp={(event) => keys.current.delete(event.code)} onBlur={() => keys.current.clear()}>
         <rect width="900" height="600" fill="#c4c8ad" />
-        <image href={assetUrl("/rooms/goelzau-range-v1.png")} width="900" height="600" onError={() => setAssetFailed(true)} />
+        <image href={assetUrl("/rooms/goelzau-range-v1.webp")} width="900" height="600" onError={() => setAssetFailed(true)} />
         {assetFailed && <g><path d="M0 345H900V600H0Z" fill="#8d9c81" /><path d="M0 220H900" stroke="#aa8756" strokeWidth="18" /></g>}
         <rect width="900" height="600" fill="#262b2e" opacity=".13" />
         {TARGETS.map((target, index) => <g key={target.id} data-testid={`target-${target.id}`}>

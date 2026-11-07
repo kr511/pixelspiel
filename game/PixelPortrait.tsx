@@ -18,7 +18,6 @@ export function PixelPortrait({ id, emotion = "neutral" }: PixelPortraitProps) {
   const graphic = characterGraphic(normalized).portrait;
   const seed = portraitSeed(normalized);
   const skin = isFelice ? "#f5b69a" : isElias ? "#ffc59d" : "#f1bd9e";
-  const shadow = isFelice ? "#d98d79" : "#dc9c7a";
   const eyes = isElias ? "#658ca2" : "#865b40";
   const portraitFrame = isFelice ? "155 15 155 180" : "0 0 100 100";
   const dimensions = isFelice ? { x: 0, y: 0, width: 1448, height: 1086 } : { x: -graphic.column * 100, y: -graphic.row * 100, width: graphic.columns * 100, height: graphic.rows * 100 };
@@ -29,14 +28,10 @@ export function PixelPortrait({ id, emotion = "neutral" }: PixelPortraitProps) {
     <g clipPath={`url(#${clip})`}>
       <path d="M0 0H100V112H0Z" fill={emotion === "love" ? "#59404b" : emotion === "sad" ? "#36444f" : "#394d46"}/>
       <path d="M0 80H100V112H0Z" fill="#293c37"/>
-      {normalized === "shadow" ? <ShadowPortrait/> : normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : <>
+      {normalized === "shadow" ? <ShadowPortrait/> : normalized === "dog" ? <svg x="3" y="12" width="94" height="100" viewBox="0 0 100 100"><image href={assetUrl(graphic.sheet)} width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg> : normalized === "narrator" ? <NarratorPortrait/> : normalized === "school-bell" ? <BellPortrait/> : <>
         {known ? <svg x="0" y="0" width="100" height="112" viewBox={portraitFrame} preserveAspectRatio={isFelice ? "xMidYMin meet" : "none"} overflow="hidden"><image href={assetUrl(graphic.sheet)} {...dimensions} preserveAspectRatio="none"/></svg> : <FallbackPortrait seed={seed} skin={skin}/>}
         {/* Faces have real independent eyes, eyebrows and mouths for all eight emotions. */}
-        {main ? <g transform={isElias ? "translate(0 5) rotate(-9 50 50)" : "translate(0 -1)"} data-face-expression={emotion}>
-          <path d="M30 36H69V48H73V57H68V63H61V67H40V63H33V57H28V46H30Z" fill={skin}/>
-          <path d="M30 51H33V57H37V61H41V63H60V61H65V58H68V53H71V58H68V64H61V68H40V64H33V58H30Z" fill={shadow} opacity=".45"/>
-          <Face emotion={emotion} skin={skin} eyeColor={eyes}/>
-        </g> : <g transform="translate(0 -1)" data-face-expression={emotion}>
+        {isFelice ? <FeliceExpression emotion={emotion}/> : isElias ? <EliasExpression emotion={emotion}/> : <g transform="translate(0 -1)" data-face-expression={emotion}>
           <path d="M30 29H69V42H73V56H69V64H62V68H40V64H32V55H28V40H30Z" fill={skin}/>
           <Face emotion={emotion} skin={skin} eyeColor={eyes}/>
           {/* Atlas sharing does not make two named NPC portraits identical. */}
@@ -51,6 +46,57 @@ export function PixelPortrait({ id, emotion = "neutral" }: PixelPortraitProps) {
       {emotion === "thoughtful" && <path d="M78 11H82V15H78ZM85 7H89V11H85ZM92 3H96V7H92Z" fill="#acc7c5"/>}
     </g>
   </svg>;
+}
+
+/** Felice keeps the drawn face of her sprite; only what changes is painted on top. */
+function FeliceExpression({ emotion }: { emotion: Emotion }) {
+  const soft = useId();
+  const skin = "#f8b08f", brow = "#6a4636", lash = "#3d2a25", mouth = "#b9645a";
+  const eyesClosed = emotion === "happy" || emotion === "laughing";
+  const eyePatch = <><path d="M32 36H45V46H32Z" fill={skin}/><path d="M54 36H67V46H54Z" fill={skin}/></>;
+  const mouthPatch = <path d="M43 49H58V57H43Z" fill={skin}/>;
+  return <g data-face-expression={emotion}>
+    <defs><filter id={soft} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".55"/></filter></defs>
+    {emotion !== "neutral" && <g filter={`url(#${soft})`}>
+      {eyesClosed && eyePatch}
+      {emotion !== "thoughtful" && mouthPatch}
+      {(emotion === "shy" || emotion === "love" || emotion === "happy" || emotion === "laughing") && <><path d="M32 45H41V50H32Z" fill="#f08c85" opacity={emotion === "shy" ? ".7" : ".4"}/><path d="M59 45H68V50H59Z" fill="#f08c85" opacity={emotion === "shy" ? ".7" : ".4"}/></>}
+    </g>}
+    {eyesClosed && <path d={emotion === "laughing" ? "M34 42Q39 36 44 42M55 42Q60 36 65 42" : "M34 42Q39 38 44 42M55 42Q60 38 65 42"} fill="none" stroke={lash} strokeWidth="1.4" strokeLinecap="round" shapeRendering="auto"/>}
+    {emotion === "sad" && <><path d="M33 33L44 35M66 33L55 35" stroke={brow} strokeWidth="1.5" strokeLinecap="round" shapeRendering="auto"/><path d="M36 45H38V50H36ZM62 45H64V50H62Z" fill="#a5d0d9"/></>}
+    {emotion === "surprised" && <path d="M34 31Q39 28 44 31M55 31Q60 28 65 31" fill="none" stroke={brow} strokeWidth="1.5" strokeLinecap="round" shapeRendering="auto"/>}
+    {emotion === "thoughtful" && <path d="M55 34Q60 31 66 33" fill="none" stroke={brow} strokeWidth="1.5" strokeLinecap="round" shapeRendering="auto"/>}
+    {emotion === "laughing" ? <><path d="M45 50Q50 50 56 50Q55 57 50.5 57Q46 57 45 50Z" fill="#8a3f40"/><path d="M46 50.5H55V52H46Z" fill="#fff5df"/></>
+      : emotion === "surprised" ? <ellipse cx="50.5" cy="53" rx="2.6" ry="3.4" fill="#8a3f40"/>
+      : emotion === "sad" ? <path d="M46 55Q50.5 51.5 55 55" fill="none" stroke={mouth} strokeWidth="1.3" strokeLinecap="round" shapeRendering="auto"/>
+      : emotion === "happy" || emotion === "love" ? <path d="M45 51Q50.5 56 56 51" fill="none" stroke={mouth} strokeWidth="1.3" strokeLinecap="round" shapeRendering="auto"/>
+      : emotion === "shy" ? <path d="M47 52.5Q50.5 54 54 52.5" fill="none" stroke={mouth} strokeWidth="1.2" strokeLinecap="round" shapeRendering="auto"/> : null}
+  </g>;
+}
+
+/** Elias keeps his drawn face (head tilted 9°); only the changed parts are painted on top. */
+function EliasExpression({ emotion }: { emotion: Emotion }) {
+  const soft = useId();
+  const skin = "#fbb584", lash = "#2f2623", mouth = "#a5583a", blush = "#f08c85";
+  const eyesClosed = emotion === "happy" || emotion === "laughing";
+  const eyeL = "translate(38 54) rotate(-9)", eyeR = "translate(56 49) rotate(-9)", mouthAt = "translate(47 61) rotate(-9)";
+  return <g data-face-expression={emotion}>
+    <defs><filter id={soft} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".6"/></filter></defs>
+    {emotion !== "neutral" && <g filter={`url(#${soft})`}>
+      {eyesClosed && <><ellipse transform={eyeL} rx="7" ry="5" fill={skin}/><ellipse transform={eyeR} rx="7" ry="5" fill={skin}/></>}
+      {emotion !== "thoughtful" && <ellipse transform={mouthAt} rx="8" ry="3.6" fill={skin}/>}
+      {(emotion === "shy" || emotion === "love" || emotion === "happy" || emotion === "laughing") && <><ellipse transform="translate(36 62)" rx="4" ry="2.6" fill={blush} opacity={emotion === "shy" ? ".7" : ".4"}/><ellipse transform="translate(61 54)" rx="4" ry="2.6" fill={blush} opacity={emotion === "shy" ? ".7" : ".4"}/></>}
+    </g>}
+    {eyesClosed && <g fill="none" stroke={lash} strokeWidth="1.5" strokeLinecap="round" shapeRendering="auto"><path transform={eyeL} d={emotion === "laughing" ? "M-5 1Q0 -5 5 1" : "M-5 1Q0 -3 5 1"}/><path transform={eyeR} d={emotion === "laughing" ? "M-5 1Q0 -5 5 1" : "M-5 1Q0 -3 5 1"}/></g>}
+    {emotion === "sad" && <path d="M33 60H35V65H33ZM59 53H61V58H59Z" fill="#a5d0d9"/>}
+    <g transform={mouthAt} fill="none" stroke={mouth} strokeWidth="1.3" strokeLinecap="round" shapeRendering="auto">
+      {emotion === "laughing" ? <><path d="M-6 -1Q0 -1 6 -1Q5 6 0 6Q-5 6 -6 -1Z" fill="#8a3f40" stroke="none"/><path d="M-5 -0.5H5V1H-5Z" fill="#fff5df" stroke="none"/></>
+        : emotion === "surprised" ? <ellipse rx="2.8" ry="3.6" fill="#8a3f40" stroke="none"/>
+        : emotion === "sad" ? <path d="M-5 2Q0 -2 5 2"/>
+        : emotion === "happy" || emotion === "love" ? <path d="M-6 -1Q0 5 6 -1"/>
+        : emotion === "shy" ? <path d="M-3 0.5Q0 2 3 0.5"/> : null}
+    </g>
+  </g>;
 }
 
 function Face({ emotion, skin, eyeColor }: { emotion: Emotion; skin: string; eyeColor: string }) {
@@ -95,6 +141,10 @@ function ShadowPortrait() {
   </g>;
 }
 
+/** The school door speaks through its bell, not through a stranger's face. */
+function BellPortrait() {
+  return <><path d="M46 16H54V22H46Z" fill="#8a6a3c"/><path d="M40 22H60V28H66V58H72V68H28V58H34V28H40Z" fill="#e2b04a"/><path d="M40 28H46V58H40Z" fill="#f3d27a"/><path d="M28 68H72V74H28Z" fill="#b5852f"/><path d="M45 74H55V82H45Z" fill="#8a6a3c"/></>;
+}
 function NarratorPortrait() {
   return <><path d="M20 31H48V35H52V31H80V86H54V91H46V86H20Z" fill="#d6c5a1"/><path d="M25 37H45V79H25ZM55 37H75V79H55Z" fill="#efdfbd"/><path d="M29 44H41V47H29ZM29 54H41V57H29ZM59 44H71V47H59ZM59 54H71V57H59Z" fill="#ad9974"/><path d="M38 14H44V11H50V16H54V22H50V28H44V22H38Z" fill="#d7949d"/></>;
 }

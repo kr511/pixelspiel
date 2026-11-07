@@ -13,7 +13,7 @@ import {
 
 export { ADVENTURE_KEY, chapterOf, newAdventure };
 
-const PLACE_IDS: Place[] = ["bedroom", "home", "kitchen", "garden", "radegast", "bus", "zoerbig", "schoolway", "school", "gym", "goelzau", "range", "playground", "christmasmarket", "eliasroom", "archive"];
+const PLACE_IDS: Place[] = ["bedroom", "home", "kitchen", "garden", "radegast", "bus", "zoerbig", "schoolway", "school", "gym", "goelzau", "range", "playground", "christmasmarket", "eliasroom", "hotel", "hotelboys", "parliament", "europapark", "archive"];
 const CHAPTER_ORDER = CHAPTER_IDS;
 export const chapterDef = (save: AdventureSave) => ADVENTURE_CHAPTERS.find(chapter => chapter.id === chapterOf(save))!;
 

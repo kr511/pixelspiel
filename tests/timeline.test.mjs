@@ -10,7 +10,7 @@ const player = { x: .5, y: .7 };
 const dated = STORY_EVENTS.filter(event => event.date && event.scene !== "legacy");
 const finish = save => {
   const event = eventById(save.active.id);
-  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" ? 2 : event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+  const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" || event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
   const state = { ...save.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
   return completeEvent({ ...save, progress: { ...save.progress, [event.id]: state } }, event.id, false, "2026-10-08T12:00:00Z");
 };
@@ -23,7 +23,7 @@ const reach = id => {
 test("Neuer Kalender beginnt im Herbst; alle acht Kapitel haben eindeutige, konfigurierte Szenen", () => {
   const save = initialTimeline();
   assert.equal(save.clock.date, STORY_START);
-  assert.equal(save.clock.minute, 300);
+  assert.equal(save.clock.minute, 330);
   assert.equal(save.clock.season, "Herbst");
   assert.deepEqual(STORY_CHAPTERS.map(chapter => chapter.number), [1,2,3,4,5,6,7,8]);
   assert.deepEqual([...new Set(dated.map(event => event.chapterNumber))], [1,2,3,4,5,6,7,8]);
@@ -89,18 +89,22 @@ test("Alle Storyziele sind ohne Durchlaufen von Möbeln und Mauern tatsächlich 
 
 test("Historische Kerntermine und verschränkte Novemberereignisse folgen den korrigierten Angaben", () => {
   const index = id => dated.findIndex(event => event.id === id);
-  // Bestätigt am 10.10.2026: das Treffen bei den Pferden war am 19.11.2025.
-  assert.equal(eventById("radegast-chocolate").date, "2025-11-19");
+  // Laut Chat war das Treffen bei den Pferden am Sonntag, 16.11.2025, gegen 10:45 Uhr.
+  assert.equal(eventById("radegast-chocolate").date, "2025-11-16");
+  assert.equal(eventById("radegast-chocolate").staging.start, 10 * 60 + 45);
+  assert.ok(index("chat-2025-11-15") < index("radegast-chocolate"));
+  assert.ok(index("radegast-chocolate") < index("chat-2025-11-16"));
   assert.ok(index("chat-2025-11-18") < index("school-first-feelings-19"));
-  assert.ok(index("school-first-feelings-19") < index("radegast-chocolate"));
-  assert.ok(index("radegast-chocolate") < index("chat-2025-11-19"));
   const confession = eventById("confession-2025-11-24");
   assert.equal(confession.date, "2025-11-24");
   assert.equal(confession.staging.start, 17 * 60 + 20);
   assert.ok(confession.staging.timeConfirmed);
   assert.ok(index(confession.id) < index("chat-2025-11-24"));
   assert.ok(index("handholding-2025-11-25") < index("first-i-love-you"));
-  assert.deepEqual(eventById("first-i-love-you").dialogue.map(line => [line.speaker, line.text, line.original]), [["Elias","Ich liebe dich.",true],["Felice","Ich liebe dich.",true]]);
+  const love = eventById("first-i-love-you").dialogue;
+  assert.ok(love.every(line => line.original && /^\d\d:\d\d$/.test(line.time)));
+  assert.deepEqual(love.slice(0, 4).map(line => [line.time, line.speaker, line.text]), [["17:10","Felice","… ….. …."],["17:10","Elias","Ich liebe dich auch"],["17:11","Elias","Schreib nicht in Punkten"],["17:11","Felice","Ich liebe dich"]]);
+  assert.equal(eventById("confession-2025-11-24").dialogue[0].text, "Ich hab mich wirklich in dich verliebt 🫣");
   assert.equal(eventById("first-kiss-christmas").date, "2025-12-25");
   assert.equal(eventById("first-kiss-christmas").steps.find(step => step.animation === "kiss").place, "bedroom");
 });
@@ -108,7 +112,7 @@ test("Historische Kerntermine und verschränkte Novemberereignisse folgen den ko
 test("Spielgestaltung und Zukunft werden nicht zu erfundenen historischen Meilensteinen", () => {
   for (const event of dated.filter(event => event.source === "staged")) assert.match(event.description, /inszenier|Spielgestalt|Spielwelt|Alltagsszen|rekonstru|spielerisch|erfind/i, event.id);
   assert.ok(dated.filter(event => event.date > "2026-10-08").every(event => event.source === "future"));
-  assert.equal(eventById("our-story-finale").steps.at(-1).text, "Unsere Geschichte ist noch lange nicht zu Ende. ❤️");
+  assert.deepEqual(eventById("our-story-finale").steps.slice(-2).map(step => [step.speaker, step.text]), [["Felice", "Also für immer?"], ["Elias", "Genau so. ❤️"]]);
   assert.deepEqual(eventById("morning-after-2025-12-26").artifacts.map(item => item.id), ["elias-letter","folded-cranes"]);
   assert.match(eventById("morning-after-2025-12-26").artifacts[0].description, /Originaltext.*nicht/);
   for (const event of STORY_EVENTS.filter(event => event.scene === "legacy")) {
@@ -253,7 +257,8 @@ test("Belohnungen kommen nur beim ersten echten Abschluss; Wiederholungen änder
   const replayed = completeEvent({ ...save, inventory: [] }, "radegast-chocolate", true);
   assert.deepEqual(replayed.inventory, [], "Wiederholung vergibt nichts");
   assert.equal(completeEvent(save, "radegast-chocolate"), save, "Kein zweiter Abschluss");
-  assert.ok(!ITEMS.chocolate.description.includes("16."));
+  // The item names the same day as its memory (moved to 16.11.2025 with the real chat lines).
+  assert.ok(ITEMS.chocolate.description.includes(historicalDate(eventById("radegast-chocolate").date)));
 });
 
 test("Schlafen springt zum nächsten relevanten Storytag, nie rückwärts und nie über offene Ereignisse", () => {
@@ -265,7 +270,7 @@ test("Schlafen springt zum nächsten relevanten Storytag, nie rückwärts und ni
   assert.equal(sleepToStoryDay({ ...save, clock: woke }).date, "2025-11-12");
   woke = sleepToStoryDay({ ...save, clock: { ...woke, date: "2025-11-12", day: woke.day + 1 } });
   assert.equal(woke.date, "2025-11-13");
-  assert.equal(woke.minute, 300);
+  assert.equal(woke.minute, 330);
   assert.equal(woke.day, save.clock.day + 3);
   assert.equal(woke.season, "Herbst");
   // Ein heute noch offenes Ereignis wird nicht übersprungen: nur bis zum nächsten Morgen.
@@ -301,8 +306,47 @@ test("Gedanken-Hinweise ändern sich nur mit der Situation und bieten Warten am 
   assert.equal(storyHint(beginEvent(save, "beginning-2025-11-01", player, "front")), null, "Keine Hinweise während einer Szene");
   const done = finish(reach("beginning-2025-11-01"));
   assert.equal(storyHint(done).key, "routine:2025-11-10", "Alltagstage haben einen eigenen Hinweis");
-  const sameDay = { ...done, clock: { ...done.clock, date: "2025-11-13", minute: 600 } };
+  // Vormittags ist am 13.11. Schule; nach dem Unterricht wartet Felice auf den Chat am Abend.
+  assert.equal(storyHint({ ...done, clock: { ...done.clock, date: "2025-11-13", minute: 600 } }).key.startsWith("school:"), true);
+  const sameDay = { ...done, clock: { ...done.clock, date: "2025-11-13", minute: 800 } };
   assert.match(storyHint(sameDay).key, /:later$/);
-  assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 600);
+  assert.equal(waitingMinutes(sameDay), eventById("chat-2025-11-13").staging.start - 800);
   assert.equal(waitingMinutes(done), null);
+});
+
+test("Nächster Schritt: eine Quelle für Welt, Handy, Album und Karte", async () => {
+  const { nextStepInfo, initialTimeline, nextEvent, storyHint, storyTrigger, canTrigger, completeEvent, beginEvent } = await import("../game/timeline.ts");
+  let save = initialTimeline();
+  // Walk the first few memories: the visible step always matches Felice's thought and the trigger place.
+  for (let i = 0; i < 4; i++) {
+    const info = nextStepInfo(save), event = nextEvent(save);
+    assert.equal(info.key, storyHint(save).key, "Anzeige und Gedanke sagen dasselbe");
+    assert.equal(info.event?.id, event.id);
+    if (!canTrigger(save, event)) break;
+    assert.equal(info.status, "go");
+    assert.equal(info.place, storyTrigger(event).place, "Kartenziel ist der Ort des Auslösers");
+    const active = beginEvent(save, event.id, { x: .5, y: .5 }, "front");
+    assert.equal(nextStepInfo(active).status, "active");
+    const cursor = event.scene === "sequence" ? event.steps.length : event.scene === "love" || event.scene === "confession" || event.scene === "message" ? event.dialogue.length : 4;
+    const state = { ...active.progress[event.id], cursor, topics: event.scene === "chat" ? ["space", "collin"] : [], topic: null };
+    save = completeEvent({ ...active, progress: { ...active.progress, [event.id]: state } }, event.id, false, "2026-10-13T12:00:00Z");
+    assert.ok(save.progress[event.id].completedAt, event.id);
+  }
+  const done = { ...save, progress: Object.fromEntries((await import("../game/timeline.ts")).STORY_EVENTS.map(e => [e.id, { cursor: 0, line: 0, visits: 1, topics: [], topic: null, completedAt: "legacy" }])) };
+  assert.equal(nextStepInfo(done).status, "complete");
+});
+
+test("Alltagsgedanke passt zu Uhrzeit und erledigten Aufgaben; Tageszahl folgt dem Datum", async () => {
+  const { storyDayNumber } = await import("../game/timeline.ts");
+  const done = finish(reach("beginning-2025-11-01"));
+  const at = (minute, flags = []) => storyHint({ ...done, flags: [...done.flags, ...flags], clock: { ...done.clock, date: "2025-11-11", minute } }).text;
+  assert.match(at(360), /frischmachen/);
+  assert.match(at(360, ["routine-2025-11-11-wash"]), /los zur Schule/);
+  assert.match(at(600), /Unterricht hat schon angefangen/);
+  assert.doesNotMatch(at(900), /Schule!|frischmachen/, "Nachmittags schickt der Gedanke nicht mehr zur Schule");
+  assert.match(at(900, ["routine-2025-11-11-school"]), /Hausaufgaben/);
+  assert.match(at(1200, ["routine-2025-11-11-school", "routine-2025-11-11-homework"]), /ins Bett/);
+  assert.equal(storyDayNumber("2025-11-10"), 1);
+  assert.equal(storyDayNumber("2025-11-13"), 4);
+  assert.equal(storyDayNumber("2026-11-02"), 358);
 });

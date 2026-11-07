@@ -11,7 +11,15 @@ Ein vollständiges Story-Rätsel-Adventure als neuer Hauptmodus. Elias ist versc
 
 Aufbau, Rätselliste und Softlock-Schutz: [game/adventure/README.md](game/adventure/README.md)
 
-Version **0.9** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **01.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+Version **0.91** erweitert das vorhandene mobile 2D-Pixelspiel zu einer zusammenhängenden Geschichte vom **10.11.2025 bis 02.11.2026**: acht Kapitel, die zwölf vorhandenen Orte plus Spielplatz, Weihnachtsmarkt und Elias’ Zimmer sowie alle vier bestehenden Jahreszeiten.
+
+## Neu in V0.91
+
+- **Belebter Pausenhof vor Schulbeginn:** Ab 06:00 Uhr warten 27 Schülerfiguren auf dem Hof. Neben Elena, Jason, Luca und Wyatt, die im Kreis stehen, stehen die unbekannte Dreiergruppe und sieben weitere Gruppen auf dem Pflaster. Fünf Gruppen mit je zwei bis vier Personen sind neu hinzugekommen.
+- **Schulschluss um 13 Uhr:** Schüler kommen nacheinander aus dem Eingang. Drei sammeln sich auf dem Pausenhof, drei laufen durch das Hoftor zum Bus am Zörbiger Markt und warten dort bis 14 Uhr. Die Hofgruppe bleibt bis 18 Uhr. Pausieren hält die Bewegung an; spätere Besuche zeigen den fortgeschrittenen Tagesablauf.
+- **Unbekannte Dreiergruppe:** Vor dem Unterricht um 07:15 Uhr wartet Elias separat mit Paul und Justin. Weil Felice sie dort noch nicht kennt, erscheinen alle drei ohne Namen oder Gesprächsaufforderungen. Ihre späteren Story- und Abschlussauftritte behalten die vorgesehenen Namen und Interaktionen.
+- **Abwechslungsreiche Hintergrundschüler:** 20 weitere Schüler mit unterschiedlichen Haaren, Kleidungsfarben, Größen und Blickrichtungen beleben den Hof. Sie und die unbekannte Dreiergruppe haben keine Namensboxen oder Gesprächsaufforderungen und stehen nicht im Namenseditor. Vorher gespeicherte Namen bleiben lesbar, werden für die unbekannten Figuren aber nicht angezeigt.
+- Die zusätzlichen Morgengruppen gehen zum Unterrichtsbeginn hinein. Die vorhandenen Pausenfiguren und eine ausdrücklich eingeladene Elias-Begleitung behalten ihre bisherigen Funktionen. Die namenlosen Schüler verwenden vorhandene Grafiken.
 
 ## Neu in V0.9
 
@@ -34,9 +42,9 @@ bisherige Serverfassung. Der separate Vite-Build enthält das Spiel und sämtlic
 Grafiken; es werden weder Node-Server noch Datenbank auf GitHub Pages benötigt.
 Die vorhandenen Sites-Buildbefehle bleiben erhalten.
 
-Einmalig in [Settings → Pages](https://github.com/kr511/pixelgame/settings/pages)
+Einmalig in [Settings → Pages](https://github.com/kr511/pixelspiel/settings/pages)
 als **Source: GitHub Actions** auswählen. Anschließend unter
-[Actions → Deploy GitHub Pages](https://github.com/kr511/pixelgame/actions/workflows/github-pages.yml)
+[Actions → Deploy GitHub Pages](https://github.com/kr511/pixelspiel/actions/workflows/github-pages.yml)
 **Run workflow** starten. Weitere Pushes auf `main` bauen und veröffentlichen
 automatisch. Solange Pages nicht aktiviert ist, erzeugt der Workflow bereits
 das herunterladbare `github-pages`-Artefakt und zeigt die Einrichtungshinweise.
@@ -44,7 +52,7 @@ Der Workflow verwendet Node 24, passend zu den Optionen des bestehenden Testskri
 Bei privaten Repositories muss der GitHub-Tarif Pages unterstützen; die
 Repository-Sichtbarkeit wird durch diesen Workflow nicht geändert.
 
-Die erwartete Spieladresse ist **https://kr511.github.io/pixelgame/**.
+Die erwartete Spieladresse ist **https://kr511.github.io/pixelspiel/**.
 Die `.html`-Datei im Repository ist der Build-Einstieg. Veröffentlicht wird
 **der gesamte Inhalt von `dist-pages/`**, einschließlich der gebauten
 `index.html`, Skripte, Styles und Grafiken; nur die Quelldatei hochzuladen reicht
@@ -123,13 +131,13 @@ Die Ortsanordnung nutzt die persönlichen Luftbilder, die vier Schulhof-Fotos un
 
 ## Neu in V0.61
 
-- Der Tag beginnt um **5:00 Uhr**. Gespräche, Hinsetzen, Hinlegen, Aufstehen und Ausruhen kosten **10 Minuten**, Ortswechsel **30 Minuten**. Laufen, Pause und das Erinnerungsbuch verbrauchen keine Spielzeit.
+- Der Tag beginnt um **5:30 Uhr** (`WAKE_MINUTE` in `game/day.ts`). Gespräche, Hinsetzen, Hinlegen, Aufstehen und Ausruhen kosten **10 Minuten**, Ortswechsel je nach Strecke **5 bis 20 Minuten** (`travelMinutes` in `game/day.ts`, Zimmer bis Schulhof zusammen 50 Minuten). Laufen, Pause und das Erinnerungsbuch verbrauchen keine Spielzeit.
 - Die Uhr bleibt oben sichtbar. Um **8, 12, 15, 18, 21 und 24 Uhr** erscheint für 4,5 Sekunden ein Hinweis mit Uhrzeit und Ort/Aktivität. Überschreitet eine Aktion mehrere Uhrzeiten, folgen die Hinweise nacheinander; während Dialogen, Pause und Erinnerungen warten sie.
 - An der Schultür lässt sich Unterricht von **7:15 bis 13:00 Uhr** besuchen. Wer früher kommt, wartet bis zum Unterricht. Danach ist der Schulhof weiter frei begehbar.
 - **Frühling, Sommer, Herbst und Winter** sind über die Uhr auswählbar und werden gespeichert. Die Jahreszeit steuert weiche Dämmerung, Tageslänge und winterliche Außenbilder. Sommerabende bleiben deutlich länger hell als Winterabende. Das Weihnachtskapitel behält seine winterliche Gestaltung.
 - **Elena, Jason, Luca und Wyatt** stehen auf dem Schulhof. **Ida, Helena, Linda, Lina und Alexandra** sind am Schießstand. Elena ist Felice näher befreundet; Jason und Luca haben ruhigere Dialoge. Die Figuren verwenden vorläufig vorhandene Atlasgrafiken, bis persönliche Aussehensangaben vorliegen.
 - Bänke in Garten, Haltestelle, Schulhof und Schießstand sind mit **E oder dem Aktionsknopf** benutzbar. **Mit Elias sitzen** lädt Elias auf den freien Platz ein. **Aufstehen** beendet die Sitzposition.
-- In Felices Zimmer führt **Hinlegen** ins Bett, zunächst wach. **Schlafen bis 5:00 Uhr** überspringt alle verbleibenden Hinweise bis zum nächsten Morgen; Schlaf vor 21 Uhr löst somit keine 21-/24-Uhr-Meldung aus. Nach Mitternacht führt Schlaf zu 5 Uhr desselben Morgens.
+- In Felices Zimmer führt **Hinlegen** ins Bett, zunächst wach. **Schlafen bis 5:30 Uhr** überspringt alle verbleibenden Hinweise bis zum nächsten Morgen; Schlaf vor 21 Uhr löst somit keine 21-/24-Uhr-Meldung aus. Nach Mitternacht führt Schlaf zu 5 Uhr desselben Morgens.
 
 Der Tagesstand wird getrennt unter `felice-elias.day.v061` gespeichert. Bestehende Kapitel- und Erinnerungsstände bleiben kompatibel. Sitz-/Liegepositionen sind vorübergehend; nach Neuladen steht Felice wieder am Ortseingang.
 
