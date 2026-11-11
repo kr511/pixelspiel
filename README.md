@@ -83,6 +83,16 @@ Auf dem Smartphone verwendest du den Touch-Joystick und die Aktionsknöpfe. Halt
 
 Das Spiel speichert Fortschritt, Kalender, Namen und Bestwerte automatisch im lokalen Browserspeicher. Spielstände gehören zum jeweiligen Browser und zur Spieladresse. Die lokale Version und eine Online-Version teilen ihren Spielstand daher nicht automatisch.
 
+## Euer ganzer Chatverlauf (nur lokal)
+
+Der Reiter „WhatsApp“ im Handy zeigt den kompletten Chatverlauf, aber nur in der Version auf deinem PC. Lege den WhatsApp-Export (`WhatsApp Chat - ….zip`) in den Projektordner und führe einmal aus:
+
+```bash
+node scripts/chat-import.mjs
+```
+
+Die Dateien landen in `public/chat/` und gehen nie auf GitHub. Online steht im Reiter nur ein kurzer Hinweis.
+
 ## Am Quellcode arbeiten
 
 Mit **Node 24** im Projektordner:
