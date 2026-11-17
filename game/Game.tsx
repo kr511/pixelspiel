@@ -1109,10 +1109,10 @@ export function Game() {
     {adventure && advCutscene === "elias-message" && <EliasMessage message={eliasMessageFor(adv)} onReply={answerElias}/>}
     {adventure && advCutscene === "credits" && <AdventureCredits playSeconds={adv.playSeconds} words={spokenWords(adv)} reduced={adv.settings.effects === "reduced"} onDone={finishAdventureCredits}/>}
     {adventure && advMinigame && <TargetChallenge blocked={paused || needsLandscape} onDone={finishTargets}/>}
-    {adventure && advReward && started && <RewardBurst key={advReward.key} title={advReward.title} symbol={advReward.symbol} main={advReward.main} fragment={advReward.fragment} reduced={adv.settings.effects === "reduced"}/>}
-    {adventure && advFx && started && <div key={advFx.key} className={`adv-fx-center adv-fx-${advFx.name}`} aria-hidden="true"><FxSprite name={advFx.name} scale={3} reduced={adv.settings.effects === "reduced"}/></div>}
+    {adventure && advReward && started && <RewardBurst key={`reward-${advReward.key}`} title={advReward.title} symbol={advReward.symbol} main={advReward.main} fragment={advReward.fragment} reduced={adv.settings.effects === "reduced"}/>}
+    {adventure && advFx && started && <div key={`fx-${advFx.key}`} className={`adv-fx-center adv-fx-${advFx.name}`} aria-hidden="true"><FxSprite name={advFx.name} scale={3} reduced={adv.settings.effects === "reduced"}/></div>}
     {adventure && advRide && started && <BusRide paused={paused || needsLandscape} caption="Radegast → Zörbig · Der Schattenbus" thoughts={ADV_RIDE_THOUGHTS} duration={ADV_RIDE_MS} onDone={finishAdventureRide}/>}
-    {adventure && glitch > 0 && <ShadowGlitch key={glitch} reduced={adv.settings.effects === "reduced"}/>}
+    {adventure && glitch > 0 && <ShadowGlitch key={`glitch-${glitch}`} reduced={adv.settings.effects === "reduced"}/>}
     {adventure && advError && started && <div className="day-save-warning" role="status">{advError}</div>}
     {(saveError || memoryError) && started && <div className="memory-save-warning" role="status">{saveError ?? memoryError}<button onClick={() => {
       if (memoryError) useMemories.getState().retrySave();
