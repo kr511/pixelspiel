@@ -115,7 +115,7 @@ def mobile_layout(page):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-url", default="http://127.0.0.1:5173/pixelgame/")
+    parser.add_argument("--base-url", default="http://127.0.0.1:5173/")
     parser.add_argument("--executable", help="Chromium path; otherwise use Playwright's installed browser")
     parser.add_argument("--fixture-url", help="Optional development spawn harness URL")
     parser.add_argument("--output", type=Path, default=Path("/tmp/pixelspiel-browser-qa"))
