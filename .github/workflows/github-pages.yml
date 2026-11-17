@@ -3,10 +3,11 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 concurrency:
-  group: github-pages
+  group: github-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -62,11 +63,12 @@ jobs:
           fi
       - name: Browser check (spiel/ in Chromium)
         run: |
-          pip install --quiet playwright
-          python -m playwright install --with-deps chromium
+          python3 -m venv /tmp/qa-venv
+          /tmp/qa-venv/bin/pip install --quiet playwright
+          /tmp/qa-venv/bin/python -m playwright install --with-deps chromium
           node scripts/serve-local.mjs &
           sleep 2
-          python scripts/check-game-browser.py --base-url http://127.0.0.1:8765/ --output /tmp/browser-qa
+          /tmp/qa-venv/bin/python scripts/check-game-browser.py --base-url http://127.0.0.1:8765/ --output /tmp/browser-qa
       - name: Build static game
         run: npm run build
         env:
@@ -78,7 +80,7 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages_enabled == 'true'
+    if: needs.build.outputs.pages_enabled == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write
