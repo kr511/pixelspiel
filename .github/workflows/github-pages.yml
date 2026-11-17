@@ -60,6 +60,13 @@ jobs:
             echo "::error::spiel/ passt nicht zum Quellcode. Lokal 'npm run build:spiel' ausführen und spiel/ mit committen."
             exit 1
           fi
+      - name: Browser check (spiel/ in Chromium)
+        run: |
+          pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+          node scripts/serve-local.mjs &
+          sleep 2
+          python scripts/check-game-browser.py --base-url http://127.0.0.1:8765/ --output /tmp/browser-qa
       - name: Build static game
         run: npm run build
         env:

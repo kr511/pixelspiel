@@ -2,7 +2,7 @@
 """Optional real-browser gameplay checks; requires Python Playwright.
 
 Start the Vite development server, then run:
-  python scripts/check-game-browser.py --base-url http://127.0.0.1:5173/pixelgame/ \
+  python scripts/check-game-browser.py --base-url http://127.0.0.1:5173/ \
     --executable /usr/bin/chromium --output /tmp/pixelspiel-browser-qa
 
 Use --fixture-url to additionally check all four school friends with a supplied
@@ -10,6 +10,7 @@ development-only spawn harness. Every scenario uses an isolated browser context.
 """
 
 import argparse
+import re
 import json
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -101,7 +102,7 @@ def main():
             options["executable_path"] = args.executable
         browser = playwright.chromium.launch(**options)
 
-        def open_scenario(state=None, size=(1440, 900), url=None):
+        def open_scenario(state=None, size=(1440, 900), url=None, mode=r"^Unser Jahr"):
             context = browser.new_context(
                 viewport={"width": size[0], "height": size[1]},
                 is_mobile=size[0] < 1000, has_touch=size[0] < 1000,
@@ -115,7 +116,8 @@ def main():
             page.set_default_timeout(8000)
             page.on("pageerror", lambda error: report["pageErrors"].append(str(error)))
             page.goto(url or args.base_url, wait_until="networkidle")
-            page.get_by_role("button", name="Welt betreten", exact=True).click()
+            # Start menu since V1.0: "Unser Jahr (Chronik)" starts the chronicle, "Neues Spiel" the adventure.
+            page.get_by_role("button", name=re.compile(mode)).click()
             return context, page
 
         try:
@@ -123,6 +125,27 @@ def main():
             page.get_by_role("button", name="Überspringen").wait_for()
             page.screenshot(path=str(args.output / "fresh-intro.png"))
             checked("Fresh game starts the intro")
+            context.close()
+
+            context, page = open_scenario(mode=r"^Neues Spiel")
+            page.get_by_text("Lies den fremden Brief").first.wait_for()
+            page.get_by_role("button", name="Gespräch unterbrechen").click()
+            page.keyboard.press("j")
+            page.get_by_role("heading", name="Felices Tagebuch").wait_for()
+            page.screenshot(path=str(args.output / "adventure-journal.png"))
+            page.get_by_role("button", name="Tagebuch schließen").click()
+            page.keyboard.press("i")
+            page.get_by_role("heading", name="Gegenstände").wait_for()
+            page.get_by_role("button", name="Tasche schließen").click()
+            before = point(page)
+            page.keyboard.down("a")
+            page.wait_for_timeout(700)
+            page.keyboard.up("a")
+            after = point(page)
+            assert after != before, (before, after)
+            saved = page.evaluate("localStorage.getItem('felice-elias.adventure.v1')")
+            assert saved and '"version":2' in saved.replace(" ", ""), saved
+            checked("Adventure starts: prologue, journal, bag, walking, autosave")
             context.close()
 
             context, page = open_scenario(fixture("bedroom", beginning_completed=False))

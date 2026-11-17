@@ -1,8 +1,6 @@
-/* Tailwind only scans the game sources, never built output in spiel/ (keeps builds reproducible). */
+/* Tailwind only scans the game sources, never built output in spiel/ (keeps builds reproducible).
+   The @source lines must come after every @import, otherwise the browser drops the later imports. */
 @import "tailwindcss" source(none);
-@source "../game";
-@source "../static";
-@source "../index.html";
 @import "../game/memories/memories.css";
 @import "../game/story.css";
 @import "../game/world.css";
@@ -10,6 +8,9 @@
 @import "../game/dialogue.css";
 @import "../game/phone-album.css";
 @import "../game/year.css";
+@source "../game";
+@source "../static";
+@source "../index.html";
 
 :root { --ink:#fff7ef; --glass:rgba(27,28,31,.42); }
 * { box-sizing:border-box; }
