@@ -52,20 +52,17 @@ import { audioAllowed, worldAudio } from "./audio";
 import { ACTION_MINUTES, DAY_KEY, REST_SPOTS, SCHOOL_END, SCHOOL_START, WAKE_MINUTE, activityAt, travelMinutes, clockText, longDate, parseDay, seasonalLight, nightShade, type DaySave, type RestSpot } from "./day";
 import { CHAPTERS, ENTITIES, PLACES, SPAWNS, STORY_KEY, EMPTY_STORY, advanceStory, beginChapter, canWalk, storyCanWalk, currentStep, parseStory, routeTo, type ChapterId, type Entity, type Exit, type Place, type Point, type StorySave } from "./story";
 import { BusRide } from "./BusRide";
-import { addPlayTime, felice as advFelice, formatPlayTime, hasFlag as advHasFlag, narrate as advNarrate, newAdventure, type AdventureSave, type After as AdvAfter, type Line as AdvLine, type Outcome as AdvOutcome } from "./adventure/core";
-import { chooseWords, finishMinigame, mainProgress, chapterOf as advChapterOf, hotspotById, ambience as advAmbience, chapterDef as advChapter, combineEvidence, combineItems, enterPlace as advEnterPlace, exitGate, finishAdventure, hotspotsAt, interact as advInteractAt, objective as advObjective, openPuzzleRecord, revealHint, skipPuzzle, submitPuzzle, thought as advThought, applyItem as advUseItem, walkBlocked } from "./adventure/engine";
-import { browserStorage, loadAdventure, setAsideDamaged, writeAdventure } from "./adventure/storage";
-import { AdventureBag, AdventureCredits, AdventureHud, AdventureJournal, AdventureProp, EliasMessage, HintPanel, LOCAL_SAVE_NOTE, RewardBurst, ShadowGlitch, savedTime, type JournalTab } from "./adventure/AdventureUI";
+import { felice as advFelice, formatPlayTime, hasFlag as advHasFlag, narrate as advNarrate } from "./adventure/core";
+import { hotspotById, ambience as advAmbience, chapterDef as advChapter, enterPlace as advEnterPlace, exitGate, finishAdventure, hotspotsAt, interact as advInteractAt, objective as advObjective, openPuzzleRecord, revealHint, thought as advThought, applyItem as advUseItem, walkBlocked } from "./adventure/engine";
+import { AdventureBag, AdventureCredits, AdventureHud, AdventureJournal, AdventureProp, EliasMessage, HintPanel, LOCAL_SAVE_NOTE, RewardBurst, ShadowGlitch, savedTime } from "./adventure/AdventureUI";
 import { PuzzlePanel } from "./adventure/PuzzlePanel";
 import { TargetChallenge } from "./adventure/TargetChallenge";
 import { FxSprite } from "./adventure/fx";
-import { ADVENTURE_INTRO, ADV_RIDE_THOUGHTS, ADV_RIDE_MS, FRAGMENTS, MAIN_PUZZLES, eliasMessageFor, spokenWords } from "./adventure/content";
+import { ADVENTURE_INTRO, ADV_RIDE_THOUGHTS, ADV_RIDE_MS, eliasMessageFor, spokenWords } from "./adventure/content";
 import "./adventure/adventure.css";
+import { useAdventure, useAdventureAutosave } from "./adventure/useAdventure";
 
 type GameMode = "chronicle" | "adventure";
-/** Active play time is folded into the save at every write and at least this often. */
-const ADV_AUTOSAVE_MS = 30000;
-const solvedCount = (save: AdventureSave) => Object.values(save.puzzles).filter(record => record.status === "gelöst").length;
 import { GAME_VERSION } from "./version";
 import { PixelIcon } from "./PixelIcons";
 
@@ -124,29 +121,19 @@ export function Game() {
   const modeRef = useRef<GameMode>("adventure");
   function setMode(value: GameMode) { modeRef.current = value; setModeState(value); }
   const adventure = mode === "adventure";
-  // Saves: main slot + checkpoint slot in localStorage; a damaged main save is never overwritten without the player's choice.
-  const [advInitial] = useState(() => loadAdventure(browserStorage()));
-  const [adv, setAdv] = useState<AdventureSave>(advInitial.save);
-  const advRef = useRef(advInitial.save);
-  const advReadable = useRef(advInitial.state !== "damaged");
-  const [advDamaged, setAdvDamaged] = useState(advInitial.state === "damaged");
-  const [advError, setAdvError] = useState<string | null>(advInitial.state === "unavailable" ? "Dieser Browser erlaubt gerade kein lokales Speichern (privates Fenster oder gesperrte Websitedaten). Du kannst spielen, aber der Fortschritt geht beim Schließen verloren." : null);
-  const [advSavedAt, setAdvSavedAt] = useState<string | null>(advInitial.save.savedAt);
-  const [advSaveMessage, setAdvSaveMessage] = useState<string | null>(advInitial.state === "migrated" ? "Dein Spielstand aus der vorherigen Version wurde übernommen." : null);
-  const playAcc = useRef(0);
-  const [advRide, setAdvRide] = useState<AdvAfter | null>(null);
-  const [advMinigame, setAdvMinigame] = useState(false);
-  const [advReward, setAdvReward] = useState<{ key: number; title: string; symbol: string; main?: string; fragment: boolean } | null>(null);
-  const [advFx, setAdvFx] = useState<{ key: number; name: "shadow-dissolve" | "heart-burst" } | null>(null);
-  /** A scene change that waits until Elias' message was answered. */
-  const advPendingTravel = useRef<Place | null>(null);
-  const [advScript, setAdvScript] = useState<{ lines: AdvLine[]; index: number; after?: AdvAfter } | null>(null);
-  const [advPuzzle, setAdvPuzzle] = useState<string | null>(null);
-  const [advJournal, setAdvJournal] = useState<JournalTab | null>(null);
-  const [advBag, setAdvBag] = useState(false);
-  const [advHint, setAdvHint] = useState(false);
-  const [advCutscene, setAdvCutscene] = useState<"elias-message" | "credits" | null>(null);
-  const [glitch, setGlitch] = useState(0);
+  // Felice in the world; declared before the adventure hook, which moves her between places.
+  const [player, setPlayer] = useState<Point>(timelineInitial.save.active ? (eventById(timelineInitial.save.active.id)!.steps?.[timelineInitial.save.progress[timelineInitial.save.active.id]?.cursor ?? 0]?.place ? SPAWNS[eventById(timelineInitial.save.active.id)!.steps![timelineInitial.save.progress[timelineInitial.save.active.id]?.cursor ?? 0].place!] : eventById(timelineInitial.save.active.id)!.staging.spawn) : SPAWNS[initial.save.place]);
+  const [walking, setWalking] = useState(false);
+  const playerRef = useRef(player);
+  const [rest, setRest] = useState<Rest | null>(null);
+  const restRef = useRef<Rest | null>(null);
+  const {
+    advInitial, adv, advRef, advReadable, advDamaged, acceptDamagedSave, beginFreshAdventure, advError, advSavedAt, advSaveMessage, setAdvSaveMessage, playAcc,
+    advRide, advMinigame, setAdvMinigame, advReward, setAdvReward, advFx, setAdvFx, advScript, setAdvScript, advPuzzle, setAdvPuzzle,
+    advJournal, setAdvJournal, advBag, setAdvBag, advHint, setAdvHint, advCutscene, setAdvCutscene, glitch,
+    persistAdventure, advTravel, runAdventure, answerElias, finishTargets, finishAdventureRide,
+    advanceAdventureScript, skipAdventureScript, submitAdventurePuzzle, skipAdventurePuzzle, combineAdventureItems, combineAdventureEvidence,
+  } = useAdventure({ playerRef, restRef, setPlayer, setWalking, clearMovement });
   const session = adventure ? null : replay?.session ?? timeline.active;
   const event = session ? eventById(session.id) : undefined;
   const eventState = replay?.state ?? (session ? timeline.progress[session.id] ?? emptyEvent() : null);
@@ -194,17 +181,13 @@ export function Game() {
   const namesReadable = useRef(!namesInitial.error);
   const [namesError, setNamesError] = useState<string | null>(namesInitial.error);
   const [notices, setNotices] = useState<Notice[]>([]);
-  const [rest, setRest] = useState<Rest | null>(null);
-  const restRef = useRef<Rest | null>(null);
   const [visitingElias, setVisitingElias] = useState<Place | null>(null);
   const [actors, setActors] = useState<Actors>(initialActors);
   const [dismissal, setDismissal] = useState<SchoolDismissalState>({ date: day.date, elapsed: 0 });
   const actorsRef = useRef(actors);
   const [photoMoment, setPhotoMoment] = useState<{ target?: string } | null>(null);
   const [kitchenEffect, setKitchenEffect] = useState<string | null>(null);
-  const [player, setPlayer] = useState<Point>(timelineInitial.save.active ? (eventById(timelineInitial.save.active.id)!.steps?.[timelineInitial.save.progress[timelineInitial.save.active.id]?.cursor ?? 0]?.place ? SPAWNS[eventById(timelineInitial.save.active.id)!.steps![timelineInitial.save.progress[timelineInitial.save.active.id]?.cursor ?? 0].place!] : eventById(timelineInitial.save.active.id)!.staging.spawn) : SPAWNS[initial.save.place]);
   const [direction, setDirection] = useState<Direction>("front");
-  const [walking, setWalking] = useState(false);
   const [walkFrame, setWalkFrame] = useState(0);
   const walkDistance = useRef(0);
   const [dog, setDog] = useState<Point>({ x: .58, y: .53 });
@@ -234,7 +217,6 @@ export function Game() {
   const [compact, setCompact] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(initial.error);
   const readable = useRef(!initial.error);
-  const playerRef = useRef(player);
     const journalRef = useRef<HTMLDialogElement>(null);
   const paused = useInput(s => s.paused);
   const phase = useMemories(s => s.phase);
@@ -309,36 +291,6 @@ export function Game() {
   function updateActors(next: Actors) { actorsRef.current = next; setActors(next); }
 
   function position(point: Point) { playerRef.current = point; setPlayer(point); setWalking(false); clearMovement(); }
-  /**
-   * Every adventure change is written at once. Solved puzzles, chapter changes and manual saves
-   * also refresh the checkpoint slot. Active play time collected since the last write is folded in.
-   */
-  const persistAdventure = useCallback((raw: AdventureSave, options: { checkpoint?: boolean } = {}) => {
-    const prior = advRef.current;
-    const next = addPlayTime(raw, playAcc.current, advChapterOf(prior)); playAcc.current = 0;
-    const checkpoint = options.checkpoint || advChapterOf(prior) !== advChapterOf(next) || solvedCount(next) > solvedCount(prior);
-    const result = advReadable.current ? writeAdventure(browserStorage(), next, { checkpoint }) : null;
-    const stored = result?.ok ? { ...next, savedAt: result.savedAt, chapter: advChapterOf(next) } : next;
-    advRef.current = stored; setAdv(stored);
-    // Rewards that are felt, not only read: a returning fragment spins up to the HUD, a finished main puzzle is announced.
-    const newFragment = FRAGMENTS.find(fragment => next.fragments.includes(fragment.id) && !prior.fragments.includes(fragment.id));
-    const doneBefore = mainProgress(prior).filter(entry => entry.solved).length, doneNow = mainProgress(next).filter(entry => entry.solved);
-    if (newFragment || doneNow.length > doneBefore) {
-      const main = doneNow.length > doneBefore ? `Haupt-Rätsel ${doneNow.length}/${MAIN_PUZZLES.length} gelöst` : undefined;
-      setAdvReward({ key: Date.now(), title: newFragment?.title ?? doneNow[doneNow.length - 1].title, symbol: newFragment?.symbol ?? "✦", main, fragment: Boolean(newFragment) });
-      if (next.settings.effects !== "reduced") { try { navigator.vibrate?.([30, 50, 70]); } catch { /* optional */ } }
-    }
-    if (!result) return null;
-    if (result.ok) { setAdvSavedAt(result.savedAt); setAdvError(null); } else setAdvError(result.error);
-    return result;
-  }, []);
-  /** Moves Felice to another place of the adventure (exits, travel after a puzzle, the bus ride). */
-  const advTravel = useCallback((place: Place, spawn: Point = SPAWNS[place]) => {
-    const outcome = advEnterPlace(advRef.current, place);
-    persistAdventure({ ...outcome.save, position: spawn });
-    playerRef.current = spawn; setPlayer(spawn); setWalking(false); clearMovement();
-    if (outcome.lines.length) setAdvScript({ lines: outcome.lines, index: 0 });
-  }, [persistAdventure]);
   const setSave = useCallback((next: StorySave) => {
     if (modeRef.current === "adventure") {
       if (next.place !== advRef.current.place) advTravel(next.place, playerRef.current);
@@ -913,81 +865,9 @@ export function Game() {
     return () => window.clearTimeout(timer);
   }, [thought]);
 
-  /* ------------------------------------------------ Abenteuer: Die verlorenen Erinnerungen */
-  /** Applies an engine outcome: autosave first (so a skipped dialogue never loses progress), then show it. */
-  function runAdventure(outcome: AdvOutcome) {
-    persistAdventure({ ...outcome.save, position: playerRef.current });
-    if (outcome.lines.length) setAdvScript({ lines: outcome.lines, index: 0, after: outcome.after });
-    else runAdventureAfter(outcome.after);
-  }
-  function runAdventureAfter(after?: AdvAfter) {
-    if (!after) return;
-    if ((after.glitch || after.cutscene === "shadow" || after.cutscene === "barrier") && advRef.current.settings.effects !== "reduced") setGlitch(Date.now());
-    if (after.cutscene === "bus") { clearMovement(); setAdvRide(after); return; }
-    if (after.cutscene === "barrier") setAdvFx({ key: Date.now(), name: "shadow-dissolve" });
-    if (after.minigame) { clearMovement(); setAdvMinigame(true); return; }
-    // Elias' message comes first; a scene change waits until Felice has answered.
-    if (after.cutscene === "elias-message" && after.travel) { advPendingTravel.current = after.travel; setAdvCutscene("elias-message"); return; }
-    if (after.travel) advTravel(after.travel);
-    if (after.puzzle) { persistAdventure(openPuzzleRecord(advRef.current, after.puzzle)); setAdvPuzzle(after.puzzle); }
-    if (after.cutscene === "elias-message" || after.cutscene === "credits") setAdvCutscene(after.cutscene);
-  }
-  function answerElias(wordId: string) {
-    persistAdventure(chooseWords(advRef.current, wordId));
-    setAdvCutscene(null); clearMovement();
-    const travel = advPendingTravel.current; advPendingTravel.current = null;
-    if (travel) advTravel(travel);
-  }
-  function finishTargets() {
-    setAdvMinigame(false); worldAudio.play("complete");
-    runAdventure(finishMinigame(advRef.current, "targets"));
-  }
-  function finishAdventureRide() {
-    const ride = advRide; setAdvRide(null);
-    advTravel(ride?.travel ?? "school");
-  }
-  function advanceAdventureScript(choice?: string) {
-    const script = advScript;
-    if (!script) return;
-    const current = script.lines[script.index];
-    const picked = current?.choices?.find(entry => entry.label === choice);
-    if (picked?.id) { persistAdventure(chooseWords(advRef.current, picked.id)); setAdvFx({ key: Date.now(), name: "heart-burst" }); }
-    const lines = picked?.reply?.length ? [...script.lines.slice(0, script.index + 1), ...picked.reply, ...script.lines.slice(script.index + 1)] : script.lines;
-    if (script.index + 1 >= lines.length) { setAdvScript(null); clearMovement(); runAdventureAfter(script.after); return; }
-    setAdvScript({ lines, index: script.index + 1, after: script.after });
-  }
-  function skipAdventureScript() { const script = advScript; setAdvScript(null); clearMovement(); runAdventureAfter(script?.after); }
-  function submitAdventurePuzzle(id: string, answer: unknown) {
-    const result = submitPuzzle(advRef.current, id, answer);
-    persistAdventure(result.save);
-    if (result.ok) {
-      worldAudio.play("complete");
-      window.setTimeout(() => { setAdvPuzzle(null); runAdventure({ save: advRef.current, lines: result.lines, after: result.after }); }, 700);
-    } else {
-      worldAudio.play("interact");
-      if (advRef.current.settings.effects !== "reduced") { try { navigator.vibrate?.(60); } catch { /* optional */ } }
-    }
-    return { ok: Boolean(result.ok), feedback: result.feedback };
-  }
-  function skipAdventurePuzzle(id: string) {
-    const outcome = skipPuzzle(advRef.current, id);
-    if (outcome.save === advRef.current) return;
-    setAdvPuzzle(null); setAdvHint(false); worldAudio.play("complete"); runAdventure(outcome);
-  }
+  /* ------------------------------------------------ Abenteuer: Die verlorenen Erinnerungen (Logik in adventure/useAdventure.ts) */
   const advNearby = adventure ? sceneEntities.map(entity => ({ entity, distance: Math.hypot(entity.x - player.x, entity.y - player.y) })).filter(entry => entry.distance < .14).sort((a, b) => a.distance - b.distance)[0]?.entity : undefined;
   function applyAdventureItem(item: string) { setAdvBag(false); runAdventure(advUseItem(advRef.current, item, advNearby?.id)); }
-  function combineAdventureItems(a: string, b: string) {
-    const outcome = combineItems(advRef.current, a, b);
-    const text = outcome.lines.map(entry => entry.text).join(" ");
-    if (outcome.ok) { worldAudio.play("complete"); setAdvBag(false); runAdventure(outcome); } else persistAdventure(outcome.save);
-    return { ok: outcome.ok, text };
-  }
-  function combineAdventureEvidence(a: string, b: string) {
-    const outcome = combineEvidence(advRef.current, a, b);
-    persistAdventure(outcome.save);
-    if (outcome.ok) worldAudio.play("complete");
-    return { ok: outcome.ok, text: outcome.lines.map(entry => entry.text).join(" ") };
-  }
   const chroniclePlayer = useRef<Point | null>(null);
   function resetTransient() {
     setDialogue(null); setAdvScript(null); setAdvPuzzle(null); setAdvJournal(null); setAdvBag(false); setAdvHint(false); setAdvCutscene(null); setAdvMinigame(false); setAdvReward(null); setAdvFx(null);
@@ -1003,10 +883,9 @@ export function Game() {
   function startAdventure(fresh: boolean) {
     if (modeRef.current === "chronicle" && started) chroniclePlayer.current = playerRef.current;
     resetTransient(); setMode("adventure");
-    if (advDamaged) { setAsideDamaged(browserStorage()); advReadable.current = true; setAdvDamaged(false); }
-    let current = advRef.current;
-    if (fresh) { playAcc.current = 0; current = { ...newAdventure(), settings: advRef.current.settings }; advRef.current = current; persistAdventure(current, { checkpoint: true }); setAdvSaveMessage(null); }
-    else persistAdventure(current, { checkpoint: true });
+    if (advDamaged) acceptDamagedSave();
+    const current = fresh ? beginFreshAdventure() : advRef.current;
+    if (!fresh) persistAdventure(current, { checkpoint: true });
     position(current.position ?? SPAWNS[current.place]); setDirection("front");
     setStarted(true);
     if (!advHasFlag(current, "letter-read")) setAdvScript({ lines: ADVENTURE_INTRO, index: 0 });
@@ -1041,37 +920,7 @@ export function Game() {
     persistAdventure({ ...outcome.save, position: { x: .47, y: .72 } }, { checkpoint: true }); changeRest(null); position({ x: .47, y: .72 }); setDirection("back");
     setAdvScript({ lines: [advNarrate("Felices Zimmer. Draußen wird es hell. Elias ist da – und eure Erinnerungen leuchten wieder."), advNarrate("Abenteuer abgeschlossen! Im Tagebuch findest du alle Erinnerungen. Über das Pausenmenü (oben rechts) kannst du die Chronik „Unser Jahr“ spielen oder das Abenteuer neu beginnen.")], index: 0 });
   }
-  useEffect(() => {
-    if (!glitch) return;
-    const timer = window.setTimeout(() => setGlitch(0), 900);
-    return () => window.clearTimeout(timer);
-  }, [glitch]);
-  useEffect(() => {
-    if (!advReward) return;
-    const timer = window.setTimeout(() => setAdvReward(null), 3400);
-    return () => window.clearTimeout(timer);
-  }, [advReward]);
-  useEffect(() => {
-    if (!advFx) return;
-    const timer = window.setTimeout(() => setAdvFx(null), 2200);
-    return () => window.clearTimeout(timer);
-  }, [advFx]);
-  // Active play time (no pause, no hidden tab, no rotate prompt) plus a quiet autosave of position and time.
-  useEffect(() => {
-    if (!started || !adventure || paused || needsLandscape) return;
-    let last = performance.now();
-    const tick = window.setInterval(() => { const now = performance.now(); if (!document.hidden) playAcc.current += Math.min(5, (now - last) / 1000); last = now; }, 1000);
-    const autosave = window.setInterval(() => { if (!document.hidden && advReadable.current) persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }); }, ADV_AUTOSAVE_MS);
-    return () => { window.clearInterval(tick); window.clearInterval(autosave); };
-  }, [started, adventure, paused, needsLandscape, persistAdventure]);
-  // Closing the tab, switching apps on the phone or locking the screen writes the latest state.
-  useEffect(() => {
-    if (!started || !adventure) return;
-    const flush = () => { if (advReadable.current) persistAdventure({ ...advRef.current, position: restRef.current ? restRef.current.spot.approach : playerRef.current }); };
-    const hidden = () => { if (document.visibilityState === "hidden") flush(); };
-    window.addEventListener("pagehide", flush); document.addEventListener("visibilitychange", hidden);
-    return () => { window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", hidden); };
-  }, [started, adventure, persistAdventure]);
+  useAdventureAutosave({ advReadable, advRef, playAcc, persistAdventure }, { playerRef, restRef }, started && adventure, !paused && !needsLandscape);
 
   function jumpStory() {
     if (session || legacyView) return;
