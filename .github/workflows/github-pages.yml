@@ -46,13 +46,22 @@ jobs:
               await core.summary.addHeading('Statischer Build bereit').addRaw('GitHub Pages ist noch nicht eingerichtet oder für dieses Repository nicht verfügbar. Unter Settings → Pages als Source „GitHub Actions“ wählen und danach diesen Workflow erneut starten. Private Repositories benötigen einen GitHub-Tarif, der Pages unterstützt.').write();
             }
       - name: Install dependencies
-        run: npm run install:ci
+        run: npm ci
       - name: Verify game
         run: |
           npm test
-          npx tsc --noEmit
+          npm run typecheck
+          npm run lint
+      - name: Check offline copy in spiel/
+        run: |
+          npm run build:spiel
+          if [ -n "$(git status --porcelain -- spiel)" ]; then
+            git status --short -- spiel
+            echo "::error::spiel/ passt nicht zum Quellcode. Lokal 'npm run build:spiel' ausführen und spiel/ mit committen."
+            exit 1
+          fi
       - name: Build static game
-        run: npm run build:pages
+        run: npm run build
         env:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - name: Upload Pages artifact

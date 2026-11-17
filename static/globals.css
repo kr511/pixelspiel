@@ -1,4 +1,8 @@
-@import "tailwindcss";
+/* Tailwind only scans the game sources, never built output in spiel/ (keeps builds reproducible). */
+@import "tailwindcss" source(none);
+@source "../game";
+@source "../static";
+@source "../index.html";
 @import "../game/memories/memories.css";
 @import "../game/story.css";
 @import "../game/world.css";
