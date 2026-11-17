@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "pixelgame-pages",
+      "name": "pixelgame-dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--config", "vite.pages.config.ts", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
+      "runtimeArgs": ["vite", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
       "port": 5174
     },
     {

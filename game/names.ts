@@ -13,6 +13,7 @@ export function displayName(entity: Entity, save: NameSave): string { return ent
 export function renamePerson(save: NameSave, id: string, value: string): NameSave {
   if (!ids.has(id)) throw new Error("Unbekannte Figur");
   const name = value.trim().replace(/\s+/g, " ");
+  // eslint-disable-next-line no-control-regex -- control characters are rejected on purpose.
   if (name.length > 32 || /[\u0000-\u001f\u007f]/.test(name)) throw new Error("Der Name darf höchstens 32 Zeichen enthalten.");
   const names = { ...save.names };
   if (name) names[id] = name; else delete names[id];

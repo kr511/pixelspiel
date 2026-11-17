@@ -1,32 +1,14 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    // Generated game builds (offline copy and Pages output).
-    "spiel/**",
-    "dist-pages/**",
-    "dist/**",
-  ]),
-  {
-    files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
-    rules: {
-      // These files are vendored verbatim from shadcn@4.17.0. Keep the
-      // registry source intact while applying the stricter rules to Site code.
-      "@typescript-eslint/no-unused-vars": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/set-state-in-effect": "off",
-    },
-  },
-]);
-
-export default eslintConfig;
+export default tseslint.config(
+  { ignores: ["node_modules/**", "spiel/**", "dist-pages/**", "dist/**"] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  reactHooks.configs.flat["recommended-latest"] ?? reactHooks.configs.flat.recommended,
+  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
+  // The build does not use the React Compiler, so its "could not memoize" notice is no error here.
+  { rules: { "react-hooks/preserve-manual-memoization": "off" } },
+);

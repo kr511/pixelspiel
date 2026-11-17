@@ -1,0 +1,3 @@
+# LF everywhere, so a build of spiel/ on Windows matches the CI check byte for byte.
+* text=auto eol=lf
+*.bat text eol=crlf
