@@ -2,7 +2,7 @@
 """Optional real-browser gameplay checks; requires Python Playwright.
 
 Start the Vite development server, then run:
-  python scripts/check-game-browser.py --base-url http://127.0.0.1:5173/pixelgame/ \
+  python scripts/check-game-browser.py --base-url http://127.0.0.1:5173/ \
     --executable /usr/bin/chromium --output /tmp/pixelspiel-browser-qa
 
 Use --fixture-url to additionally check all four school friends with a supplied
@@ -10,6 +10,7 @@ development-only spawn harness. Every scenario uses an isolated browser context.
 """
 
 import argparse
+import re
 import json
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -47,6 +48,38 @@ def point(page):
     )
 
 
+def walk_to(page, x, y, near=.025):
+    """Steers Felice with the arrow keys until she stands close to (x, y)."""
+    for _ in range(80):
+        p = point(page)
+        dx, dy = x - p["x"], y - p["y"]
+        if abs(dx) < near and abs(dy) < near:
+            return p
+        keys = []
+        if abs(dx) >= near * .6:
+            keys.append("ArrowRight" if dx > 0 else "ArrowLeft")
+        if abs(dy) >= near * .6:
+            keys.append("ArrowDown" if dy > 0 else "ArrowUp")
+        for key in keys:
+            page.keyboard.down(key)
+        page.wait_for_timeout(110)
+        for key in keys:
+            page.keyboard.up(key)
+    raise AssertionError(f"Felice did not reach {x},{y}: {point(page)}")
+
+
+def skip_adventure_dialogue(page):
+    """Closes adventure dialogue with ×; its follow-up effects (puzzles, travel) still run."""
+    for _ in range(10):
+        close = page.get_by_role("button", name="Gespräch unterbrechen")
+        if close.count() == 0:
+            page.wait_for_timeout(300)
+        if close.count() == 0:
+            return
+        close.first.click()
+        page.wait_for_timeout(250)
+
+
 def school_pupils(page):
     return page.locator('[data-entity^="school-pupil-"]').count()
 
@@ -82,7 +115,7 @@ def mobile_layout(page):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-url", default="http://127.0.0.1:5173/pixelgame/")
+    parser.add_argument("--base-url", default="http://127.0.0.1:5173/")
     parser.add_argument("--executable", help="Chromium path; otherwise use Playwright's installed browser")
     parser.add_argument("--fixture-url", help="Optional development spawn harness URL")
     parser.add_argument("--output", type=Path, default=Path("/tmp/pixelspiel-browser-qa"))
@@ -101,7 +134,7 @@ def main():
             options["executable_path"] = args.executable
         browser = playwright.chromium.launch(**options)
 
-        def open_scenario(state=None, size=(1440, 900), url=None):
+        def open_scenario(state=None, size=(1440, 900), url=None, mode=r"^Unser Jahr"):
             context = browser.new_context(
                 viewport={"width": size[0], "height": size[1]},
                 is_mobile=size[0] < 1000, has_touch=size[0] < 1000,
@@ -115,7 +148,8 @@ def main():
             page.set_default_timeout(8000)
             page.on("pageerror", lambda error: report["pageErrors"].append(str(error)))
             page.goto(url or args.base_url, wait_until="networkidle")
-            page.get_by_role("button", name="Welt betreten", exact=True).click()
+            # Start menu since V1.0: "Unser Jahr (Chronik)" starts the chronicle, "Neues Spiel" the adventure.
+            page.get_by_role("button", name=re.compile(mode)).click()
             return context, page
 
         try:
@@ -123,6 +157,41 @@ def main():
             page.get_by_role("button", name="Überspringen").wait_for()
             page.screenshot(path=str(args.output / "fresh-intro.png"))
             checked("Fresh game starts the intro")
+            context.close()
+
+            context, page = open_scenario(mode=r"^Neues Spiel")
+            page.get_by_text("Lies den fremden Brief").first.wait_for()
+            skip_adventure_dialogue(page)
+            page.keyboard.press("j")
+            page.get_by_role("heading", name="Felices Tagebuch").wait_for()
+            page.screenshot(path=str(args.output / "adventure-journal.png"))
+            page.get_by_role("button", name="Tagebuch schließen").click()
+            page.keyboard.press("i")
+            page.get_by_role("heading", name="Gegenstände").wait_for()
+            page.get_by_role("button", name="Tasche schließen").click()
+            # Prologue: letter and mirror in the bedroom, then the shadow seal at the front door.
+            for x, y in ((.655, .43), (.565, .43), (.735, .66)):
+                walk_to(page, x, y)
+                page.keyboard.press("e")
+                page.wait_for_timeout(500)
+                skip_adventure_dialogue(page)
+            assert page.locator(".pixel-viewport").first.get_attribute("aria-label") == "Bei Felice zu Hause"
+            walk_to(page, .2, .56)
+            page.keyboard.press("e")
+            page.wait_for_timeout(500)
+            skip_adventure_dialogue(page)
+            page.get_by_role("heading", name="Das Schattensiegel").wait_for()
+            for field in ("1-1", "1-3", "3-1", "3-3", "2-1", "2-3"):
+                page.get_by_role("button", name=f"Feld {field}").click()
+            page.get_by_test_id("adv-check").click()
+            page.get_by_text("Haupt-Rätsel 1/6 gelöst").wait_for()
+            page.screenshot(path=str(args.output / "adventure-seal-solved.png"))
+            skip_adventure_dialogue(page)
+            saved = json.loads(page.evaluate("localStorage.getItem('felice-elias.adventure.v1')"))
+            assert saved["version"] == 2 and saved["puzzles"]["p-seal"]["status"] == "gelöst", saved["puzzles"]
+            assert saved["chapter"] == "radegast", saved["chapter"]
+            assert page.evaluate("localStorage.getItem('felice-elias.adventure.checkpoint')")
+            checked("Adventure prologue: journal, bag, letter, mirror, travel, seal puzzle, reward, autosave and checkpoint")
             context.close()
 
             context, page = open_scenario(fixture("bedroom", beginning_completed=False))
