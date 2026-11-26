@@ -56,7 +56,7 @@ export function ChatHistory({ currentDate, currentMinute = 1439, initialDate = n
   const pending = today && day.entries ? day.entries.length - (entries?.length ?? 0) : 0;
 
   if (index === undefined) return <p className="phone-empty">Chat wird geladen …</p>;
-  if (index === null) return <div className="phone-empty"><span aria-hidden="true">💬</span><p>Euer ganzer Chatverlauf ist nur in der lokalen Version auf deinem PC enthalten. Dort einmal <code>node scripts/chat-import.mjs</code> ausführen.</p></div>;
+  if (index === null) return <div className="phone-empty"><span aria-hidden="true">💬</span><p>Euer ganzer Chatverlauf ist nur in der Version auf deinem PC.</p></div>;
   if (selected) {
     const position = days.findIndex(day => day.date === selected);
     const previous = days[position - 1]?.date, next = days[position + 1]?.date;

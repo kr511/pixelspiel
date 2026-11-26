@@ -11,7 +11,7 @@ export const ITEMS: Record<string, InventoryItem> = {
   },
   "elias-letter": {
     id: "elias-letter", name: "Ein persönlicher Brief von Elias", symbol: "✉", category: "Brief", memoryId: "morning-after-2025-12-26",
-    description: "Elias’ persönlicher Brief vom Morgen nach Weihnachten. Der Originaltext liegt nicht vor und wird nicht erfunden; er kann später ergänzt werden.",
+    description: "Elias’ persönlicher Brief vom Morgen nach Weihnachten. Was darin steht, bleibt zwischen den beiden.",
   },
 };
 
