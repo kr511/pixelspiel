@@ -1071,7 +1071,7 @@ export function Game() {
     </>}
     {started && paused && !adventure && <PauseMenu tab={pauseTab} onTab={setPauseTab} onResume={resumeGame} place={inWorld ? event?.scene === "encounter" ? "Radegast · Am Treffpunkt" : PLACES[save.place].name : "Erinnerung · Gölzau"} completed={completed} actions={[
       ...(overlay || !inWorld ? [] : [
-        { label: "Erinnerungsbuch", shortcut: "J", onSelect: () => { resumeGame(); setJournal(true); } },
+        { label: "Erinnerungsbuch", onSelect: () => { resumeGame(); setJournal(true); } },
         { label: "Smartphone", onSelect: () => { resumeGame(); setPhone(true); } },
       ]),
       { label: "Hauptmenü", onSelect: backToMenu },

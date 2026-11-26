@@ -418,6 +418,9 @@ main.pixel-game.version-095.ui-tagebuch .start-card .start-enter small { font:70
 main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:hover:not(:disabled) { filter:brightness(1.06); transform:none; background:var(--px-rose); }
 main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:disabled { background:var(--px-line); color:var(--px-ink-2); }
 main.pixel-game.version-095.ui-tagebuch .start-card .start-enter:focus-visible { outline:3px solid var(--px-ink); outline-offset:3px; }
+/* Start menu with the adventure: notes and loading text on the paper card */
+main.pixel-game.version-095.ui-tagebuch .start-card :is(.save-note,.start-loading) { color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .start-card .start-notice { color:var(--px-ink); }
 main.pixel-game.version-095.ui-tagebuch .start-card .start-place { font:500 12px/1.3 var(--font-pixel); color:var(--px-ink-2); }
 @media (max-height:520px) {
   main.pixel-game.version-095.ui-tagebuch .start-card { width:min(100%,460px); padding:20px 26px 14px; gap:8px; }
@@ -437,7 +440,7 @@ main.pixel-game.version-095.ui-tagebuch .pause-resume { display:flex; align-item
 main.pixel-game.version-095.ui-tagebuch .pause-resume kbd { background:var(--px-paper); color:var(--px-ink); }
 main.pixel-game.version-095.ui-tagebuch .pause-resume:focus-visible { outline:3px solid var(--px-ink); outline-offset:3px; }
 main.pixel-game.version-095.ui-tagebuch .pause-actions { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:8px; }
-main.pixel-game.version-095.ui-tagebuch .pause-actions button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:6px 8px; background:var(--px-paper-2); color:var(--px-ink); border:2px solid var(--px-ink); font:500 15px/1 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .pause-actions button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:6px 6px; background:var(--px-paper-2); color:var(--px-ink); border:2px solid var(--px-ink); font:500 14px/1.1 var(--font-pixel); text-align:center; overflow-wrap:anywhere; cursor:pointer; }
 main.pixel-game.version-095.ui-tagebuch .pause-actions button:focus-visible { outline:3px solid var(--px-rose); outline-offset:2px; }
 main.pixel-game.version-095.ui-tagebuch .pause-place { margin:0; font:700 13px/1.3 var(--font-body); color:var(--px-ink-2); }
 main.pixel-game.version-095.ui-tagebuch .pause-tabs { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); border:3px solid var(--px-ink); }
