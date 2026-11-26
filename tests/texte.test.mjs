@@ -63,3 +63,19 @@ test("Spielstände mit echten Gesprächsfäden und mit alten Themen bleiben lesb
   assert.ok(CHAT_TOPICS.length);
   assert.throws(() => parseTimeline(JSON.stringify({ ...save, progress: { "chat-2025-11-13": { ...emptyEvent(), topics: ["erfunden"] } } })));
 });
+
+test("Spielertexte enthalten keine Entwicklersprache; die Kennzeichnung übernehmen ♥, ✎ und ☆", async () => {
+  const { ENTITIES, PLACES, CHAPTERS } = await import("../game/story.ts");
+  const { ITEMS } = await import("../game/inventory.ts");
+  const { REACTIONS } = await import("../game/reactions.ts");
+  const banned = /rekonstru|inszenier|Interpretation|Spielkulisse|Spielgestalt|Spielweg|Pixelentwurf|maßstabsgetreu|nicht erfunden|behaupte|fiktionalisiert|sinngemäß|szenisch ergänzt|bleibt offen|für das Spiel verkürzt/i;
+  const texts = [
+    ...STORY_EVENTS.flatMap(event => [event.title, event.description, event.period ?? "", event.hint ?? "", ...event.dialogue.map(line => line.text), ...(event.steps ?? []).flatMap(step => [step.label, step.text]), ...(event.artifacts ?? []).flatMap(artifact => [artifact.title, artifact.description])].map(text => [event.id, text])),
+    ...Object.entries(ENTITIES).flatMap(([place, list]) => list.map(entity => [place, entity.text])),
+    ...Object.entries(PLACES).map(([place, info]) => [place, info.subtitle ?? ""]),
+    ...Object.values(CHAPTERS).flatMap(chapter => [[chapter.id, chapter.intro ?? ""]]),
+    ...Object.values(ITEMS).map(item => [item.id, item.description]),
+    ...Object.entries(REACTIONS).flatMap(([key, choices]) => Object.values(choices).map(reaction => [key, reaction.text])),
+  ];
+  for (const [id, text] of texts) assert.doesNotMatch(text, banned, `${id}: ${text.slice(0, 80)}`);
+});

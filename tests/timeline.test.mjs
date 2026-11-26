@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { CHAPTERS, EMPTY_STORY, SPAWNS, canWalk, storyCanWalk } from "../game/story.ts";
 import { initialDay } from "../game/day.ts";
 import { advanceActor, standingActor, walkingRoute } from "../game/actors.ts";
-import { CHAT_TOPICS, INTRO_FLAG, STORY_CHAPTERS, STORY_END, STORY_EVENTS, STORY_START, advanceTimelineClock, beginEvent, calendarSeason, canTrigger, chatTopicForEvent, completeEvent, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepTimelineClock, sleepToStoryDay, storyHint, storySeason, storyTrigger, waitingMinutes } from "../game/timeline.ts";
+import { CHAT_TOPICS, INTRO_FLAG, STORY_CHAPTERS, STORY_END, STORY_EVENTS, STORY_START, advanceTimelineClock, beginEvent, calendarSeason, canTrigger, chatTopicForEvent, completeEvent, emptyEvent, eventById, eventStatus, historicalDate, initialTimeline, jumpToNext, nextEvent, parseTimeline, sleepTimelineClock, sleepToStoryDay, storyHint, storySeason, storyTrigger, waitingMinutes, sceneMark } from "../game/timeline.ts";
 import { ITEMS } from "../game/inventory.ts";
 
 const player = { x: .5, y: .7 };
@@ -110,7 +110,8 @@ test("Historische Kerntermine und verschränkte Novemberereignisse folgen den ko
 });
 
 test("Spielgestaltung und Zukunft werden nicht zu erfundenen historischen Meilensteinen", () => {
-  for (const event of dated.filter(event => event.source === "staged")) assert.match(event.description, /inszenier|Spielgestalt|Spielwelt|Alltagsszen|rekonstru|spielerisch|erfind/i, event.id);
+  // Staged scenes carry the ✎ mark instead of explaining themselves in every description.
+  for (const event of dated.filter(event => event.source === "staged")) assert.equal(sceneMark(event).symbol, "✎", event.id);
   assert.ok(dated.filter(event => event.date > "2026-10-08").every(event => event.source === "future"));
   assert.deepEqual(eventById("our-story-finale").steps.slice(-2).map(step => [step.speaker, step.text]), [["Felice", "Also für immer?"], ["Elias", "Genau so. ❤️"]]);
   assert.deepEqual(eventById("morning-after-2025-12-26").artifacts.map(item => item.id), ["elias-letter","folded-cranes"]);

@@ -46,14 +46,19 @@ main.pixel-game.version-095.ui-tagebuch .next-step span { padding:3px 14px 0; fo
 
 /* ---------- Felice's thought: a handwritten bubble above her ---------- */
 main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought {
-  position:absolute; z-index:240; width:max-content; max-width:min(210px,34%); margin:0; padding:7px 12px 9px; transform:translate(-50%,-100%);
+  position:absolute; z-index:240; width:max-content; max-width:min(210px,34%); margin:0; padding:7px 12px 9px; transform:translate(-50%,-100%) scale(calc(1 / var(--world-zoom, 1))); transform-origin:50% 100%;
   background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); border-radius:0; clip-path:none; box-shadow:4px 4px 0 rgba(43,36,32,.35);
   font-family:var(--font-hand); font-size:22px; font-weight:600; line-height:1.05; pointer-events:none; animation:thought-in .32s steps(4,end) both;
 }
 main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought p { margin:0; font:inherit; }
 main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought small { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought::after { content:""; position:absolute; left:50%; bottom:-12px; width:9px; height:9px; margin-left:-4px; background:var(--px-ink); box-shadow:5px 6px 0 -1px var(--px-ink); }
-@keyframes thought-in { from { opacity:0; transform:translate(-50%,-88%); } to { opacity:1; transform:translate(-50%,-100%); } }
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought.is-below { transform:translate(-50%,0) scale(calc(1 / var(--world-zoom, 1))); transform-origin:50% 0; animation-name:thought-in-below; }
+main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought.is-below::after { bottom:auto; top:-12px; box-shadow:5px -6px 0 -1px var(--px-ink); }
+@keyframes thought-in { from { opacity:0; transform:translate(-50%,-88%) scale(calc(1 / var(--world-zoom, 1))); } to { opacity:1; transform:translate(-50%,-100%) scale(calc(1 / var(--world-zoom, 1))); } }
+@keyframes thought-in-below { from { opacity:0; transform:translate(-50%,-12%) scale(calc(1 / var(--world-zoom, 1))); } to { opacity:1; transform:translate(-50%,0) scale(calc(1 / var(--world-zoom, 1))); } }
+/* Standing on an exit, the action card names it already; a faded sign under Felice only looks like a glitch. */
+main.pixel-game.version-095.ui-tagebuch .world-exit.nearby-exit { opacity:0; }
 
 /* ---------- Right margin: three doors ---------- */
 main.pixel-game.version-095.ui-tagebuch .hud-doors { position:absolute; z-index:6; right:20px; top:20px; width:var(--hud-w); display:flex; flex-direction:column; gap:10px; pointer-events:auto; }
@@ -141,7 +146,7 @@ main.pixel-game.version-095.ui-tagebuch .joystick-knob { background:var(--px-pap
   main.pixel-game.version-095.ui-tagebuch .memory-interaction button { min-height:44px; font-size:13px; padding:6px 8px; }
   main.pixel-game.version-095.ui-tagebuch .memory-interaction button:first-of-type { min-height:52px; justify-content:center; font-size:14px; }
   main.pixel-game.version-095.ui-tagebuch .memory-interaction button kbd { display:none; }
-  main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought { font-size:14px; max-width:min(120px,36%); padding:4px 7px 5px; border-width:2px; }
+  main.pixel-game.version-095.ui-tagebuch .world-scene .felice-thought { font-size:16px; max-width:min(150px,40%); padding:4px 7px 5px; border-width:2px; }
   main.pixel-game.version-095.ui-tagebuch .story-unlocked { top:12px; width:min(360px,calc(100dvh - 24px)); }
   main.pixel-game.version-095.ui-tagebuch .routine-list { left:max(12px,env(safe-area-inset-left)); bottom:124px; padding:7px 10px; }
   main.pixel-game.version-095.ui-tagebuch .routine-list li { font-size:12px; }
@@ -210,7 +215,6 @@ main.pixel-game.version-095.ui-tagebuch .fx-dialogue-ending .fx-dialogue-card { 
   main.pixel-game.version-095.ui-tagebuch .fx-dialogue-close { top:4px; right:4px; }
 }
 /* The trigger's name hangs below its sparkle, clear of Felice when she stands on it. */
-main.pixel-game.version-095.ui-tagebuch .story-trigger small { position:absolute; top:calc(100% + 16px); left:50%; transform:translateX(-50%); }
 main.pixel-game.version-095.ui-tagebuch .fx-dialogue-mark.is-original { background:var(--px-mint); border-color:var(--px-forest); color:var(--px-forest); }
 
 /* ---------- Phone: a real phone with a paper screen ---------- */

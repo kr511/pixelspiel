@@ -13,6 +13,10 @@ const SCHOOL_FRIENDS = ["friends", "jason", "luca", "wyatt"];
 const GRADUATION_KEEPSAKES = ["graduation-certificates", "graduation-photo"];
 export function routineEntities(place: Place, minute: number, entities: Entity[], keepElias = false, inStory = false, date?: string): Entity[] {
   if (place === "home" && !inStory) entities = entities.filter(e => !AWAY_FROM_HOME.includes(e.id));
+  // The forgotten notebook only belongs to the old school chapter, not to everyday school days.
+  if (place === "school" && !inStory) entities = entities.filter(e => e.id !== "notebook");
+  // Shooting friends and trainers meet in the evening and at weekends; the lane itself stays open.
+  if (place === "range" && !inStory && date && minute < 16 * 60 && ![0, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay())) entities = entities.filter(e => e.kind !== "person");
   // The homework pile belongs to the routine days; afterwards the desk chair stays free.
   if (place === "bedroom" && !inStory && date && !isRoutineDay(date)) entities = entities.filter(e => e.id !== "homework");
   if (place === "gym" && !inStory && date && date !== GRADUATION_DAY) entities = date > GRADUATION_DAY ? entities.filter(e => GRADUATION_KEEPSAKES.includes(e.id)) : [];
