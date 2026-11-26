@@ -11,7 +11,9 @@ import { GAME_VERSION } from "./version";
 export type MenuEntry = { label: string; shortcut?: string; onSelect: () => void; keepOpen?: boolean; primary?: boolean };
 /** Start-screen choices; without them the single "Welt betreten" button starts the chronicle. `confirm` asks once before replacing a save. */
 export type StartMode = { id: string; label: string; detail: string; primary?: boolean; confirm?: string; onSelect: () => void };
-export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [], modes = [], saveStatus, saveNote, startNotice }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[]; modes?: StartMode[]; controls?: string; saveStatus?: string; saveNote?: string; startNotice?: string | null }) {
+export type StartProgress = { chapter: number; chapterTitle: string; completed: number; resume: string | null; done?: boolean };
+/** `pauseCard` shows the small pause card with `menu`; the chronicle uses its own PauseMenu sheet instead. */
+export function GameUI({ started, loading = null, onStart, roomActive = true, transitioning = false, place = "Felices Pixelzimmer", completed = 0, menu = [], modes = [], saveStatus, saveNote, startNotice, progress, pauseCard = true }: { started: boolean; loading?: number | null; onStart: () => void; roomActive?: boolean; transitioning?: boolean; place?: string; completed?: number; menu?: MenuEntry[]; modes?: StartMode[]; controls?: string; saveStatus?: string; saveNote?: string; startNotice?: string | null; progress?: StartProgress; pauseCard?: boolean }) {
   const [confirming, setConfirming] = useState<string | null>(null);
   const paused = useInput((state) => state.paused);
   const muted = useSyncExternalStore(worldAudio.subscribe, worldAudio.getMuted, worldAudio.getMuted);
@@ -43,13 +45,14 @@ export function GameUI({ started, loading = null, onStart, roomActive = true, tr
           <div className="joystick-knob" style={{ transform: `translate(${stick.x}px, ${stick.y}px)` }} />
         </div>
       )}
-      {(!started || paused) && (
+      {(!started || paused && pauseCard) && (
         <div className={`start-screen${started ? "" : " with-backdrop"}`} data-game-control>
           {!started && <StartBackdrop/>}
           <div className="start-card">
             <p>{started ? `${place}${completed > 0 ? ` · ${completed} ${completed === 1 ? "Erinnerung" : "Erinnerungen"} bewahrt` : ""}` : modes.length ? `Felice × Elias World · Version ${GAME_VERSION}` : `Eure kleine Welt · Version ${GAME_VERSION}`}</p>
             <h1>{started && paused ? "Kurze Pause?" : "Felice × Elias"}</h1>
             <span>{started && paused ? "Dein Moment wartet auf dich." : modes.length ? "Elias ist verschwunden. Ein Schatten hält ihn zwischen euren Erinnerungen gefangen. Löse sechs Rätsel, finde vier verlorene Erinnerungen – und hol ihn zurück. Ein Abenteuer für etwa 30 Minuten." : "Lange Abende am Handy. Ein Fahrrad, ein Stück Schokolade. Zwei Nachrichten, die bleiben. Erlebe euer gemeinsames Jahr in acht Kapiteln – vom ersten Schreiben bis zu den Erinnerungen, die bleiben."}</span>
+            {!started && progress && progress.completed > 0 && <div className="start-progress" data-testid="start-progress"><div><span>Unser Jahr · Kapitel {progress.chapter} von 8 · {progress.chapterTitle}</span><span>{progress.completed} {progress.completed === 1 ? "Erinnerung" : "Erinnerungen"} bewahrt</span></div><ol aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <li key={index} className={progress.done || index + 1 < progress.chapter ? "is-done" : index + 1 === progress.chapter ? "is-current" : undefined}/>)}</ol></div>}
             {!started && startNotice && <p className="start-notice" role="alert" data-testid="start-notice">{startNotice}</p>}
             {!started && modes.length > 0 ? <div className="start-modes" data-testid="start-modes">{waiting && <small className="start-loading">Welt lädt … {Math.round((loading ?? 0) * 100)} %</small>}{modes.map(mode => confirming === mode.id
               ? <div key={mode.id} className="start-confirm" role="alertdialog" aria-label={mode.label}><p>{mode.confirm}</p><div><button data-testid="start-confirm-yes" className="is-primary" onClick={() => { setConfirming(null); void worldAudio.unlock(); setPaused(false); mode.onSelect(); }}><span><strong>Ja, neu beginnen</strong></span></button><button className="is-secondary" onClick={() => setConfirming(null)}><span><strong>Abbrechen</strong></span></button></div></div>

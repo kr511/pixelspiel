@@ -25,6 +25,6 @@ export function WorldMap({ place, target = null }: { place: Place; target?: Plac
       {nodes.map(node => <g key={node.name} data-map-places={node.places.join(",")} className={`map-node${node.places.includes(place) ? " is-current" : ""}${target && target !== place && node.places.includes(target) ? " is-target" : ""}`}><circle cx={node.x} cy={node.y} r="8"/><rect x={node.x - 96} y={node.y + 14} width="192" height="25" rx="4"/><text x={node.x} y={node.y + 31} textAnchor="middle">{node.name}</text></g>)}
       <text x="408" y="349" className="map-route-label">zu Fuß</text>
     </svg>
-    <p className="world-map-caption">Die Wege sind für das Spiel verkürzt. Spielplatz, Weihnachtsmarkt und Elias’ Zimmer ergänzen die vorhandenen Orte; ihre Anordnung ist eine Spielinterpretation.</p>
+    <p className="world-map-caption">Die Wege sind für das Spiel verkürzt.</p>
   </section>;
 }
