@@ -77,7 +77,7 @@ export function ShootingMemory({ blocked, onComplete, onLeave }: Props) {
   }
 
   return <section className="shooting-memory" aria-label="Erinnerung: Luftgewehrschießen in Gölzau" data-testid="shooting-memory">
-    <div className="range-heading"><span>Undatierter Szenenentwurf</span><h1>Gölzau</h1><p>Ein ruhiger Moment. Nur du und die Scheibe.</p></div>
+    <div className="range-heading"><span>Erinnerung · Luftgewehr</span><h1>Gölzau</h1><p>Ein ruhiger Moment. Nur du und die Scheibe.</p></div>
     <div className="range-frame">
       <svg ref={surface} className={`range-surface${stage === "playing" && !finished ? " is-aiming" : ""}`} viewBox={`0 0 ${RANGE_WIDTH} ${RANGE_HEIGHT}`} role="application" aria-label="Schießstand. Mit Maus oder Pfeiltasten zielen, klicken oder Leertaste zum Schießen. Auf dem Handy die aktive Scheibe antippen." tabIndex={stage === "playing" && !blocked ? 0 : -1}
         onPointerMove={(event) => { if (!blocked) point(event); }}
@@ -128,8 +128,7 @@ export function ShootingMemory({ blocked, onComplete, onLeave }: Props) {
         <span className="memory-eyebrow">Schießen in Gölzau · Luftgewehr</span>
         <h2>Ankommen. Durchatmen.</h2>
         <p>Das Licht der Halle. Vor dir die Scheiben. Ein Augenblick, in dem alles andere leise wird.</p>
-        <p className="memory-input-hint">Fiktionalisierte Inszenierung · Historisches Datum und genauer Ablauf sind noch offen.</p>
-        <p className="memory-instructions">Drei Scheiben, je drei Schüsse. Ziele auf die leuchtend markierte Bahn. Je näher an der Mitte, desto mehr Punkte – bis zu 10 pro Schuss.</p>
+        <p className="memory-instructions">Drei Scheiben, je drei Schüsse. Ziele auf die leuchtend markierte Bahn. Je näher an der Mitte, desto mehr Punkte, bis zu 10 pro Schuss.</p>
         <p className="memory-input-hint">Maus & Klick · Pfeiltasten & Leertaste · Antippen</p>
         <button className="memory-primary" onClick={begin} disabled={blocked}>In Ruhe anfangen</button>
         <button className="memory-text-button" onClick={onLeave} disabled={blocked}>Zurück in die Welt</button>

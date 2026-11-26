@@ -37,7 +37,7 @@ export const STORY_CHAPTERS: { number: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; title: str
   { number: 1, title: "Alles beginnt", period: "November 2025", description: "Lange Gespräche, Schokolade, erste Gefühle und zwei Worte, die bleiben." },
   { number: 2, title: "Unsere ersten romantischen Momente", period: "Dezember 2025", description: "Die Parkbank, Lichter am Weihnachtsmarkt und unser erster richtiger Kuss." },
   { number: 3, title: "Ein neues Jahr", period: "Januar 2026", description: "Wünsche für das neue Jahr und Raum für den gemeinsamen Alltag." },
-  { number: 4, title: "Unser erster Valentinstag", period: "Februar 2026", description: "Ein Wochenende mit Zeit füreinander, ohne unbestätigte Geschenke." },
+  { number: 4, title: "Unser erster Valentinstag", period: "Februar 2026", description: "Ein Wochenende mit Zeit füreinander." },
   { number: 5, title: "Unsere Erinnerungen", period: "März 2026", description: "Alte Nachrichten und ein Wochenende bei Elias verbinden damals und heute." },
   { number: 6, title: "Gemeinsame Zeit", period: "April & Mai 2026", description: "Lernen, Besuche und der Plan, mehrere Tage miteinander zu verbringen." },
   { number: 7, title: "Unser Sommer", period: "Juni–August 2026", description: "Helle Tage und spielbare Alltagsszenen im vorhandenen Sommer." },
@@ -203,7 +203,7 @@ const schoolEpisode = (day: 17 | 19 | 21, steps: StoryBeat[]) => sequence({
 const datedEvents: StoryEvent[] = [
   // Beat IDs and count stay stable so saved checkpoints keep their meaning.
   // The intro cinematic wakes Felice beside her bed and opens the first beat.
-  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: WAKE_MINUTE, end: WAKE_MINUTE + 30, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Hier fängt alles an. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Ein spielerischer Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt.", steps: [
+  sequence({ id: "beginning-2025-11-01", title: "Der Beginn", date: STORY_START, source: "staged", chapterNumber: 1, place: "bedroom", start: WAKE_MINUTE, end: WAKE_MINUTE + 30, spawn: { x: .5, y: .6 }, symbol: "🍂", cast: ["Felice"], hint: "Hier fängt alles an. Vielleicht sehe ich mich erst einmal in meinem Zimmer um.", description: "Der Anfang am 10. November: Felices Zimmer, Herbstblätter und die ersten Schritte durch die vertraute Welt.", steps: [
     beat("wake", "Wach werden", "Der zehnte November. Draußen fallen die Blätter. Mal sehen, was der Tag bringt.", { x: .42, y: .52 }, { speaker: "Felice", art: "felice", emotion: "neutral", choices: ["Sich strecken und aufstehen", "Noch kurz aus dem Fenster schauen"] }),
     beat("phone", "Das Handy auf dem Schreibtisch ansehen", "Mein Handy. Mit E oder dem Aktionsknopf kann ich Dinge ansehen und benutzen. Mal sehen, wer mir in nächster Zeit schreibt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
     beat("explore", "Zur Zimmertür gehen", "WASD, die Pfeiltasten oder der Joystick bewegen mich. Mit E spreche ich mit Menschen, J öffnet unser Erinnerungsbuch, I meine Tasche und Esc das Menü. Die nächsten Tage sind ganz normaler Alltag: aufstehen, frischmachen, zur Schule, Hausaufgaben und schlafen.", { x: .70, y: .66 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Die Welt kennenlernen", "Erst einmal durchatmen"] }),
@@ -287,7 +287,7 @@ const datedEvents: StoryEvent[] = [
   ] }),
   sequence({ id: "morning-after-2025-12-26", title: "Der Morgen danach", date: "2025-12-26", chapterNumber: 2, place: "bedroom", start: 540, end: 600, spawn: { x: .5, y: .6 }, symbol: "✉", rewards: ["elias-letter"], description: "Wir erinnern uns an die gemeinsame Nacht. Ein persönlicher Brief von Elias und die gefalteten Kraniche, die ich in seiner Jacke versteckt habe, finden ihren Platz im Album. Was im Brief steht, bleibt zwischen den beiden.", artifacts: [
     { id: "elias-letter", title: "Elias’ Liebesbrief", symbol: "✉", description: "Sein Weihnachtsgeschenk: ein Liebesbrief. Felice liest ihn am Abend des 26. Dezember und schreibt: „Der Brief ist so schön. Ich muss weinen.“ Der Originaltext ist nicht überliefert und bleibt frei für eine spätere Ergänzung." },
-    { id: "folded-cranes", title: "Die gefalteten Kraniche", symbol: "◇", description: "Felice versteckte gefaltete Kraniche in Elias’ Jacke. Farbe, Zahl und weitere Details werden nicht ergänzt." },
+    { id: "folded-cranes", title: "Die gefalteten Kraniche", symbol: "◇", description: "Felice versteckte gefaltete Kraniche in Elias’ Jacke." },
   ], steps: [
     beat("morning", "Elias am Morgen ansprechen", "Morgen. Ich muss die ganze Zeit an gestern denken.", { x: .5, y: .6 }, { emotion: "love", animation: "reflection" }),
     beat("letter", "Den persönlichen Brief ansehen", "Dein Brief. Was darin steht, behalte ich für mich.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "inspect" }),
@@ -378,12 +378,12 @@ const datedEvents: StoryEvent[] = [
     beat("home", "Ankunft in Zörbig", "Alle wieder da? Dann ab nach Hause. Danke für die schöne Fahrt!", { x: .50, y: .70 }, { place: "school", speaker: "Herr Kluger", art: "kluger", emotion: "happy", animation: "arrival", cast: ["Herr Kluger", "Frau Kaiser"] }),
     beat("thanks", "Elias verabschieden", "Danke für diese Woche. Ich werd sie nicht vergessen.", { x: .62, y: .78 }, { place: "school", emotion: "love", choices: ["Ich auch nicht", "Wir schreiben später"], cast: ["Elias"] }),
   ] }),
-  sequence({ id: "longer-visit-plan", title: "Mehrere Tage zusammen", date: "2026-05-06", chapterNumber: 6, place: "bedroom", start: 1140, end: 1170, spawn: { x: .5, y: .6 }, symbol: "▤", description: "Am 6. Mai planen wir, mehrere Tage miteinander zu verbringen. Der Plan ist bestätigt; noch offene Details und der genaue spätere Ablauf werden nicht ergänzt.", steps: [
+  sequence({ id: "longer-visit-plan", title: "Mehrere Tage zusammen", date: "2026-05-06", chapterNumber: 6, place: "bedroom", start: 1140, end: 1170, spawn: { x: .5, y: .6 }, symbol: "▤", description: "Am 6. Mai planen wir, mehrere Tage miteinander zu verbringen.", steps: [
     beat("idea", "Den Gedanken an einen längeren Besuch teilen", "Wie wäre es, wenn wir uns bald mehrere Tage füreinander nehmen?", { x: .5, y: .6 }, { emotion: "thoughtful" }),
     beat("plan", "Gemeinsam über den Besuch nachdenken", "Ich würde mich freuen. Wir können in Ruhe schauen, wie es für uns passt.", { x: .60, y: .395 }, { speaker: "Felice", art: "felice", emotion: "happy", choices: ["Über gemeinsame Zeit sprechen", "Erst mal schauen, wann es passt"], animation: "inspect" }),
     beat("remember", "Den Plan im Kalender bewahren", "Ein gemeinsamer Plan.", { x: .5, y: .6 }, { speaker: "Erzählung", emotion: "neutral" }),
   ] }),
-  sequence({ id: "may-everyday", title: "Zeit füreinander", date: "2026-05-14", until: "2026-05-17", period: "14.–17. Mai 2026 · Spielerische Möglichkeit", source: "staged", chapterNumber: 6, place: "home", start: 960, end: 1080, spawn: { x: .4, y: .65 }, illustration: "/rooms/garden-v06.webp", symbol: "❧", description: "Um den 14. bis 17. Mai können passende Alltagsszenen gespielt werden. Diese Möglichkeit bestätigt keinen tatsächlich durchgeführten mehrtägigen Besuch und keine weiteren unüberlieferten Details.", steps: [
+  sequence({ id: "may-everyday", title: "Zeit füreinander", date: "2026-05-14", until: "2026-05-17", period: "14.–17. Mai 2026", source: "staged", chapterNumber: 6, place: "home", start: 960, end: 1080, spawn: { x: .4, y: .65 }, illustration: "/rooms/garden-v06.webp", symbol: "❧", description: "Mitte Mai: ein paar ganz normale Tage zusammen.", steps: [
     beat("time", "Gemeinsame Zeit gestalten", "Ein ganz normaler Tag im Mai.", { x: .4, y: .65 }, { speaker: "Erzählung", emotion: "neutral" }),
     beat("talk", "Mit Elias sprechen", "Was möchtest du gerade teilen? Wir können einfach zuhören und uns nicht beeilen.", { x: .5, y: .65 }, { place: "garden", emotion: "thoughtful", choices: ["Über einen schönen Gedanken reden", "Einen ruhigen Moment teilen"] }),
     beat("hug", "Die Alltagsszene bewahren", "Einfach zusammen sein. Das reicht mir.", { x: .5, y: .65 }, { place: "garden", speaker: "Felice", art: "felice", emotion: "happy", animation: "hug" }),
@@ -423,7 +423,7 @@ const datedEvents: StoryEvent[] = [
       narration("Gemeint war ein Plan für Weihnachten mit Justin und Paul. Ein ganz normaler Tag. Und trotzdem ein schöner.", "thoughtful"),
     ], interactions: ["Platz nehmen", "Die Morgennachricht öffnen", "Elias antworten", "Raten, was er gestartet hat"],
   },
-  sequence({ id: "our-story-finale", title: "Unsere Geschichte geht weiter", date: STORY_END, period: "02.11.2026 · Spielerischer Ausblick", source: "future", chapterNumber: 8, place: "garden", start: 960, end: 1000, spawn: { x: .5, y: .65 }, illustration: "/rooms/garden-v06.webp", symbol: "♥", special: true, description: "Ein spielerischer Ausblick am Ende des Kalenders. Die Tage nach dem 8. Oktober sind keine abgeschlossenen historischen Erlebnisse. Felice und Elias schauen auf freigeschaltete Erinnerungen zurück und stehen am Ende nebeneinander.", steps: [
+  sequence({ id: "our-story-finale", title: "Unsere Geschichte geht weiter", date: STORY_END, period: "02.11.2026", source: "future", chapterNumber: 8, place: "garden", start: 960, end: 1000, spawn: { x: .5, y: .65 }, illustration: "/rooms/garden-v06.webp", symbol: "♥", special: true, description: "Am Ende des Kalenders schauen Felice und Elias auf ihr Jahr zurück und stehen nebeneinander.", steps: [
     beat("beginning", "Auf den gemeinsamen Anfang zurückblicken", "Die ersten Gespräche. Das Fahrrad. Die Schokolade. Die Gefühle, die langsam Worte fanden.", { x: .5, y: .65 }, { speaker: "Felice", art: "felice", emotion: "thoughtful", animation: "reflection" }),
     beat("winter", "Die Wintermomente wiedersehen", "Das erste Liebesgeständnis. Deine drei Reihen Punkte und mein „Ich liebe dich auch“. Die Parkbank, der Weihnachtsmarkt und Weihnachten mit unserem ersten Kuss.", { x: .6, y: .7 }, { emotion: "love", animation: "reflection" }),
     beat("year", "Unser Jahr im Album ansehen", "Valentinstag. Das Wochenende bei dir. Die Klassenfahrt. Und so viele kleine Tage dazwischen.", { x: .5, y: .65 }, { speaker: "Felice", art: "felice", emotion: "happy", animation: "reflection" }),
@@ -443,7 +443,7 @@ export const STORY_EVENTS: StoryEvent[] = [
   ...CHAPTERS.map((chapter, index): StoryEvent => ({
     id: `legacy-${chapter.id}`, title: chapter.title, date: null, period: chapter.id === "graduation" ? chapter.date : undefined, order: index, place: chapter.steps[0].place,
     scene: "legacy", requires: [], confirmed: false, source: "staged", chapter: chapter.id,
-    description: chapter.id === "christmas" ? "Der vorhandene Weihnachtsentwurf bleibt mit seinen Abschlüssen erhalten. Die bestätigte Weihnachtsgeschichte vom 25. Dezember und der erste Kuss werden im Hauptkalender separat erlebt." : "Diese Geschichte gehört zu eurer Welt. Das historische Datum und der genaue Ablauf werden später mit bestätigten Angaben ergänzt. Der vorhandene Szenenentwurf bleibt spielbar.",
+    description: chapter.id === "christmas" ? "Weihnachten bei Felice, ohne festes Datum. Den 25. Dezember mit dem ersten Kuss erlebst du im Kalender." : "Eine Geschichte aus eurer Welt, noch ohne festes Datum. Du kannst sie jederzeit spielen.",
     illustration: chapter.id === "dog" ? "/rooms/garden-v06.webp" : chapter.id === "christmas" ? "/rooms/home-winter-v06.webp" : chapter.id === "school" ? "/rooms/zoerbig-market-v09.webp" : chapter.id === "graduation" ? "/rooms/graduation-gym-v08.webp" : "/rooms/goelzau-range-v1.webp",
     staging: { start: 840, end: 900, spawn: { x: .5, y: .7 }, timeConfirmed: false },
     dialogue: chapter.steps.map(step => ({ speaker: "Erzählung", text: step.text })), interactions: chapter.steps.map(step => step.label),
@@ -457,7 +457,7 @@ export type StorySession = { id: string; returnPlayer: Point; returnDirection: "
 export type TimelineSave = { version: 2; clock: DaySave; progress: Record<string, EventProgress>; active: StorySession | null; inventory: string[]; flags: string[] };
 export const INTRO_FLAG = "intro-seen";
 export const emptyEvent = (): EventProgress => ({ cursor: 0, topics: [], topic: null, line: 0, visits: 0 });
-export function historicalDate(date: string | null) { return date ? date.split("-").reverse().join(".") : "Historisches Datum noch offen"; }
+export function historicalDate(date: string | null) { return date ? date.split("-").reverse().join(".") : "Ohne festes Datum"; }
 export function eventById(id: string) { return STORY_EVENTS.find(event => event.id === id); }
 export function initialTimeline(legacyDay?: DaySave, legacyStory?: StorySave, shootingCompleted = false): TimelineSave {
   const clock = legacyDay ? boundClock(legacyDay) : { ...initialDay(new Date(`${STORY_START}T12:00:00Z`)), date: STORY_START, season: "Herbst" as const };

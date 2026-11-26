@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ORIGINAL_CHATS } from "../game/texte/index.ts";
-import { CHAT_TOPICS, STORY_EVENTS, chatTopicForEvent, chatTopicsForEvent, emptyEvent, eventById, initialTimeline, parseTimeline } from "../game/timeline.ts";
+import { CHAT_TOPICS, STORY_CHAPTERS, STORY_EVENTS, chatTopicForEvent, chatTopicsForEvent, emptyEvent, eventById, initialTimeline, parseTimeline } from "../game/timeline.ts";
 
 const lastOfMonth = date => { const [y, m] = date.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10); };
 
@@ -68,12 +68,13 @@ test("Spielertexte enthalten keine Entwicklersprache; die Kennzeichnung überneh
   const { ENTITIES, PLACES, CHAPTERS } = await import("../game/story.ts");
   const { ITEMS } = await import("../game/inventory.ts");
   const { REACTIONS } = await import("../game/reactions.ts");
-  const banned = /rekonstru|inszenier|Interpretation|Spielkulisse|Spielgestalt|Spielweg|Pixelentwurf|maßstabsgetreu|nicht erfunden|behaupte|fiktionalisiert|sinngemäß|szenisch ergänzt|bleibt offen|für das Spiel verkürzt/i;
+  const banned = /rekonstru|inszenier|Interpretation|Spielkulisse|Spielgestalt|Spielweg|Pixelentwurf|maßstabsgetreu|nicht erfunden|behaupte|fiktional|sinngemäß|ergänzt|bleibt offen|für das Spiel verkürzt|bestätigt|historisch|undatiert|entwurf|spielerische|unüberliefert/i;
   const texts = [
     ...STORY_EVENTS.flatMap(event => [event.title, event.description, event.period ?? "", event.hint ?? "", ...event.dialogue.map(line => line.text), ...(event.steps ?? []).flatMap(step => [step.label, step.text]), ...(event.artifacts ?? []).flatMap(artifact => [artifact.title, artifact.description])].map(text => [event.id, text])),
     ...Object.entries(ENTITIES).flatMap(([place, list]) => list.map(entity => [place, entity.text])),
     ...Object.entries(PLACES).map(([place, info]) => [place, info.subtitle ?? ""]),
-    ...Object.values(CHAPTERS).flatMap(chapter => [[chapter.id, chapter.intro ?? ""]]),
+    ...Object.values(CHAPTERS).flatMap(chapter => [chapter.title, chapter.date, chapter.intro, chapter.ending, chapter.reward, ...(chapter.steps ?? []).flatMap(step => [step.label, step.text])].map(text => [chapter.id, text ?? ""])),
+    ...STORY_CHAPTERS.flatMap(chapter => [chapter.title, chapter.period, chapter.description].map(text => [`Kapitel ${chapter.number}`, text ?? ""])),
     ...Object.values(ITEMS).map(item => [item.id, item.description]),
     ...Object.entries(REACTIONS).flatMap(([key, choices]) => Object.values(choices).map(reaction => [key, reaction.text])),
   ];

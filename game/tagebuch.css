@@ -4,13 +4,15 @@
 
 @font-face { font-family:"Pixelify Sans"; src:url("/fonts/pixelify-sans.woff2") format("woff2"); font-weight:400 700; font-display:swap; }
 @font-face { font-family:"Nunito"; src:url("/fonts/nunito.woff2") format("woff2"); font-weight:200 1000; font-display:swap; }
+/* Pixelify's 5 reads as S or 8; pixel text takes its digits from Nunito. */
+@font-face { font-family:"Pixel Digits"; src:url("/fonts/nunito.woff2") format("woff2"); font-weight:200 1000; font-display:swap; unicode-range:U+0030-0039; }
 @font-face { font-family:"Caveat"; src:url("/fonts/caveat.woff2") format("woff2"); font-weight:400 700; font-display:swap; }
 
 main.pixel-game.ui-tagebuch {
   --px-paper:#F6EEDF; --px-paper-2:#EFE3CC; --px-cream:#FFFBF3; --px-line:#D6C3A0;
   --px-ink:#2B2420; --px-ink-2:#5E5046; --px-rose:#A9435A; --px-rose-soft:#FBE7EB; --px-washi:#E9B9C2;
   --px-forest:#2F5D50; --px-mint:#DCE8D2; --px-night:#1E2433;
-  --font-pixel:"Pixelify Sans",ui-monospace,monospace; --font-body:Nunito,system-ui,sans-serif; --font-hand:Caveat,"Segoe Print",cursive;
+  --font-pixel:"Pixel Digits","Pixelify Sans",ui-monospace,monospace; --font-body:Nunito,system-ui,sans-serif; --font-hand:Caveat,"Segoe Print",cursive;
   /* Stepped 3px corners. */
   --px-cut:polygon(0 6px,3px 6px,3px 3px,6px 3px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px));
   --px-drop:drop-shadow(0 4px 0 rgba(43,36,32,.38));
@@ -35,7 +37,7 @@ main.pixel-game.version-095.ui-tagebuch .hud-left { left:20px; top:20px; width:v
 main.pixel-game.version-095.ui-tagebuch .hud-left > :is(.day-clock,.next-step) { position:relative; inset:auto; transform:none; margin:0; width:100%; min-width:0; box-sizing:border-box; }
 main.pixel-game.version-095.ui-tagebuch .day-clock { display:flex; flex-direction:column; gap:2px; padding:11px 14px 12px; }
 main.pixel-game.version-095.ui-tagebuch .day-clock time { font-family:var(--font-pixel); font-size:11px; letter-spacing:.03em; white-space:nowrap; text-transform:uppercase; color:var(--px-ink-2); }
-main.pixel-game.version-095.ui-tagebuch .day-clock strong { font-family:var(--font-pixel); font-size:38px; font-weight:600; line-height:1.05; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .day-clock strong { font-family:var(--font-pixel); font-size:38px; font-weight:900; line-height:1.05; color:var(--px-ink); }
 main.pixel-game.version-095.ui-tagebuch .day-clock small { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--px-ink-2); }
 main.pixel-game.version-095.ui-tagebuch .day-clock .calendar-season { position:static; font-size:12px; font-weight:800; padding:1px 7px; background:var(--px-mint); color:var(--px-forest); clip-path:var(--px-cut); white-space:nowrap; }
 main.pixel-game.version-095.ui-tagebuch .next-step { display:flex; flex-direction:column; padding:0 0 11px; overflow:hidden; }
@@ -557,3 +559,50 @@ main.pixel-game.version-095.ui-tagebuch .graduation-snapshot figcaption { font:6
 main.pixel-game.version-095.ui-tagebuch .graduation-snapshot figcaption small { font:500 12px/1.3 var(--font-pixel); color:var(--px-ink-2); }
 main.pixel-game.version-095.ui-tagebuch .snapshot-memory-caption { font:600 26px/1.1 var(--font-hand); color:var(--px-paper); }
 main.pixel-game.version-095.ui-tagebuch .start-backdrop-caption { z-index:3; padding:4px 10px; background:var(--px-paper); color:var(--px-ink); border:2px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); font:500 13px/1.2 var(--font-pixel); box-shadow:none; backdrop-filter:none; }
+
+/* ---------- Shooting memory in Gölzau: a page from the diary with the range glued in ---------- */
+main.pixel-game.version-095.ui-tagebuch .shooting-memory { padding:14px 16px 10px; background:var(--px-paper); color:var(--px-ink); border:3px solid var(--px-ink); box-shadow:var(--px-drop); }
+main.pixel-game.version-095.ui-tagebuch .range-heading { margin:0 0 10px; }
+main.pixel-game.version-095.ui-tagebuch .range-heading > span, main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-eyebrow { font-family:var(--font-pixel); font-size:11px; font-weight:500; letter-spacing:.12em; color:var(--px-forest); }
+main.pixel-game.version-095.ui-tagebuch .range-heading h1 { margin:2px 0; font:700 38px/1 var(--font-hand); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .range-heading p { margin:0; font:600 13px/1.4 var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .range-frame { border:3px solid var(--px-ink); box-shadow:none; background:var(--px-paper-2); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-story { background:rgba(43,36,32,.38); backdrop-filter:blur(2px); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card { position:relative; padding:24px 26px 18px; background:var(--px-cream); color:var(--px-ink); border:3px solid var(--px-ink); clip-path:var(--px-cut); box-shadow:none; }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card::before { content:""; position:absolute; top:-2px; left:50%; width:96px; height:18px; margin-left:-48px; background:var(--px-washi); opacity:.85; }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card h2 { margin:6px 0 10px; font:700 34px/1.05 var(--font-hand); color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card p { font:500 14px/1.55 var(--font-body); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card :is(.memory-instructions,.memory-input-hint) { color:var(--px-ink-2); font-size:12px; }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-primary { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:8px 18px; background:var(--px-rose); color:#fff; border:3px solid var(--px-ink); border-radius:0; clip-path:var(--px-cut); box-shadow:none; font:500 15px/1.2 var(--font-pixel); cursor:pointer; }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-primary:hover { background:#8f3549; }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-text-button { font:700 13px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-text-button:hover { color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .shooting-memory :is(.memory-primary,.memory-text-button):focus-visible { outline:3px solid var(--px-rose); outline-offset:3px; }
+main.pixel-game.version-095.ui-tagebuch .memory-score { font:900 52px/1 var(--font-pixel); color:var(--px-rose); }
+main.pixel-game.version-095.ui-tagebuch .memory-score small { font:700 14px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .target-results > span { font:700 11px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .target-results strong { font:500 15px var(--font-pixel); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .range-hud { padding:10px 2px 0; color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .range-hud small, main.pixel-game.version-095.ui-tagebuch .range-points span { font:700 11px var(--font-body); color:var(--px-ink-2); }
+main.pixel-game.version-095.ui-tagebuch .range-hud strong { font:500 15px var(--font-pixel); color:var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .range-ammo i { width:6px; height:14px; background:var(--px-rose); border:2px solid var(--px-ink); }
+main.pixel-game.version-095.ui-tagebuch .range-ammo i.spent { background:transparent; border-color:var(--px-line); }
+main.pixel-game.version-095.ui-tagebuch .range-footer { margin:8px 0 0; font:600 11px var(--font-body); color:var(--px-ink-2); letter-spacing:0; }
+main.pixel-game.version-095.ui-tagebuch .memory-transition { background:rgba(30,36,51,.96); backdrop-filter:blur(6px); }
+main.pixel-game.version-095.ui-tagebuch .memory-transition-star { color:var(--px-washi); }
+main.pixel-game.version-095.ui-tagebuch .memory-transition p { font:700 clamp(30px,5vw,48px)/1.1 var(--font-hand); color:var(--px-cream); }
+main.pixel-game.version-095.ui-tagebuch .memory-transition small { font:600 13px/1.6 var(--font-body); color:#cfc6b8; }
+@media (max-height:580px) and (orientation:landscape) {
+  main.pixel-game.version-095.ui-tagebuch .shooting-memory { width:min(calc((100dvh - 104px) * 1.5),calc(100vw - 220px)); padding:6px 10px 4px; }
+  main.pixel-game.version-095.ui-tagebuch .range-footer { margin-top:4px; font-size:9px; }
+  main.pixel-game.version-095.ui-tagebuch .range-heading { right:calc(100% + 10px); padding:8px; background:var(--px-paper); border:2px solid var(--px-ink); }
+  main.pixel-game.version-095.ui-tagebuch .range-heading h1 { font-size:26px; }
+  main.pixel-game.version-095.ui-tagebuch .range-heading p { font-size:10px; }
+  main.pixel-game.version-095.ui-tagebuch .range-heading > span { font-size:8px; }
+  main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card { padding:12px 16px 8px; }
+  main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card h2 { font-size:26px; margin:4px 0; }
+  main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-card p { font-size:11px; line-height:1.4; margin:6px 0; }
+  main.pixel-game.version-095.ui-tagebuch .shooting-memory .memory-primary { min-height:38px; font-size:13px; }
+  main.pixel-game.version-095.ui-tagebuch .range-hud strong { font-size:11px; } main.pixel-game.version-095.ui-tagebuch .range-hud small, main.pixel-game.version-095.ui-tagebuch .range-points span { font-size:9px; }
+  main.pixel-game.version-095.ui-tagebuch .memory-score { font-size:36px; }
+}
